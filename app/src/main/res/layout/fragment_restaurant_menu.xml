@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:fillViewport="true"
+    tools:context=".PartneredRestaurant.Fragments.RestaurantMenuFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/filterRv"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:layout_marginTop="20dp"
+            android:clipToPadding="false"
+            app:layout_constraintTop_toTopOf="parent"
+            android:paddingHorizontal="14dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/restaurantMenuRv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="17dp"
+        android:layout_marginTop="28dp"
+        android:orientation="vertical"
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/filterRv"
+
+        />
+
+
+
+        <ProgressBar
+            android:id="@+id/menuProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:indicatorColor="@color/orange"
+            app:layout_constraintTop_toTopOf="@id/restaurantMenuRv"
+            app:layout_constraintBottom_toBottomOf="@id/restaurantMenuRv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:theme="@style/progressBarOrange" />
+
+        <TextView
+            android:id="@+id/noMenuItemTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/restaurantMenuRv"
+            app:layout_constraintBottom_toBottomOf="@id/restaurantMenuRv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="No menu items found"
+            android:visibility="gone"
+            android:fontFamily="@font/almarai_regular"
+            android:textSize="18sp"
+            android:textColor="@color/orange"
+            />
+
+
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/addToMenuFb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        android:text="Add To Menu"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        app:iconTint="@color/orange"
+        app:icon="@drawable/add_icon_white"
+        app:backgroundTint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <View
+        android:id="@+id/courseLocationIndicatorView"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/orange_circle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/courseLocationNameTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:textColor="@color/light_black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/courseLocationIndicatorView"
+        app:layout_constraintStart_toEndOf="@+id/courseLocationIndicatorView"
+        app:layout_constraintTop_toTopOf="@+id/courseLocationIndicatorView" />
+
+
+    <TextView
+        android:id="@+id/courseLocationItemCountTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/amlarai_bold"
+        android:textColor="@color/orange"
+        android:textSize="15sp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/courseLocationIndicatorView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/courseLocationIndicatorView" />
+
+
+    <TextView
+        android:id="@+id/courseLocationCoordinatesTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:textColor="@color/light_black"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/courseLocationIndicatorView"
+        app:layout_constraintTop_toBottomOf="@+id/courseLocationNameTv" />
+
+    <View
+        android:id="@+id/courseLocationRouteLineView"
+        android:layout_width="3dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/orange_line_rounded_corneres"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/courseLocationIndicatorView"
+        app:layout_constraintStart_toStartOf="@+id/courseLocationIndicatorView"
+        app:layout_constraintTop_toBottomOf="@+id/courseLocationIndicatorView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

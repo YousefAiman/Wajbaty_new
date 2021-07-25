@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="13dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="13dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/cartItemImageIv"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@color/shaded_white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.35" />
+
+
+            <TextView
+                android:id="@+id/cartItemNameTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/almarai_regular"
+                android:textColor="@color/light_black"
+                android:textSize="20sp"
+                app:layout_constraintStart_toEndOf="@+id/cartItemImageIv"
+                app:layout_constraintTop_toTopOf="@+id/cartItemImageIv" />
+
+            <TextView
+                android:id="@+id/cartItemPriceTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/almarai_regular"
+                android:textColor="@color/light_black"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="@+id/cartItemNameTv"
+                app:layout_constraintTop_toBottomOf="@+id/cartItemNameTv" />
+
+
+            <ImageView
+                android:id="@+id/cartItemPlusIv"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/plus_round_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cartItemPriceTv"
+                app:layout_constraintWidth_percent="0.06" />
+
+
+            <TextView
+                android:id="@+id/cartItemCountTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/almarai_regular"
+                android:textColor="@color/light_black"
+                android:textSize="25sp"
+                app:layout_constraintBottom_toBottomOf="@+id/cartItemPlusIv"
+                app:layout_constraintEnd_toStartOf="@+id/cartItemPlusIv"
+                app:layout_constraintTop_toTopOf="@+id/cartItemPlusIv" />
+
+
+            <ImageView
+                android:id="@+id/cartItemMinusIv"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="20dp"
+                android:src="@drawable/minus_round_icon"
+                app:layout_constraintBottom_toBottomOf="@+id/cartItemPlusIv"
+                app:layout_constraintDimensionRatio="1"
+                app:layout_constraintEnd_toStartOf="@+id/cartItemCountTv"
+                app:layout_constraintTop_toTopOf="@+id/cartItemPlusIv"
+                app:layout_constraintWidth_percent="0.06" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+    <ImageView
+        android:id="@+id/cartItemRemoveIv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/close_round_icon"
+        android:layout_gravity="top|end"
+        />
+
+</FrameLayout>

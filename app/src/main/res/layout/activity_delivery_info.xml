@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/shaded_white"
+    android:orientation="vertical"
+    tools:context=".DeliveryDriver.Activities.DeliveryInfoActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/cartToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        app:title="Delivery for"
+        app:titleTextAppearance="@style/ToolbarTitleAppearance"
+        app:titleTextColor="@color/white"
+        android:background="@color/orange"
+        app:navigationIcon="@drawable/back_arrow_white" />
+
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/deliveryInfoNSV"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/deliveryInfoUserIv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="20dp"
+        android:background="@drawable/profile_circular_icon"
+        android:elevation="3dp"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.155" />
+
+    <TextView
+        android:id="@+id/deliveryInfoUserNameTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toBottomOf="@+id/deliveryInfoUserIv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/deliveryInfoUserIv"
+        app:layout_constraintTop_toTopOf="@+id/deliveryInfoUserIv" />
+
+    <TextView
+        android:id="@+id/deliveryInfoAddressTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/deliveryInfoUserNameTv"
+        app:layout_constraintStart_toStartOf="@+id/deliveryInfoUserIv"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoUserIv" />
+
+
+    <TextView
+        android:id="@+id/deliveryInfoCoordinatesTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/deliveryInfoAddressTv"
+        app:layout_constraintStart_toStartOf="@+id/deliveryInfoAddressTv"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoAddressTv" />
+
+
+    <TextView
+        android:id="@+id/deliveryInfoTotalDistanceTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/deliveryInfoCoordinatesTv"
+        app:layout_constraintStart_toStartOf="@+id/deliveryInfoCoordinatesTv"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoCoordinatesTv" />
+
+
+    <TextView
+        android:id="@+id/deliveryInfoOrderTimeTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintEnd_toEndOf="@+id/deliveryInfoTotalDistanceTv"
+        app:layout_constraintStart_toStartOf="@+id/deliveryInfoTotalDistanceTv"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoTotalDistanceTv" />
+
+
+    <TextView
+        android:id="@+id/deliveryInfoTotalPriceTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintEnd_toEndOf="@+id/deliveryInfoOrderTimeTv"
+        app:layout_constraintStart_toStartOf="@+id/deliveryInfoOrderTimeTv"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoOrderTimeTv" />
+
+
+    <TextView
+        android:id="@+id/deliveryInfoRestaurantCountTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/almarai_regular"
+        android:maxLines="2"
+        android:textColor="@color/light_black"
+        android:textSize="18sp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintEnd_toEndOf="@+id/deliveryInfoTotalPriceTv"
+        app:layout_constraintStart_toStartOf="@+id/deliveryInfoTotalPriceTv"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoTotalPriceTv" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/deliveryInfoCartItemsRv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:orientation="vertical"
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryInfoRestaurantCountTv" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/deliveryInfoStartDeliveryBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginVertical="15dp"
+        android:background="@drawable/filled_button_background"
+        android:elevation="3dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:paddingVertical="10dp"
+        android:text="Start Delivery"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="22sp" />
+
+
+</LinearLayout>

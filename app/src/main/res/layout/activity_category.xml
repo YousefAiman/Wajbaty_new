@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Customer.Activities.CategoryActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/categoryRestaurantsToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="Category"
+        app:titleTextAppearance="@style/ToolbarTitleAppearance"
+        app:titleTextColor="@color/white"
+        android:background="@color/orange"
+        app:navigationIcon="@drawable/back_arrow_white" />
+
+    <TextView
+        android:id="@+id/categoryRestaurantsResultsTv"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/grey"
+        android:textSize="16sp"
+        android:text="0 Restaurants"
+        android:fontFamily="@font/almarai_light"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/categoryRestaurantsToolbar" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categoryRestaurantsRv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/categoryRestaurantsResultsTv" />
+
+
+    <ProgressBar
+        android:id="@+id/categoryRestaurantsProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:theme="@style/progressBarOrange"
+        app:indicatorColor="@color/orange"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/categoryRestaurantsResultsTv" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

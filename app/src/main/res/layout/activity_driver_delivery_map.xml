@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/shaded_white"
+    tools:context=".DeliveryDriver.Activities.DriverDeliveryMapActivity">
+
+    <fragment
+        android:id="@+id/driverDeliveryMap"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+    <ImageButton
+        android:id="@+id/driverDeliveryBackIB"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="25dp"
+        android:background="@drawable/white_circle"
+        android:padding="5dp"
+        android:scaleType="fitStart"
+        android:src="@drawable/back_arrow_orange_icon"
+        app:layout_constraintBottom_toBottomOf="@+id/driverDeliveryMessageIB"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/driverDeliveryMessageIB"
+        app:layout_constraintWidth_percent="0.12"
+        app:tint="@color/orange" />
+
+    <ImageButton
+        android:id="@+id/driverDeliveryMessageIB"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="25dp"
+        android:background="@drawable/orange_circle"
+        android:src="@drawable/messages_icon"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent=".145"
+        app:tint="@color/white" />
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/driverDeliveryItemsBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/filled_button_background"
+        android:fontFamily="@font/almarai_regular"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="10dp"
+        android:text="SHOW ITEMS"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/driverDeliveryMessageIB"
+        app:layout_constraintEnd_toStartOf="@+id/driverDeliveryMessageIB"
+        app:layout_constraintTop_toTopOf="@+id/driverDeliveryMessageIB" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/driverDeliveryCourseCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="25dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="3dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/driverDeliveryMessageIB">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/driverDeliveryCourseRv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_map_course_location"
+            tools:itemCount="3"
+            android:padding="5dp"
+            android:orientation="vertical" />
+
+    </androidx.cardview.widget.CardView>
+
+    <ImageButton
+        android:id="@+id/driverDeliveryCurrentLocationIB"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/my_location_map_icon"
+        app:layout_constraintBottom_toTopOf="@+id/driverDeliveryConfirmBtn"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.15" />
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/driverDeliveryConfirmBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/filled_button_background"
+        android:elevation="3dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:paddingVertical="10dp"
+        android:text="Confirm Order Pickup"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

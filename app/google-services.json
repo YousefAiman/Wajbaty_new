@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "915830508388",
+    "firebase_url": "https://wajbatytestproject-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "wajbatytestproject",
+    "storage_bucket": "wajbatytestproject.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:915830508388:android:440fdd461ea475ad504871",
+        "android_client_info": {
+          "package_name": "com.developers.wajbaty"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "915830508388-s7tur8vq3ffmhhemht78lttplimps87m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBcQSA_63YCRU-Z1xGRn-hvQ1foT1t03A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "915830508388-s7tur8vq3ffmhhemht78lttplimps87m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,56 @@
+<resources>
+
+    <style name="Widget.Theme.Wajbaty.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
+    </style>
+
+    <style name="Widget.Theme.Wajbaty.ButtonBar.Fullscreen" parent="">
+        <item name="android:background">@color/black_overlay</item>
+        <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
+    </style>
+
+    <style name="customRatingBar" parent="Widget.AppCompat.RatingBar">
+        <item name="android:progressDrawable">@drawable/custom_rating_bar_selector</item>
+        <item name="android:minHeight">24dip</item>
+        <item name="android:maxHeight">24dip</item>
+    </style>
+
+    <style name="progressBarOrange" parent="@style/Theme.Wajbaty">
+        <item name="colorAccent">@color/orange</item>
+    </style>
+
+    <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/text_input_selector</item>
+    </style>
+
+    <style name="ExpandedAppBar" parent="TextAppearance.Design.CollapsingToolbar.Expanded">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">@font/almarai_regular</item>
+    </style>
+
+    <style name="CollapsedAppBar" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">@font/almarai_regular</item>
+    </style>
+
+    <style name="asdasdad" parent="Widget.AppCompat.ActionBar.TabText">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/almarai_regular</item>
+    </style>
+
+    <style name="ToolbarTitleAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="fontFamily">@font/almarai_regular</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="ToolbarLargeTitleAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="fontFamily">@font/almarai_regular</item>
+        <item name="android:textSize">25sp</item>
+    </style>
+
+    <style name="SideNavTextApperance" parent="Widget.Design.NavigationView">
+        <item name="fontFamily">@font/almarai_regular</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+</resources>

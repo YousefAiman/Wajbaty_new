@@ -1,0 +1,11 @@
+<resources>
+
+
+
+    <style name="noStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="background">@color/white</item>
+        <item name="boxStrokeColor">@color/white</item>
+    </style>
+
+
+</resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="title_activity_maps">Map</string>
+    <string name="app_name">Wajbitna</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="sign_in">Sign in</string>
+    <string name="continue_as_guest">Continue as guest</string>
+    <string name="confirm">Confirm</string>
+    <string name="locate_your_restaurant">Locate Your Restaurant</string>
+    <string name="create_your_account">Create your account</string>
+    <string name="fill_restaurant_info">Fill Restaurant Info</string>
+    <string name="main_restaurant_image">Main Restaurant Image</string>
+    <string name="banner_images">Banner Images</string>
+    <string name="restaurant_media_album">Restaurant Media Album</string>
+    <string name="next">Next</string>
+    <string name="atleast_main_image">You need to atleast add the main restaurant image to continue!</string>
+    <string name="address">Address</string>
+    <string name="description">Description</string>
+    <string name="category">Category</string>
+    <string name="service_options">Service Options</string>
+    <string name="additional_services">Additional Services</string>
+    <string name="contact_information">Contact Information:</string>
+    <string name="social_media">Social Media:</string>
+    <string name="weekly_schedule">Weekly Schedule</string>
+    <string name="skip">Skip</string>
+    <string name="restaurant_name">Restaurant Name</string>
+    <string name="meal_photos_guideline">Meal Photos - you need to add at least one photo</string>
+    <string name="meal_name">Meal Name</string>
+    <string name="meal_price">Meal Price</string>
+    <string name="meal_ingredients">Meal Ingredients</string>
+    <string name="add">Add</string>
+    <string name="add_your_picture">add your picture</string>
+
+</resources>

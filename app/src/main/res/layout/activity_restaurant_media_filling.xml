@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".PartneredRestaurant.Activities.RestaurantMediaFillingActivity">
+
+
+    <ImageView
+        android:id="@+id/backIv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/back_arrow_icon"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/imageInputNextBtn"
+        app:layout_constraintTop_toBottomOf="@id/backIv">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:fontFamily="@font/amlarai_bold"
+                android:text="@string/fill_restaurant_info"
+                android:textColor="@color/orange"
+                android:textSize="28sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/amlarai_bold"
+                android:text="@string/main_restaurant_image"
+                android:textColor="@color/orange"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/constraintLayout"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="10dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/orange"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                android:layout_margin="15dp"
+                android:elevation="3dp"
+                app:layout_constraintDimensionRatio="1:0.55"
+                app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/mainImageIv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/image_input_card_design" />
+
+
+
+                <ImageView
+                    android:id="@+id/mainAddIv"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:src="@drawable/add_cicular_icon"
+                    app:layout_constraintBottom_toBottomOf="@+id/mainImageIv"
+                    app:layout_constraintDimensionRatio="1"
+                    app:layout_constraintEnd_toEndOf="@+id/mainImageIv"
+                    app:layout_constraintStart_toStartOf="@+id/mainImageIv"
+                    app:layout_constraintTop_toTopOf="@+id/mainImageIv"
+                    app:layout_constraintWidth_percent="0.15" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <ImageView
+                android:id="@+id/mainImageCloseIv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/close_round_icon"
+                android:visibility="visible"
+                app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+                app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
+                app:layout_constraintStart_toEndOf="@+id/constraintLayout"
+                app:layout_constraintTop_toTopOf="@+id/constraintLayout" />
+
+
+
+            <TextView
+                android:id="@+id/textView7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/amlarai_bold"
+                android:text="@string/banner_images"
+                android:textColor="@color/orange"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/bannerImagesRv"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintDimensionRatio="2.5:1"
+                app:layout_constraintTop_toBottomOf="@+id/textView7"
+                tools:itemCount="5"
+                tools:listitem="@layout/item_image_input_layout" />
+
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/amlarai_bold"
+                android:text="@string/restaurant_media_album"
+                android:textColor="@color/orange"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/bannerImagesRv" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/restaurantMediaRv"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintDimensionRatio="2.5:1"
+                app:layout_constraintTop_toBottomOf="@+id/textView8"
+                tools:itemCount="5"
+                tools:listitem="@layout/item_image_input_layout" />
+
+            <!--            <HorizontalScrollView-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="0dp"-->
+            <!--                android:layout_marginTop="20dp"-->
+            <!--                app:layout_constraintTop_toBottomOf="@+id/textView7">-->
+
+
+            <!--                <androidx.constraintlayout.widget.ConstraintLayout-->
+            <!--                    android:id="@+id/constraintLayout2"-->
+            <!--                    android:layout_width="match_parent"-->
+            <!--                    android:layout_height="0dp"-->
+            <!--                    android:layout_marginTop="10dp"-->
+            <!--                    android:elevation="3dp"-->
+            <!--                    app:layout_constraintDimensionRatio="1:0.55"-->
+            <!--                    app:layout_constraintTop_toBottomOf="@+id/textView5">-->
+
+
+            <!--                    <ImageView-->
+            <!--                        android:id="@+id/bannerIv1"-->
+            <!--                        android:layout_width="match_parent"-->
+            <!--                        android:layout_height="match_parent"-->
+            <!--                        android:layout_margin="15dp"-->
+            <!--                        android:background="@drawable/image_input_card_design" />-->
+
+
+            <!--                    <ImageView-->
+            <!--                        android:layout_width="wrap_content"-->
+            <!--                        android:layout_height="wrap_content"-->
+            <!--                        android:src="@drawable/close_round_icon"-->
+            <!--                        app:layout_constraintBottom_toTopOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintEnd_toEndOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintStart_toEndOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintTop_toTopOf="@+id/bannerIv1" />-->
+
+            <!--                    <ImageView-->
+            <!--                        android:layout_width="0dp"-->
+            <!--                        android:layout_height="0dp"-->
+            <!--                        android:src="@drawable/add_cicular_icon"-->
+            <!--                        app:layout_constraintBottom_toBottomOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintDimensionRatio="1"-->
+            <!--                        app:layout_constraintEnd_toEndOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintStart_toStartOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintTop_toTopOf="@+id/bannerIv1"-->
+            <!--                        app:layout_constraintWidth_percent="0.15" />-->
+
+
+            <!--                </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+
+            <!--            </HorizontalScrollView>-->
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/imageInputNextBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/next"
+        android:elevation="3dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:background="@color/orange"
+        android:paddingVertical="10dp"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

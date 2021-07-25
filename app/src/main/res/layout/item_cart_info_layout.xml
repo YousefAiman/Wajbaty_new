@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="17dp"
+        android:layout_marginHorizontal="20dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="3dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/cartInfoItemImageIv"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@color/shaded_white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.35" />
+
+
+            <TextView
+                android:id="@+id/cartInfoItemNameTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/almarai_regular"
+                android:textColor="@color/light_black"
+                android:textSize="20sp"
+                app:layout_constraintStart_toEndOf="@+id/cartInfoItemImageIv"
+                app:layout_constraintTop_toTopOf="@+id/cartInfoItemImageIv" />
+
+            <TextView
+                android:id="@+id/cartInfoItemPriceTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/almarai_regular"
+                android:textColor="@color/light_black"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="@+id/cartInfoItemNameTv"
+                app:layout_constraintTop_toBottomOf="@+id/cartInfoItemNameTv" />
+
+            <TextView
+                android:id="@+id/cartInfoItemCountTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/almarai_regular"
+                android:textColor="@color/light_black"
+                android:textSize="25sp"
+                app:layout_constraintStart_toStartOf="@+id/cartInfoItemPriceTv"
+                app:layout_constraintTop_toBottomOf="@+id/cartInfoItemPriceTv" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+

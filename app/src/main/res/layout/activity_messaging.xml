@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.MessagingActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/messagesToolBar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/orange"
+        android:elevation="3dp"
+        app:menu="@menu/customer_messaging_menu"
+        app:navigationIcon="@drawable/back_arrow_white"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="match_parent">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/messagingUserIv"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintHeight_percent="0.7"
+                app:layout_constraintDimensionRatio="1"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:background="@drawable/profile_circular_white_icon" />
+
+            <TextView
+                android:id="@+id/messagingUserNameTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/amlarai_bold"
+                android:text="fdsfsfsd"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginStart="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/messagingUserIv"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/messagesRv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:descendantFocusability="blocksDescendants"
+        android:orientation="vertical"
+        android:overScrollMode="never"
+        android:paddingEnd="1.5dp"
+        android:paddingBottom="18dp"
+        android:scrollbarSize="1.5dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/messageEd"
+        app:layout_constraintTop_toBottomOf="@+id/messagesToolBar" />
+
+    <ProgressBar
+        android:id="@+id/messagesProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:theme="@style/progressBarOrange"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/messagesToolBar" />
+
+
+    <EditText
+        android:id="@+id/messageEd"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        android:clickable="false"
+        android:fontFamily="@font/almarai_regular"
+        android:gravity="center"
+        android:hint="Send a message..."
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:nextFocusLeft="@id/messageEd"
+        android:nextFocusUp="@id/messageEd"
+        android:nextFocusDown="@id/messageEd"
+        android:textColorHint="#959CA7"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sendMessageBtn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/sendMessageBtn" />
+
+
+        <ImageButton
+            android:id="@+id/sendMessageBtn"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/message_button_back"
+            android:clickable="false"
+            android:paddingStart="17dp"
+            android:scaleType="centerInside"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1.7:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.27"
+            android:src="@drawable/message_plane_white" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

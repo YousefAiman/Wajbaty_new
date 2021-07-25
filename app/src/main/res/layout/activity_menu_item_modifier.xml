@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".PartneredRestaurant.Activities.MenuItemModifierActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/menuItemModifierTb"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:navigationIcon="@drawable/back_arrow_white"
+        android:background="@color/orange"
+        app:title="Add a new Meal"
+        app:titleTextColor="@color/white"
+        app:titleTextAppearance="@style/ToolbarTitleAppearance" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="30dp">
+
+    <TextView
+        android:id="@+id/textView12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="25dp"
+        android:fontFamily="@font/almarai_regular"
+        android:textColor="@color/light_black"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:text="@string/meal_photos_guideline"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/menuItemImagesRv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintDimensionRatio="2.5:1"
+        app:layout_constraintTop_toBottomOf="@+id/textView12"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_image_input_layout" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/nameTil"
+        style="@style/LoginTextInputLayoutStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:hint="@string/meal_name"
+        android:textColorHint="@color/orange"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        app:boxStrokeWidth="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/menuItemImagesRv">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/menuItemNameEd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/almarai_regular"
+            android:inputType="text"
+            android:textColor="@color/light_black" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/priceTil"
+        style="@style/LoginTextInputLayoutStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginTop="20dp"
+        android:hint="@string/meal_price"
+        android:textColorHint="@color/orange"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        app:boxStrokeWidth="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nameTil">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/menuItemPriceEd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/almarai_regular"
+            android:maxLength="10"
+            android:inputType="numberDecimal"
+            android:textColor="@color/light_black" />
+
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/currencyTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:textColor="@color/light_black"
+                android:textSize="16sp"
+                android:fontFamily="@font/almarai_regular"
+                app:layout_constraintBottom_toBottomOf="@+id/priceTil"
+                app:layout_constraintEnd_toEndOf="@+id/priceTil"
+                app:layout_constraintTop_toTopOf="@+id/priceTil" />
+
+
+            <!--        <Spinner-->
+<!--            android:id="@+id/currencySpinner"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginEnd="10dp"-->
+<!--            android:dropDownWidth="match_parent"-->
+<!--            app:layout_constraintBottom_toBottomOf="@+id/priceTil"-->
+<!--            app:layout_constraintEnd_toEndOf="@+id/priceTil"-->
+<!--            app:layout_constraintTop_toTopOf="@+id/priceTil" />-->
+
+
+        <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:text="@string/category"
+        android:textColor="@color/orange"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/menuCategorySpinner"
+        app:layout_constraintTop_toBottomOf="@+id/priceTil" />
+
+
+    <Spinner
+        android:id="@+id/menuCategorySpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/image_input_card_design"
+        android:dropDownWidth="match_parent"
+        android:padding="10dp"
+        android:spinnerMode="dropdown"
+        app:layout_constraintTop_toBottomOf="@+id/textView8" />
+
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/amlarai_bold"
+            android:text="@string/meal_ingredients"
+            android:textColor="@color/orange"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="@+id/textView8"
+            app:layout_constraintTop_toBottomOf="@+id/menuCategorySpinner" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/menuIngredientsRv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:layout_constraintVertical_bias="0"
+            android:overScrollMode="never"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.core.widget.NestedScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/menuItemConfirmBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add"
+        android:elevation="3dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:background="@color/orange"
+        android:paddingVertical="10dp"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="22sp"/>
+
+
+</LinearLayout>

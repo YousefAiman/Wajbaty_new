@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="24dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/reviewUserIv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:civ_circle_background_color="@color/white"
+        android:src="@drawable/profile_circular_icon"
+        android:elevation="3dp"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent=".148" />
+
+    <TextView
+        android:id="@+id/reviewUserNameTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:singleLine="true"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:textAlignment="viewStart"
+        android:textColor="@color/orange"
+        android:textSize="19sp"
+        app:layout_constraintBottom_toBottomOf="@+id/reviewUserIv"
+        app:layout_constraintEnd_toStartOf="@+id/reviewRatingBar"
+        app:layout_constraintStart_toEndOf="@+id/reviewUserIv"
+        app:layout_constraintTop_toTopOf="@+id/reviewUserIv" />
+
+    <RatingBar
+        android:id="@+id/reviewRatingBar"
+        style="@style/customRatingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:stepSize="1"
+        app:layout_constraintBottom_toBottomOf="@+id/reviewUserNameTv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/reviewUserNameTv" />
+
+    <EditText
+        android:id="@+id/reviewCommentEd"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintWidth_percent="0.81"
+        android:layout_marginTop="15dp"
+        android:maxLines="3"
+        android:textSize="17sp"
+        android:background="@drawable/edittext_round_back"
+        android:paddingVertical="7dp"
+        android:paddingHorizontal="15dp"
+        android:layout_marginStart="12dp"
+        android:hint="Write your review..."
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="5dp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/almarai_regular"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reviewUserIv" />
+
+    <ImageView
+        android:id="@+id/reviewSubmitIv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/check_circular_icon"
+        app:layout_constraintBottom_toBottomOf="@+id/reviewCommentEd"
+        app:layout_constraintDimensionRatio="1.13:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/reviewCommentEd"
+        app:layout_constraintWidth_percent=".118"
+        app:tint="@color/transparent_orange" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

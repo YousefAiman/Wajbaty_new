@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">وجبتنا</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="create_an_account">إنشاء حساب</string>
+    <string name="sign_in">تسجيل دخول</string>
+    <string name="continue_as_guest">الدخول كضيف</string>
+    <string name="confirm">Confirm</string>
+    <string name="locate_your_restaurant">حدد موقع مطعمك</string>
+    <string name="create_your_account">أنشئ حسابك</string>
+    <string name="fill_restaurant_info">تعبئة معلومات المطعم</string>
+    <string name="main_restaurant_image">صورة المطعم الرئيسية</string>
+    <string name="banner_images">صور البانر</string>
+    <string name="restaurant_media_album">البوم صور المطعم</string>
+    <string name="next">التالي</string>
+    <string name="atleast_main_image">يجب عليك اضافة صورة رئيسية للمطعم على الأقل للمتابعة!</string>
+    <string name="address">العنوان</string>
+    <string name="description">الوصف</string>
+    <string name="category">التصنيف</string>
+    <string name="service_options">خيارات الخطمة</string>
+    <string name="additional_services">الخدمات الاضافية</string>
+    <string name="contact_information">معلومات التواصل:</string>
+    <string name="social_media">مواقع التواصل الاجتماعي:</string>
+    <string name="weekly_schedule">الجدول الأسبوعي</string>
+    <string name="skip">تخطي</string>
+    <string name="restaurant_name">اسم المطعم</string>
+
+    <string name="meal_name">اسم الوجبة</string>
+    <string name="meal_price">سعر الوجبة</string>
+    <string name="meal_photos_guideline">صور الوجبة - يجب إضافة صورة واحدة على الأقل</string>
+    <string name="meal_ingredients">مكونات الوجبة</string>
+    <string name="add">اضافة</string>
+    <string name="add_your_picture">إضافة صورتك</string>
+
+</resources>
