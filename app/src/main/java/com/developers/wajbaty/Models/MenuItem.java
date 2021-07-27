@@ -1,8 +1,5 @@
 package com.developers.wajbaty.Models;
 
-import android.view.Menu;
-
-import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
 import java.io.Serializable;
@@ -26,12 +23,13 @@ public class MenuItem implements Serializable {
     private Map<String,Object> discountMap;
     private float rating;
     private int favoriteCount;
+    private String region;
 
     public MenuItem() {
     }
 
     public MenuItem(String ID, String name, float price, List<String> imageUrls,
-                    String category, long timeCreated, String restaurantId) {
+                    String category, long timeCreated, String restaurantId,String region) {
         this.ID = ID;
         this.name = name;
         this.price = price;
@@ -39,6 +37,7 @@ public class MenuItem implements Serializable {
         this.category = category;
         this.timeCreated = timeCreated;
         this.restaurantId = restaurantId;
+        this.region = region;
     }
 
     public ReviewSummary getReviewSummary() {
@@ -65,12 +64,21 @@ public class MenuItem implements Serializable {
         this.discountMap = discountMap;
     }
 
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
     static class Builder{
 
         private String ID,name,currency,category,restaurantId;
         private float price;
         private List<String> imageUrls,ingredients;
         private long timeCreated;
+        private String region;
 
 
         public MenuItem build(){
@@ -97,7 +105,7 @@ public class MenuItem implements Serializable {
                 throw new NullPointerException(" add at least one menu item imageUrl");
 
 
-        final MenuItem menuItem = new MenuItem(ID,name,price,imageUrls,category,timeCreated,restaurantId);
+        final MenuItem menuItem = new MenuItem(ID,name,price,imageUrls,category,timeCreated,restaurantId, region);
         if(currency!=null){
             menuItem.setCurrency(currency);
         }
@@ -148,6 +156,9 @@ public class MenuItem implements Serializable {
             this.ingredients = ingredients;
         }
 
+        public void setRegion(String region) {
+            this.region = region;
+        }
     }
 
     public static class MenuItemSummary{

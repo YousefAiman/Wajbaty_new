@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.developers.wajbaty.Activities.HomeActivity;
 import com.developers.wajbaty.Activities.MainActivity;
@@ -80,12 +81,13 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     //course
     private DeliveryCourseAdapter adapter;
     private ArrayList<DeliveryCourse> deliveryCourses;
+    private ArrayList<DeliveryCourse> allDeliveryCourses;
 
     //views
     private ImageButton driverDeliveryBackIB,driverDeliveryCurrentLocationIB,driverDeliveryMessageIB;
     private RecyclerView driverDeliveryCourseRv;
     private Button driverDeliveryItemsBtn,driverDeliveryConfirmBtn;
-
+    private ImageView driverDeliveryCourseArrowIv;
     //firestore
     private DocumentReference deliveryRef;
 
@@ -140,6 +142,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         deliveryRef = FirebaseFirestore.getInstance().collection("Deliveries")
                 .document(delivery.getID());
 
+        allDeliveryCourses = new ArrayList<>();
         deliveryCourses = new ArrayList<>();
         adapter = new DeliveryCourseAdapter(deliveryCourses);
 
@@ -155,7 +158,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         driverDeliveryCourseRv = findViewById(R.id.driverDeliveryCourseRv);
         driverDeliveryItemsBtn = findViewById(R.id.driverDeliveryItemsBtn);
         driverDeliveryConfirmBtn = findViewById(R.id.driverDeliveryConfirmBtn);
-
+        driverDeliveryCourseArrowIv = findViewById(R.id.driverDeliveryCourseArrowIv);
 //
 //        driverDeliveryCourseRv.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false) {
 //            @Override
@@ -257,7 +260,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         driverDeliveryMessageIB.setOnClickListener(this);
         driverDeliveryCurrentLocationIB.setOnClickListener(this);
         driverDeliveryConfirmBtn.setOnClickListener(this);
-
+        driverDeliveryCourseArrowIv.setOnClickListener(this);
     }
 
     private void populateViews(){
@@ -268,7 +271,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
     private void fetchCourse(){
 
-        deliveryCourses.add(new DeliveryCourse(
+        allDeliveryCourses.add(new DeliveryCourse(
                 "Start Point",
                 currentLocation,
                 0,
@@ -303,7 +306,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                         restaurantLocation.setLatitude(lat);
                         restaurantLocation.setLongitude(lng);
 
-                        deliveryCourses.add(new DeliveryCourse(
+                        allDeliveryCourses.add(new DeliveryCourse(
                                 name,
                                 restaurantLocation,
                                 delivery.getRestaurantMenuItemsMap().get(restaurant),
@@ -328,13 +331,16 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                 deliveryLocation.setLatitude(delivery.getLat());
                 deliveryLocation.setLongitude(delivery.getLng());
 
-                deliveryCourses.add(
+                allDeliveryCourses.add(
                         new DeliveryCourse(
                         "Delivery Location",
                         deliveryLocation,
                         0,
                         false,
                         false));
+
+                deliveryCourses.addAll(allDeliveryCourses);
+
 
                 adapter.notifyDataSetChanged();
 
@@ -347,17 +353,22 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     @Override
     public void notifyObservers(Location location) {
 
-        if(currentLocation == null){
-            currentLocation = location;
-        }
+        currentLocation = location;
 
-        if (currentLocation != null &&
-                currentLocation.distanceTo(location) < MIN_UPDATE_DISTANCE) {
-            return;
-        }
+        map.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(),
+                location.getLongitude())));
 
-        deliveryRef.update("driverLocation",
-                new GeoPoint( location.getLatitude(), location.getLongitude()));
+
+//
+//        if (currentLocation != null &&
+//                currentLocation.distanceTo(location) < MIN_UPDATE_DISTANCE) {
+//            return;
+//        }
+//
+//        if(currentLocation!=null){
+//            deliveryRef.update("lat",currentLocation.getLatitude(),
+//                    "lng",currentLocation.getLongitude());
+//        }
 
     }
 
@@ -387,6 +398,71 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
             messagingIntent.putExtra("intendedDeliveryID", delivery.getID());
             startActivity(messagingIntent);
 
+        }else if(v.getId() == driverDeliveryCourseArrowIv.getId()){
+
+            if(driverDeliveryCourseArrowIv.getRotation() == 90){
+
+                driverDeliveryCourseArrowIv.setRotation(-90);
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        for(int i=0;i<deliveryCourses.size();i++){
+
+                            if(!deliveryCourses.get(i).isWasPassed()){
+
+                                Log.d("ttt","found active at: "+i);
+
+//
+//                                if(i+1 >= deliveryCourses.size()){
+//
+//
+////                            deliveryCourses.remove();
+//
+//                                }else
+                                if(i-1 >= 0){
+
+                                    DeliveryCourse previousActive = deliveryCourses.get(i - 1);
+                                    DeliveryCourse currentActive = deliveryCourses.get(i);
+
+                                    deliveryCourses.clear();
+                                    deliveryCourses.add(previousActive);
+                                    deliveryCourses.add(currentActive);
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            adapter.notifyDataSetChanged();
+                                        }
+                                    });
+//                            for(int j=i;j<deliveryCourses.size();j++){
+//                                deliveryCourses.remove(j);
+//                            }
+
+
+                                }
+
+                                break;
+                            }
+
+                        }
+
+                    }
+                }).start();
+
+
+
+            }else{
+
+                driverDeliveryCourseArrowIv.setRotation(90);
+                deliveryCourses.clear();
+                deliveryCourses.addAll(allDeliveryCourses);
+                adapter.notifyDataSetChanged();
+
+            }
+
+
         }
 
     }
@@ -398,8 +474,9 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
             LatLng currentLatLng =
                     new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
 
+
             if(!map.getCameraPosition().target.equals(currentLatLng)){
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 20.0f));
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.0f));
             }
         }
     }

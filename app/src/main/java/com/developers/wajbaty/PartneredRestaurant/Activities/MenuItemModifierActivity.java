@@ -524,7 +524,8 @@ public class MenuItemModifierActivity extends AppCompatActivity implements Obser
 
             menuItemModel.uploadMenuItem(name,Float.parseFloat(price),
                     currency, categoryKey,uriImages,addedIngredients.isEmpty()?null:addedIngredients,
-                    getIntent().getStringExtra("restaurantId"));
+                    getIntent().getStringExtra("restaurantId"),
+                    getIntent().hasExtra("restaurantRegion")?getIntent().getStringExtra("restaurantRegion"):null);
 
         }
 

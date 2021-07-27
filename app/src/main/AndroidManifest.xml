@@ -24,66 +24,78 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Wajbaty">
-
-        <activity android:name=".Activities.CustomerHomeActivity"></activity>
+        <activity android:name=".Customer.Activities.CustomerDeliveryMapActivity"></activity>
+        <activity
+            android:name=".Activities.CustomerHomeActivity"
+            android:screenOrientation="portrait" />
         <activity android:name=".Activities.SigninActivity" />
         <activity android:name=".Activities.AddImageProfileActivity" />
         <activity android:name=".Activities.VerifyAccountActivity" />
-        <activity android:name=".Activities.MessagingActivity"
+        <activity
+            android:name=".Activities.MessagingActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".DeliveryDriver.Activities.DriverDeliveryMapActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".DeliveryDriver.Activities.DeliveryInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Customer.Activities.DeliveryLocationMapActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Customer.Activities.CategoryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.DiscountOfferActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Customer.Activities.FavoriteActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.HomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.MenuItemActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Customer.Activities.CartActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.TestAcitivty"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.MenuItemModifierActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.RestaurantActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.RestaurantScheduleActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.RestaurantInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.RestaurantMediaFillingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.RegisterActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.WelcomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PartneredRestaurant.Activities.RestaurantLocationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.MainActivity"
             android:screenOrientation="portrait">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-        </activity>
-
-        <activity android:name=".DeliveryDriver.Activities.DriverDeliveryMapActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".DeliveryDriver.Activities.DeliveryInfoActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".Customer.Activities.DeliveryLocationMapActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".Customer.Activities.CategoryActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".PartneredRestaurant.Activities.DiscountOfferActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".Customer.Activities.FavoriteActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
-            android:name=".Activities.HomeActivity"
-            android:screenOrientation="portrait" />
-
-        <activity android:name=".Activities.MenuItemActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".Customer.Activities.CartActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".Activities.TestAcitivty"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".PartneredRestaurant.Activities.MenuItemModifierActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".PartneredRestaurant.Activities.RestaurantActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".PartneredRestaurant.Activities.RestaurantScheduleActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".PartneredRestaurant.Activities.RestaurantInfoActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".PartneredRestaurant.Activities.RestaurantMediaFillingActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".Activities.RegisterActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".Activities.WelcomeActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".PartneredRestaurant.Activities.RestaurantLocationActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".Activities.MainActivity"
-            android:screenOrientation="portrait">
-
         </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -109,10 +121,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
-        </provider>
-            android:name=".Activities.MapsActivity"
-            android:label="@string/title_activity_maps"
-            android:screenOrientation="portrait"/> <!-- <service -->
+        </provider> <!-- <service -->
         <!-- android:name="MyNavigationService" -->
         <!-- android:foregroundServiceType="location"> -->
         <!-- &lt;!&ndash; Any inner elements would go here. &ndash;&gt; -->

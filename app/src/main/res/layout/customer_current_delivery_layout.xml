@@ -12,13 +12,15 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/currentDeliveryTv"
+            android:id="@+id/customerDeliveryTitleTv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="marquee"
             android:fontFamily="@font/almarai_regular"
             android:singleLine="true"
             android:textColor="@color/light_black"
+            android:textAlignment="center"
+            android:text="Current Delivery"
             android:textSize="18sp"
             android:layout_marginTop="14dp"
             android:layout_marginStart="20dp"
@@ -28,7 +30,7 @@
 
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/currentDeliveryUserImageIv"
+            android:id="@+id/customerDeliveryDriverImageIv"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintWidth_percent="0.17"
@@ -37,11 +39,11 @@
             android:elevation="3dp"
             android:layout_marginTop="8dp"
             android:layout_marginStart="18dp"
-            app:layout_constraintTop_toBottomOf="@id/currentDeliveryTv"
+            app:layout_constraintTop_toBottomOf="@id/customerDeliveryTitleTv"
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/currentDeliveryUserNameTv"
+            android:id="@+id/customerDeliveryDriverNameTv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
@@ -51,13 +53,13 @@
             android:maxLines="2"
             android:textColor="@color/light_black"
             android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="@id/currentDeliveryUserImageIv"
+            app:layout_constraintBottom_toBottomOf="@id/customerDeliveryDriverImageIv"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/currentDeliveryUserImageIv"
-            app:layout_constraintTop_toTopOf="@+id/currentDeliveryUserImageIv" />
+            app:layout_constraintStart_toEndOf="@id/customerDeliveryDriverImageIv"
+            app:layout_constraintTop_toTopOf="@+id/customerDeliveryDriverImageIv" />
 
         <TextView
-            android:id="@+id/currentDeliveryAddressTv"
+            android:id="@+id/customerDeliveryAddressTv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
@@ -66,13 +68,13 @@
             android:maxLines="2"
             android:textColor="@color/light_black"
             android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="@+id/currentDeliveryUserNameTv"
-            app:layout_constraintStart_toStartOf="@+id/currentDeliveryUserImageIv"
-            app:layout_constraintTop_toBottomOf="@+id/currentDeliveryUserImageIv" />
+            app:layout_constraintEnd_toEndOf="@+id/customerDeliveryDriverNameTv"
+            app:layout_constraintStart_toStartOf="@+id/customerDeliveryDriverImageIv"
+            app:layout_constraintTop_toBottomOf="@+id/customerDeliveryDriverImageIv" />
 
 
         <TextView
-            android:id="@+id/currentDeliveryOrderTimeTv"
+            android:id="@+id/customerDeliveryOrderTimeTv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="marquee"
@@ -81,9 +83,9 @@
             android:textColor="@color/light_black"
             android:textSize="18sp"
             android:layout_marginTop="12dp"
-            app:layout_constraintEnd_toEndOf="@+id/currentDeliveryUserNameTv"
-            app:layout_constraintStart_toStartOf="@+id/currentDeliveryUserImageIv"
-            app:layout_constraintTop_toBottomOf="@+id/currentDeliveryAddressTv" />
+            app:layout_constraintEnd_toEndOf="@+id/customerDeliveryDriverNameTv"
+            app:layout_constraintStart_toStartOf="@+id/customerDeliveryDriverImageIv"
+            app:layout_constraintTop_toBottomOf="@+id/customerDeliveryAddressTv" />
 
 
         <TextView
@@ -96,9 +98,9 @@
             android:textColor="@color/light_black"
             android:textSize="18sp"
             android:layout_marginTop="12dp"
-            app:layout_constraintEnd_toEndOf="@+id/currentDeliveryOrderTimeTv"
-            app:layout_constraintStart_toStartOf="@+id/currentDeliveryOrderTimeTv"
-            app:layout_constraintTop_toBottomOf="@+id/currentDeliveryOrderTimeTv" />
+            app:layout_constraintEnd_toEndOf="@+id/customerDeliveryDriverNameTv"
+            app:layout_constraintStart_toStartOf="@+id/customerDeliveryOrderTimeTv"
+            app:layout_constraintTop_toBottomOf="@+id/customerDeliveryOrderTimeTv" />
 
 
         <TextView
@@ -111,13 +113,13 @@
             android:textColor="@color/light_black"
             android:textSize="18sp"
             android:layout_marginTop="12dp"
-            app:layout_constraintEnd_toEndOf="@+id/customerDeliveryTotalPriceTv"
+            app:layout_constraintEnd_toEndOf="@+id/customerDeliveryDriverNameTv"
             app:layout_constraintStart_toStartOf="@+id/customerDeliveryTotalPriceTv"
             app:layout_constraintTop_toBottomOf="@+id/customerDeliveryTotalPriceTv" />
 
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/currentDeliveryShowItemsBtn"
+            android:id="@+id/customerShowItemsTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="25dp"
@@ -135,7 +137,7 @@
 
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/currentDeliveryShowMapBtn"
+            android:id="@+id/customerShowMapTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="25dp"
@@ -144,14 +146,14 @@
             android:elevation="3dp"
             android:fontFamily="@font/amlarai_bold"
             android:paddingVertical="10dp"
-            android:text="Show Map"
+            android:text="Track on map"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="22sp"
             android:layout_marginTop="15dp"
             app:layout_goneMarginBottom="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/currentDeliveryShowItemsBtn" />
+            app:layout_constraintTop_toBottomOf="@+id/customerShowItemsTv" />
 
 
 

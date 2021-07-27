@@ -5,6 +5,7 @@ import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class PartneredRestaurant implements Serializable {
     private List<String> admins;
     private float averageRating;
     private int favCount;
-
+    private HashMap<String,String> address;
     private ReviewSummary reviewSummary;
 
     private Map<String, Object> socialMediaLinks;
@@ -239,6 +240,14 @@ public class PartneredRestaurant implements Serializable {
 
     public void setFavCount(int favCount) {
         this.favCount = favCount;
+    }
+
+    public HashMap<String, String> getAddress() {
+        return address;
+    }
+
+    public void setAddress(HashMap<String, String> address) {
+        this.address = address;
     }
 
     @IgnoreExtraProperties

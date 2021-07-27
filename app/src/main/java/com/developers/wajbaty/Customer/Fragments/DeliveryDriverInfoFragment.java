@@ -73,7 +73,7 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
     @Override
     public void onResume() {
         super.onResume();
-        requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
 
@@ -99,7 +99,7 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        FirebaseFirestore.getInstance().collection("DeliveryDrivers")
+        FirebaseFirestore.getInstance().collection("Users")
                 .document(deliveryDriverID)
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override

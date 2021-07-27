@@ -5,6 +5,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -37,6 +38,7 @@ import android.widget.Toast;
 import com.developers.wajbaty.Customer.Activities.CartActivity;
 import com.developers.wajbaty.Customer.Activities.FavoriteActivity;
 import com.developers.wajbaty.Customer.Fragments.HomeFragment;
+import com.developers.wajbaty.Customer.Fragments.MenuItemsFragment;
 import com.developers.wajbaty.Customer.Fragments.NearbyRestaurantsFragment;
 import com.developers.wajbaty.DeliveryDriver.Fragments.DriverDeliveriesFragment;
 import com.developers.wajbaty.Fragments.MessagesFragment;
@@ -66,8 +68,12 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -75,8 +81,7 @@ import java.util.Map;
 public class HomeActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener,
         NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener,
-        LocationListenerUtil.LocationChangeObserver
-{
+        LocationListenerUtil.LocationChangeObserver {
 
     private static final int
             REQUEST_CHECK_SETTINGS = 100,
@@ -98,7 +103,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     private Location currentLocation;
     private String currentGeoHash;
     private DocumentReference driverRef;
-
+    private DocumentReference currentDriverDeliveryRef;
+    private ListenerRegistration driverSnapshotListener;
 //    private boolean requestingLocationUpdates;
 //    private LocationRequest locationRequest;
 //    private LocationCallback locationCallback;
@@ -129,6 +135,33 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             driverRef = FirebaseFirestore.getInstance().collection("Users")
                     .document(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+            driverSnapshotListener =  driverRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+
+                    if(value!=null){
+
+                        if(value.contains("currentDeliveryId")){
+
+                            String currentDeliveryId = value.getString("currentDeliveryId");
+
+                            if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
+                                currentDriverDeliveryRef = FirebaseFirestore.getInstance()
+                                .collection("Deliveries").document(currentDeliveryId);
+                            }else{
+                                currentDriverDeliveryRef = null;
+                            }
+
+                        }else{
+
+                            currentDriverDeliveryRef = null;
+
+                        }
+                    }
+
+                }
+            });
 
             checkAndRequestPermissions();
 
@@ -272,7 +305,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         if (itemId == R.id.show_Messages_action) {
 
-            replaceFragment(new MessagesFragment());
+            if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Messages_action) {
+                replaceFragment(new MessagesFragment());
+            }
 
             return true;
         } else if (itemId == R.id.show_restaurant_action) {
@@ -289,6 +324,28 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_home_action) {
                 replaceFragment(HomeFragment.newInstance(addressMap));
+                return true;
+            }
+        }else if (itemId == R.id.show_Menu_items_action) {
+
+            if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Menu_items_action) {
+
+                String region = null;
+
+                if(addressMap.containsKey("adminArea")){
+                    region = (String) addressMap.get("adminArea");
+                }else if(addressMap.containsKey("village")){
+                    region = (String) addressMap.get("village");
+                } else if (addressMap.containsKey("region")) {
+                    region = (String) addressMap.get("region");
+                } else if (addressMap.containsKey("city")) {
+                    region = (String) addressMap.get("city");
+                } else if (addressMap.containsKey("county")) {
+                    region = (String) addressMap.get("county");
+                }
+
+                replaceFragment(MenuItemsFragment.newInstance(region));
+
                 return true;
             }
         } else if (itemId == R.id.show_map_action) {
@@ -567,6 +624,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             }
         });
 
+        if(currentDriverDeliveryRef != null){
+            currentDriverDeliveryRef.update("lat",location.getLatitude(),
+                    "lng",location.getLongitude());
+        }
 
         String hash = GeoFireUtils.getGeoHashForLocation(
                 new GeoLocation(location.getLatitude(), location.getLongitude()));
@@ -600,7 +661,17 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
     }
 
-//
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(driverSnapshotListener!=null){
+            driverSnapshotListener.remove();
+        }
+    }
+
+    //
+
 //    @Override
 //    public void onProviderDisabled(@NonNull String provider) {
 //

@@ -57,7 +57,8 @@ public class MenuItemModel extends Observable {
     }
 
     public void uploadMenuItem(String name, float price, String currency, String category,
-                               List<Uri> images, ArrayList<String> ingredients,String restaurantId){
+                               List<Uri> images, ArrayList<String> ingredients,String restaurantId,
+                               String region){
 
         final String id = UUID.randomUUID().toString();
 
@@ -105,6 +106,7 @@ public class MenuItemModel extends Observable {
         builder.setRestaurantId(restaurantId);
         builder.setTimeCreated(System.currentTimeMillis());
         builder.setIngredients(ingredients);
+        builder.setRegion(region);
 
 
         Tasks.whenAllSuccess(uploadTasks).addOnCompleteListener(new OnCompleteListener<List<Object>>() {

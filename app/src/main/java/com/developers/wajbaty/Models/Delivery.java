@@ -27,6 +27,7 @@ public class Delivery implements Serializable {
     private double lat;
     private double lng;
     private String geohash;
+    private String driverID;
 
     private Map<String,Integer> restaurantMenuItemsMap;
 
@@ -67,6 +68,14 @@ public class Delivery implements Serializable {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    public String getDriverID() {
+        return driverID;
+    }
+
+    public void setDriverID(String driverID) {
+        this.driverID = driverID;
     }
 
 //    @IgnoreExtraProperties

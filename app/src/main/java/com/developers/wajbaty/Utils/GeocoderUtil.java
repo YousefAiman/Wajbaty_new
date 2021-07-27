@@ -86,6 +86,7 @@ public class GeocoderUtil {
                     map.put("latLng",latLng);
                     map.put("countryCode",countryCode);
                     map.put("city",a.getLocality());
+
                     map.put("currency",currency);
 //                    map.put("street",a.getAddressLine(0).split(",")[0]);
                     map.put("address",formatAddressGeocoder(a));
@@ -171,18 +172,30 @@ public class GeocoderUtil {
 
                     map.put("currency",currency);
 
-                    geocoderResultListener.addressFetched(map);
+
 
 //
-//                    if(address.has("village")){
-//                        cityName = address.getString("village");
-//                    } else if (address.has("region")) {
-//                        cityName = address.getString("region");
-//                    } else if (address.has("city")) {
-//                        cityName = address.getString("city");
-//                    } else if (address.has("county")) {
-//                        cityName = address.getString("county");
-//                    }
+                    String city = null;
+
+                    if(address.has("adminArea")){
+                        city =  address.getString("adminArea");
+                    }else if(address.has("village")){
+                        city = address.getString("village");
+                    } else if (address.has("region")) {
+                        city = address.getString("region");
+                    } else if (address.has("city")) {
+                        city = address.getString("city");
+                    } else if (address.has("county")) {
+                        city = address.getString("county");
+                    }
+
+                    if(city!=null){
+                        map.put("city",city);
+                    }
+
+
+                    geocoderResultListener.addressFetched(map);
+
 //
 //                    Log.d("ttt", "code:+ " + countryCode);
 //
@@ -286,7 +299,6 @@ public class GeocoderUtil {
             if(address.getThoroughfare()!=null){
                 addressMap.put("street",address.getThoroughfare());
             }
-
 
             return addressMap;
     }

@@ -34,6 +34,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.collect.Iterables;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -59,7 +60,6 @@ public class MessagingActivity extends AppCompatActivity
         implements MessageTextMapAdapter.DeleteMessageListener, View.OnLayoutChangeListener{
 
     private final static int DOCUMENT_MESSAGE_LIMIT = 15;
-
 
     private String currentUserId;
 
@@ -90,7 +90,6 @@ public class MessagingActivity extends AppCompatActivity
     //messages
     private MessageTextMapAdapter messageTextMapAdapter;
     private ArrayList<MessageMap> messageMaps;
-    private boolean isLoadingMessages;
     private OnScrollListener currentScrollListener;
     private DocumentReference currentMessagingUserRef;
     private DocumentReference messagingFirestoreRef;
@@ -102,14 +101,13 @@ public class MessagingActivity extends AppCompatActivity
     private Map<DatabaseReference, ValueEventListener> valueEventListeners;
 
     private int lastListYScroll;
-    private boolean isFetchingMoreMessages;
+    private boolean isFetchingMoreMessages = true;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messaging);
-
 
         initializeObjects();
 
@@ -125,8 +123,8 @@ public class MessagingActivity extends AppCompatActivity
 
     private void initializeObjects(){
 
-//        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        currentUserId = "7J6eWOO6ggVROicvqbZNikahj9Q2";
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//        currentUserId = "7J6eWOO6ggVROicvqbZNikahj9Q2";
 
         userRef = FirebaseFirestore.getInstance().collection("Users");
 
@@ -181,10 +179,17 @@ public class MessagingActivity extends AppCompatActivity
                 RecyclerView.VERTICAL, false) {
             @Override
             public void onItemsAdded(@NonNull RecyclerView recyclerView, int positionStart, int itemCount) {
-                messageRv.post(() -> scrollToPosition(messageMaps.size() - 1));
+
+                Log.d("ttt","positionStart: "+positionStart);
+
+                if(itemCount == 1){
+                    messageRv.post(() -> scrollToPosition(messageMaps.size() - 1));
+                }
+
             }
         };
 
+//        llm.setStackFromEnd(true);
         messageMaps = new ArrayList<>();
 
         messageTextMapAdapter = new MessageTextMapAdapter(
@@ -223,7 +228,7 @@ public class MessagingActivity extends AppCompatActivity
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
                 currentMessagingUserRef = documentSnapshot.getReference();
-                messagingUserNameTv.setText(documentSnapshot.getString("username"));
+                messagingUserNameTv.setText(documentSnapshot.getString("name"));
 
                 Picasso.get().load(documentSnapshot.getString("imageURL")).fit().into(messagingUserIv);
 
@@ -234,13 +239,13 @@ public class MessagingActivity extends AppCompatActivity
         currentUserRef.update("ActivelyMessaging", messagingUserId);
 
         currentUserRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            boolean isInitial = true;
+//            boolean isInitial = true;
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
                 if(value!=null){
 
-                    currentUserName = value.getString("username");
+                    currentUserName = value.getString("name");
                     currentImageURL =value.getString("imageURL");
 
 //                    if(isInitial){
@@ -265,9 +270,6 @@ public class MessagingActivity extends AppCompatActivity
 
     void readMessagesNew() {
 
-
-
-
         valueEventListeners = new HashMap<>();
 
         boolean currentUidIsFirst = currentUserId.toUpperCase()
@@ -287,40 +289,55 @@ public class MessagingActivity extends AppCompatActivity
 
         sendMessageBtn.setClickable(true);
 
-        ValueEventListener valueEventListener;
-        messagingChildRef.addListenerForSingleValueEvent(valueEventListener = new ValueEventListener() {
+        messagingChildRef.get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            public void onSuccess(DataSnapshot dataSnapshot) {
 
-                if(snapshot.exists()){
-
+                if(dataSnapshot.exists()){
                     addUserDeleteEventListener();
                     getInitialMessages();
 
                 }else{
-
+                    messagesProgressBar.setVisibility(View.GONE);
                     sendMessageBtn.setOnClickListener(new FirstMessageClickListener());
-
-
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.d("realTimeActivity", "single event listener: " + error.getMessage());
 
             }
         });
-
-        valueEventListeners.put(messagingChildRef, valueEventListener);
+//        ValueEventListener valueEventListener;
+//        messagingChildRef.addListenerForSingleValueEvent(valueEventListener = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//
+//                if(snapshot.exists()){
+//
+//
+//                }else{
+//
+//
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.d("realTimeActivity", "single event listener: " + error.getMessage());
+//
+//            }
+//        });
+//
+//        valueEventListeners.put(messagingChildRef, valueEventListener);
 
     }
 
 
     void getMoreTopMessages() {
 
+        isFetchingMoreMessages = true;
+        messagesProgressBar.setVisibility(View.VISIBLE);
+
         messagingChildRef
-                .child("PrivateMessages")
+                .child("Messages")
                 .orderByKey()
                 .limitToLast(DOCUMENT_MESSAGE_LIMIT)
                 .endAt(String.valueOf(Integer.parseInt(firstKey) - 1))
@@ -356,8 +373,7 @@ public class MessagingActivity extends AppCompatActivity
                             + task.getResult().getChildrenCount());
                     messageRv.removeOnScrollListener(currentScrollListener);
                 }
-
-                isLoadingMessages = false;
+                isFetchingMoreMessages = false;
             }
         });
 
@@ -660,13 +676,13 @@ public class MessagingActivity extends AppCompatActivity
 
                 messageRv.addOnScrollListener(currentScrollListener = new OnScrollListener());
 
-
                 if (Integer.parseInt(lastKey) + 1 > DOCUMENT_MESSAGE_LIMIT) {
                     Log.d("realTimeActivity", "snapshot.getChildrenCount(): " +
                             Integer.parseInt(lastKey) + 1);
-                    isFetchingMoreMessages = true;
+//                    isFetchingMoreMessages = true;
                 }
 
+                isFetchingMoreMessages = false;
                 sendMessageBtn.setOnClickListener(new MessageSenderClickListener());
                 addListenerForNewMessages();
                 addDeleteFieldListener();
@@ -719,7 +735,7 @@ public class MessagingActivity extends AppCompatActivity
 
         final Query query =
                 messagingChildRef
-                        .child("PrivateMessages")
+                        .child("Messages")
                         .orderByKey()
                         .startAt(String.valueOf(Integer.parseInt(lastKey) + 1));
 
@@ -815,41 +831,31 @@ public class MessagingActivity extends AppCompatActivity
 
     void addUserDeleteEventListener() {
 
-        final DatabaseReference deleteRef = messagingChildRef.child("isDeletedFor:" + messagingUserId);
-
-        ValueEventListener valueEventListener;
-        deleteRef.addValueEventListener(valueEventListener = new ValueEventListener() {
+        messagingFirestoreRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.d("realTimeActivity", "onDataChange: " +
-                        snapshot.getValue(Boolean.class));
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                if (snapshot.getValue(Boolean.class)) {
+                if(value!=null){
 
-                    Log.d("realTimeActivity", "messaging user deleted this messages");
+                    if(value.contains("isDeletedFor:" + messagingUserId) && value.getBoolean("isDeletedFor:" + messagingUserId)){
 
+                        Log.d("realTimeActivity", "messaging user deleted this messages");
 
-                    Toast.makeText(MessagingActivity.this,
-                            "لا يمكنك المراسلة على هذه المحادثة!",
-                            Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MessagingActivity.this,
+                                "لا يمكنك المراسلة على هذه المحادثة!",
+                                Toast.LENGTH_SHORT).show();
 
-                    messageEd.setVisibility(View.GONE);
-                    sendMessageBtn.setVisibility(View.GONE);
+                        messageEd.setVisibility(View.GONE);
+                        sendMessageBtn.setVisibility(View.GONE);
 
-                    messageTextMapAdapter.disableLongClick();
+                        messageTextMapAdapter.disableLongClick();
 
-                    deleteRef.removeEventListener(this);
-                    valueEventListeners.remove(deleteRef);
+                    }
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
 
-        valueEventListeners.put(deleteRef, valueEventListener);
 
     }
 
@@ -863,20 +869,28 @@ public class MessagingActivity extends AppCompatActivity
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
 
-            Log.d("ttt", "dx: " + dx);
-            Log.d("ttt", "dy: " + dy);
-            lastListYScroll = dy;
-
             if (isFetchingMoreMessages && !messageRv.canScrollVertically(-1)) {
-                Log.d("ttt", "at top man");
-                if (!isLoadingMessages) {
-                    isLoadingMessages = true;
-                    messagesProgressBar.setVisibility(View.VISIBLE);
+
                     Log.d("realTimeActivity", "geeting more messages");
                     getMoreTopMessages();
-                }
             }
         }
+
+//        @Override
+//        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+//            super.onScrollStateChanged(recyclerView, newState);
+//
+//            Log.d("ttt","onScrollStateChanged");
+//            if (!isFetchingMoreMessages &&
+//                    !recyclerView.canScrollVertically(-1)) {
+//
+//                Log.d("ttt", "is at bottom");
+//
+//                    messagesProgressBar.setVisibility(View.VISIBLE);
+//                    Log.d("realTimeActivity", "geeting more messages");
+//                    getMoreTopMessages();
+//            }
+//        }
     }
 
 }
