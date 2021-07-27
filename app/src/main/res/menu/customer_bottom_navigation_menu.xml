@@ -3,7 +3,12 @@
 
     <group android:checkableBehavior="single">
 
-    <item android:id="@+id/show_messages_action"
+
+        <item android:id="@+id/show_Menu_items_action"
+            android:title="Meals"
+            android:icon="@drawable/fork_and_spoon_icon"/>
+
+        <item android:id="@+id/show_Messages_action"
         android:title="Messages"
         android:icon="@drawable/messages_icon"/>
 
@@ -16,6 +21,5 @@
         android:icon="@drawable/marker_on_map_icon"/>
 
     </group>
-
 
 </menu>

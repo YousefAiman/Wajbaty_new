@@ -12,14 +12,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <include
+            android:id="@+id/customerCurrentDeliveryLayout"
+            layout="@layout/customer_current_delivery_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout_editor_absoluteX="15dp" />
+
+
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/homeOffersViewPager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="15dp"
             android:paddingHorizontal="20dp"
-            android:layout_marginTop="20dp"
             app:layout_constraintDimensionRatio="2.1:1"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/customerCurrentDeliveryLayout" />
 
         <LinearLayout
             android:id="@+id/homeOffersDotLl"

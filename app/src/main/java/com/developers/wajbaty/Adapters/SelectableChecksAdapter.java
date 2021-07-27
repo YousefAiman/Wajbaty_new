@@ -17,20 +17,30 @@ public class SelectableChecksAdapter extends RecyclerView.Adapter<SelectableChec
 
   private static final int TYPE_UNSELECTED = 1,TYPE_SELECTED = 2;
   private final ArrayList<SelectableItem> selectableItems;
-  private static SelectListener selectListener;
+  private final SelectListener selectListener;
   private int selectedItem;
-
+  private String selectableType;
 
   public interface SelectListener{
-    void itemSelected(int position);
+    void itemSelected(int position,String type);
   }
 
   public SelectableChecksAdapter(ArrayList<SelectableItem> selectableItems,
                                  SelectListener selectListener,
                                  int selectedItem) {
     this.selectableItems = selectableItems;
-    SelectableChecksAdapter.selectListener = selectListener;
+    this.selectListener = selectListener;
     this.selectedItem = selectedItem;
+  }
+
+  public SelectableChecksAdapter(ArrayList<SelectableItem> selectableItems,
+                                 SelectListener selectListener,
+                                 int selectedItem,
+                                 String selectableType) {
+    this.selectableItems = selectableItems;
+    this.selectListener = selectListener;
+    this.selectedItem = selectedItem;
+    this.selectableType = selectableType;
   }
 
   public void setSelectedItem(int selectedItem){
@@ -73,7 +83,7 @@ public class SelectableChecksAdapter extends RecyclerView.Adapter<SelectableChec
     return TYPE_UNSELECTED;
   }
 
-  public static class SelectableItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
+  public class SelectableItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     private final TextView selectableTv;
 
@@ -92,8 +102,7 @@ public class SelectableChecksAdapter extends RecyclerView.Adapter<SelectableChec
     @Override
     public void onClick(View v) {
 
-
-    selectListener.itemSelected(getAdapterPosition());
+    selectListener.itemSelected(getAdapterPosition(),selectableType);
     }
   }
 }

@@ -99,7 +99,7 @@ public class UserReviewModel extends Observable {
                     @Override
                     public void onSuccess(DocumentSnapshot snapshot) {
 
-                        if(!snapshot.contains("reviewSummary")){
+                        if(!snapshot.contains("reviewSummary") && snapshot.get("reviewSummary")!=null){
 
                             final HashMap<String,Long> ratingMap = new HashMap<>();
 

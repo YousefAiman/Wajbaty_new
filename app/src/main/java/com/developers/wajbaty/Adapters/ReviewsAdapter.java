@@ -228,8 +228,8 @@ public class ReviewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
                 }
 
-                if(snapshot.contains("username")){
-                  reviewUserNameTv.setText(snapshot.getString("username"));
+                if(snapshot.contains("name")){
+                  reviewUserNameTv.setText(snapshot.getString("name"));
                 }
               }
 
@@ -312,7 +312,7 @@ public class ReviewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
           review.setReviewerImageUrl(snapshot.getString("userImageUrl"));
           Picasso.get().load(review.getReviewerImageUrl()).fit().centerCrop().into(holder.reviewUserIv);
 
-          review.setReviewerUsername(snapshot.getString("username"));
+          review.setReviewerUsername(snapshot.getString("name"));
           holder.reviewUserNameTv.setText(review.getReviewerUsername());
 
         }

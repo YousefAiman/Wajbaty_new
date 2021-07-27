@@ -196,10 +196,19 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                                         MessageMap messageMap = new MessageMap((HashMap<String, Object>)
                                                 documentSnapshot.get("lastMessage"));
 
+                                        List<String> users = (List<String>) documentSnapshot.get("users");
+
+                                        String uid;
+                                        if(users.get(0).equals(currentUserUid)){
+                                            uid = users.get(1);
+                                        }else{
+                                            uid = users.get(0);
+                                        }
+
                                         userMessages.add(new UserMessage(
                                                 documentSnapshot.getId(),
                                                 messageMap,
-                                                messageMap.getSender(),
+                                                uid,
                                                 documentSnapshot.getLong(currentUserUid + ":LastSeenMessage"),
                                                 documentSnapshot.getLong("messagesCount")));
                                     }
@@ -253,6 +262,7 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                                     switch (dc.getType()){
 
                                         case MODIFIED:
+
 
                                             UserMessageModified(dc.getDocument());
 
@@ -390,7 +400,7 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 //        userRef.whereEqualTo("userId", userMessage.getMessagingUserId())
 //                .get().addOnSuccessListener(snaps -> {
 //            final DocumentSnapshot userSnap = snaps.getDocuments().get(0);
-//            userMessage.setChattingUsername(userSnap.getString("username"));
+//            userMessage.setChattingUsername(userSnap.getString("name"));
 //            userMessage.setChattingUserImage(userSnap.getString("imageurl"));
 //
 //

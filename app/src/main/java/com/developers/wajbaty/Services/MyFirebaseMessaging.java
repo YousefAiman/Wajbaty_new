@@ -91,8 +91,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
                 if (data.getSenderID()
                         .equals(sharedPreferences.getString("currentMessagingUserId", "")) &&
-                        Long.parseLong(data.getDestinationID()) ==
-                                sharedPreferences.getLong("currentMessagingDeliveryID", 0)) {
+                        data.getDestinationID().equals(sharedPreferences.getString("currentMessagingDeliveryID",""))) {
 
                     if (sharedPreferences.contains("isPaused") &&
                             sharedPreferences.getBoolean("isPaused", false)) {

@@ -82,8 +82,6 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
         getViews();
 
-        setUpListeners();
-
         final Intent intent = getIntent();
 
         if(intent == null){
@@ -94,6 +92,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
         if(intent.hasExtra("isForShow")){
             isForShow = intent.getBooleanExtra("isForShow",false);
         }
+
+        setUpListeners();
 
         if(intent.hasExtra("delivery")){
             delivery = (Delivery) intent.getSerializableExtra("delivery");
@@ -201,7 +201,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                 if(documentSnapshot.exists()){
 
-                    final String username = documentSnapshot.getString("username");
+                    final String username = documentSnapshot.getString("name");
                     cartToolbar.setTitle("Delivery for "+username);
 
                     final String imageURL = documentSnapshot.getString("imageURL");
@@ -352,7 +352,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                          long status = value.getLong("status");
 
-                         if(status != Delivery.STATUS_PENDING && value.getString("driverID").equals(currentUid)){
+                         if(status != Delivery.STATUS_PENDING && value.getString("driverID") !=null
+                                 && !value.getString("driverID").equals(currentUid)){
 
                              Toast.makeText(DeliveryInfoActivity.this,
                                      "You can't start the delivery because " +
@@ -361,6 +362,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                              disableStartDeliveryBtn();
 
+                             return;
                          }
 
                      }
@@ -369,7 +371,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                          if(value.contains("proposingDriverMap")){
 
-                             HashMap<String,Object> proposingMap = (HashMap<String, Object>) value.get("proposingDriverMap");
+                             HashMap<String,Object> proposingMap =
+                                     (HashMap<String, Object>) value.get("proposingDriverMap");
 
                              if(proposingMap == null){
                                  return;
@@ -377,19 +380,22 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                              if(proposingMap.containsKey("driverID")){
 
+                                 if(proposingMap.get("driverID") == null)
+                                     return;
+
                                  if(proposingMap.get("driverID").equals(currentUid)){
 
-                                     if(!proposingMap.containsKey("status") || !(proposingMap.get("status") instanceof Boolean)){
-
-                                         hideProgressFragment();
-
-                                         Toast.makeText(DeliveryInfoActivity.this,
-                                                 "An Error occurred while confirming delivery request with user!" +
-                                                         "Please try again",
-                                                 Toast.LENGTH_LONG).show();
-
-                                         return;
-                                     }
+//                                     if(!proposingMap.containsKey("status") || !(proposingMap.get("status") instanceof Boolean)){
+//
+//                                         hideProgressFragment();
+//
+//                                         Toast.makeText(DeliveryInfoActivity.this,
+//                                                 "An Error occurred while confirming delivery request with user!" +
+//                                                         "Please try again",
+//                                                 Toast.LENGTH_LONG).show();
+//
+//                                         return;
+//                                     }
 
                                      if((boolean) proposingMap.get("status")){
 
@@ -420,7 +426,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                                                                  deliveryInfoStartDeliveryBtn.setClickable(true);
 
-                                                                 firestore.collection("DeliveryDrivers").document(currentUid)
+                                                                 firestore.collection("Users").document(currentUid)
                                                                          .update("currentDeliveryId",null);
 
                                                              }

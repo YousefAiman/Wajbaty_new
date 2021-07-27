@@ -26,7 +26,6 @@
             app:tabIconTint="@color/white"
             android:background="@color/orange"/>
 
-
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/restaurantViewPager"
             android:layout_width="match_parent"

@@ -174,9 +174,15 @@ public class DeliveryModel extends Observable {
 
                         setChanged();
 
-
                         if(noResult){
-                            notifyError(DELIVERY_DRIVER_NOT_FOUND,"No drivers found in your range");
+
+                            deliveryRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    notifyError(DELIVERY_DRIVER_NOT_FOUND,"No drivers found in your range");
+                                }
+                            });
+
                         }else{
                             notifyObservers(DELIVERY_DRIVERS_NOTIFIED);
                         }
@@ -341,8 +347,6 @@ public class DeliveryModel extends Observable {
             }
         });
 
-
-
 //            String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 //
 //        firestore.collection("Users").document(currentUid)
@@ -400,7 +404,13 @@ public class DeliveryModel extends Observable {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
-                deliveryRef.update("proposingDriverMap", FieldValue.delete());
+                deliveryRef.update("proposingDriverMap", FieldValue.delete())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        deliveryRef.delete();
+                    }
+                });
 
             }
         });

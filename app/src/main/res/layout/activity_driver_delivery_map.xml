@@ -74,15 +74,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/driverDeliveryMessageIB">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/driverDeliveryCourseRv"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_map_course_location"
-            tools:itemCount="3"
-            android:padding="5dp"
-            android:orientation="vertical" />
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/driverDeliveryCourseRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_map_course_location"
+                tools:itemCount="3"
+                android:padding="5dp"
+                android:orientation="vertical" />
+
+            <ImageView
+                android:id="@+id/driverDeliveryCourseArrowIv"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:padding="5dp"
+                android:src="@drawable/back_arrow_orange_icon"
+                android:rotation="90"
+                />
+        </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 

@@ -15,6 +15,8 @@ import com.developers.wajbaty.Models.DeliveryCourse;
 import com.developers.wajbaty.R;
 import com.squareup.picasso.Picasso;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAdapter.DeliverCourseVH> {
@@ -75,8 +77,14 @@ public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAd
       }
 
       courseLocationNameTv.setText(deliveryCourse.getLocationName());
-      courseLocationCoordinatesTv.setText("["+ deliveryCourse.getLocation().getLatitude()+" , "+
-              deliveryCourse.getLocation().getLongitude()+"]");
+
+      final float lat = BigDecimal.valueOf(deliveryCourse.getLocation().getLatitude())
+              .setScale(2, RoundingMode.DOWN).floatValue(),
+              lng = BigDecimal.valueOf(deliveryCourse.getLocation().getLongitude())
+              .setScale(2, RoundingMode.DOWN).floatValue();
+
+
+      courseLocationCoordinatesTv.setText("["+ lat +" , "+ lng +"]");
 
       courseLocationItemCountTv.setText(deliveryCourse.getItemCount()+ "items");
 
@@ -102,6 +110,8 @@ public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAd
 
       if(deliveryCourses.indexOf(deliveryCourse) == deliveryCourses.size() - 1){
         courseLocationRouteLineView.setVisibility(View.GONE);
+      }else{
+        courseLocationRouteLineView.setVisibility(View.VISIBLE);
       }
 
     }

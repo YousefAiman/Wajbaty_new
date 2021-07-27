@@ -56,9 +56,7 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-
-        final UserMessage userMessage = chattingUsers.get(position);
-
+        holder.bind(chattingUsers.get(position));
     }
 
     @Override
@@ -88,7 +86,7 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
 
         void bind(UserMessage userMessage){
 
-            String senderID = userMessage.getChattingLatestMessageMap().getSender();
+            String senderID = userMessage.getMessagingUserId();
 
             if(userUserNamesMap.containsKey(senderID)){
 
@@ -151,7 +149,7 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
                 if(documentSnapshot.exists()){
 
                     final String imageURL = documentSnapshot.getString("imageURL"),
-                            username = documentSnapshot.getString("imageURL");
+                            username = documentSnapshot.getString("name");
 
                     if(imageURL!=null){
                         Picasso.get().load(imageURL).fit().centerCrop().into(userIv);

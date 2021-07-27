@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -22,6 +24,10 @@ import com.developers.wajbaty.Adapters.CategoriesAdapter;
 import com.developers.wajbaty.Adapters.DiscountOffersPagerAdapter;
 import com.developers.wajbaty.Adapters.RestaurantsPagerAdapter;
 import com.developers.wajbaty.Customer.Activities.CategoryActivity;
+import com.developers.wajbaty.Customer.Activities.CustomerDeliveryMapActivity;
+import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
+import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
+import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.MenuItem;
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.Models.RestaurantCategory;
@@ -30,6 +36,7 @@ import com.developers.wajbaty.Models.offer.Offer;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantActivity;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantMenuFragment;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.TimeFormatter;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
@@ -39,10 +46,14 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -85,6 +96,10 @@ public class HomeFragment extends Fragment implements
     private String language;
     private DocumentSnapshot lastCatgoryDocSnap;
     private HorizontalScrollListener horizontalScrollListener;
+
+    //current Delivery
+    private View customerCurrentDeliveryLayout;
+    private String currentDeliveryID;
 
 
     public HomeFragment() {
@@ -164,12 +179,14 @@ public class HomeFragment extends Fragment implements
                              Bundle savedInstanceState) {
         final View view =  inflater.inflate(R.layout.fragment_home, container, false);
 
+        customerCurrentDeliveryLayout = view.findViewById(R.id.customerCurrentDeliveryLayout);
         homeOffersViewPager = view.findViewById(R.id.homeOffersViewPager);
         homeOffersDotLl = view.findViewById(R.id.homeOffersDotLl);
         homeRestaurantsViewPager = view.findViewById(R.id.homeRestaurantsViewPager);
         restaurantsTv = view.findViewById(R.id.restaurantsTv);
         homeCategoriesRv = view.findViewById(R.id.homeCategoriesRv);
         categoryTv = view.findViewById(R.id.categoryTv);
+
 
 
 
@@ -185,6 +202,8 @@ public class HomeFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        getCurrentDelivery();
+
         getOffers();
 
         getBestRatedRestaurants();
@@ -192,6 +211,119 @@ public class HomeFragment extends Fragment implements
         getCategories(true);
 
     }
+
+    private void getCurrentDelivery(){
+
+        final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        firestore.collection("Users")
+                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+
+                        if(value!=null){
+
+                            if(value.contains("currentDeliveryID")){
+
+                              String currentDeliveryID = value.getString("currentDeliveryID");
+
+                              if(currentDeliveryID!=null && !currentDeliveryID.isEmpty()){
+
+                                  firestore.collection("Deliveries").document(currentDeliveryID)
+                                          .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                      @Override
+                                      public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                          if(documentSnapshot.exists()){
+                                              showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+                                          }
+                                      }
+                                  });
+
+                              }else{
+
+                                  currentDeliveryID = null;
+                                  customerCurrentDeliveryLayout.setVisibility(View.GONE);
+
+                                }
+
+                            }else{
+
+                                currentDeliveryID = null;
+                                customerCurrentDeliveryLayout.setVisibility(View.GONE);
+
+                            }
+
+                        }else{
+                            currentDeliveryID = null;
+                            customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                        }
+
+                    }
+                });
+
+
+    }
+
+    private void showCurrentDelivery(Delivery delivery){
+
+        currentDeliveryID = delivery.getID();
+
+        customerCurrentDeliveryLayout.setVisibility(View.VISIBLE);
+
+        final ImageView customerDeliveryDriverImageIv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryDriverImageIv);
+        final TextView
+                customerDeliveryDriverNameTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryDriverNameTv),
+                customerDeliveryAddressTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryAddressTv),
+                customerDeliveryOrderTimeTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryOrderTimeTv),
+                customerDeliveryTotalPriceTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryTotalPriceTv),
+                customerRestaurantCountTv = customerCurrentDeliveryLayout.findViewById(R.id.customerRestaurantCountTv);
+
+        final Button customerShowItemsTv = customerCurrentDeliveryLayout.findViewById(R.id.customerShowItemsTv)
+                ,customerShowMapTv = customerCurrentDeliveryLayout.findViewById(R.id.customerShowMapTv);
+
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(delivery.getDriverID()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                if(documentSnapshot.exists()){
+
+                    Picasso.get().load(documentSnapshot.getString("imageURL")).fit().centerCrop().into(customerDeliveryDriverImageIv);
+                    customerDeliveryDriverNameTv.setText(documentSnapshot.getString("name"));
+
+                }
+            }
+        });
+
+        customerDeliveryAddressTv.setText("Delivery Address: "+delivery.getAddress());
+        customerDeliveryOrderTimeTv.setText("Order Time: "+TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
+        customerDeliveryTotalPriceTv.setText("Total cost: "+delivery.getTotalCost() + delivery.getCurrency());
+        customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantMenuItemsMap().size()+" Restaurants");
+
+        customerShowItemsTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                startActivity(new Intent(requireContext(), DeliveryInfoActivity.class)
+                        .putExtra("isForShow",true)
+                        .putExtra("delivery",delivery));
+
+            }
+        });
+
+        customerShowMapTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                startActivity(new Intent(requireContext(), CustomerDeliveryMapActivity.class)
+                        .putExtra("delivery",delivery));
+
+            }
+        });
+
+    }
+
 
     private void getOffers(){
 

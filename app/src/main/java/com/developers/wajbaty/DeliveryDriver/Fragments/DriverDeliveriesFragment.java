@@ -4,20 +4,13 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,15 +26,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.developers.wajbaty.Activities.HomeActivity;
 import com.developers.wajbaty.Adapters.DriverDeliveriesAdapter;
-import com.developers.wajbaty.Customer.Fragments.HomeFragment;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
 import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
 import com.developers.wajbaty.Models.Delivery;
-import com.developers.wajbaty.Models.MenuItem;
-import com.developers.wajbaty.Models.RestaurantCategory;
-import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantMenuFragment;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.LocationListenerUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
@@ -49,26 +37,17 @@ import com.developers.wajbaty.Utils.TimeFormatter;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -214,88 +193,139 @@ public class DriverDeliveriesFragment extends Fragment implements
 //        activeStatuses.add(Delivery.STATUS_PICKED_UP);
 
         FirebaseFirestore.getInstance().collection("Users").document(currentUID)
-                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    boolean isInitial = true;
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                if(documentSnapshot.exists()){
+                        if(value!=null){
 
-                    if(documentSnapshot.contains("currentDeliveryId")){
+                            if(value.contains("currentDeliveryId")){
 
-                         String currentDeliveryId = documentSnapshot.getString("currentDeliveryId");
+                                String currentDeliveryId = value.getString("currentDeliveryId");
 
-                        if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
+                                if(currentDeliveryId!=null){
+                                    listenToCurrentDelivery(currentDeliveryId,isInitial);
+                                }else{
+                                    getPendingDeliveries(true);
+                                }
 
-                             boolean[] isInitial = {true};
+                            }else{
 
-                             int index = snapShotListeners.isEmpty()?0:snapShotListeners.size()-1;
+                                if(isInitial){
+                                    getPendingDeliveries(true);
+                                }
 
-                            snapShotListeners.add(deliveriesRef.document(currentDeliveryId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                currentDeliveryID = null;
+                                currentDeliveryLayout.setVisibility(View.GONE);
 
-                                            if(value!=null){
-
-                                                if(isInitial[0]){
-
-                                                    isInitial[0] = false;
-
-                                                    currentDeliveryID = value.getId();
-                                                    showCurrentDelivery(value.toObject(Delivery.class));
-
-                                                    getPendingDeliveries(true);
-
-                                                }else{
-
-                                                    if(value.contains("status")){
-                                                        long status = value.getLong("status");
-                                                        if(status == Delivery.STATUS_DELIVERED){
-
-                                                            currentDeliveryID = null;
-                                                            currentDeliveryLayout.setVisibility(View.GONE);
-                                                            snapShotListeners.get(index).remove();
-                                                            snapShotListeners.remove(index);
-
-                                                        }
-                                                    }
-
-                                                }
-                                            }else{
-                                                getPendingDeliveries(true);
-                                            }
-
-
-                                        }
-                                    })
-                            );
-
-//                            deliveriesRef.document(currentDeliveryId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//                                @Override
-//                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-//                                    if(documentSnapshot.exists()){
-//                                        currentDeliveryID = documentSnapshot.getId();
-//                                        showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+                            }
 //
-//                                    }
-//                                }
-//                            }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                                @Override
-//                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                            if(isInitial){
+//
+//                                isInitial = false;
+//
+//                            }else{
+//
+//
+//                            }
+//
+//                            if(value.contains("currentDeliveryId")){
+//
+//                                String currentDeliveryId = value.getString("currentDeliveryId");
+//
+//                                if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
+//
+//                                    listenToCurrentDelivery(currentDeliveryId);
+////                            deliveriesRef.document(currentDeliveryId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+////                                @Override
+////                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+////                                    if(documentSnapshot.exists()){
+////                                        currentDeliveryID = documentSnapshot.getId();
+////                                        showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+////
+////                                    }
+////                                }
+////                            }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+////                                @Override
+////                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+////
+////                                    getPendingDeliveries(true);
+////
+////                                }
+////                            });
+//
+//                                }else{
+//
+//                                    currentDeliveryID = null;
+//                                    currentDeliveryLayout.setVisibility(View.GONE);
 //
 //                                    getPendingDeliveries(true);
-//
 //                                }
-//                            });
+//                            }else{
+//                                currentDeliveryID = null;
+//                                currentDeliveryLayout.setVisibility(View.GONE);
+//                            }
 
                         }else{
+
+                            getPendingDeliveries(true);
+
+                        }
+
+                        isInitial = false;
+
+                    }
+                });
+    }
+
+
+    private void listenToCurrentDelivery(String currentDeliveryId,boolean isInitial){
+
+        int index = snapShotListeners.isEmpty()?0:snapShotListeners.size()-1;
+
+        snapShotListeners.add(deliveriesRef.document(currentDeliveryId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    boolean deliverySnapshotIsInitial = true;
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+
+                        if(value!=null){
+
+                            if(deliverySnapshotIsInitial){
+
+                                deliverySnapshotIsInitial = false;
+
+                                currentDeliveryID = value.getId();
+                                showCurrentDelivery(value.toObject(Delivery.class));
+
+                                if(isInitial){
+                                    getPendingDeliveries(true);
+                                }
+
+                            }else{
+
+                                if(value.contains("status")){
+                                    long status = value.getLong("status");
+                                    if(status == Delivery.STATUS_DELIVERED){
+
+                                        currentDeliveryID = null;
+                                        currentDeliveryLayout.setVisibility(View.GONE);
+                                        snapShotListeners.get(index).remove();
+                                        snapShotListeners.remove(index);
+
+                                    }
+                                }
+
+                            }
+                        }else if(isInitial){
                             getPendingDeliveries(true);
                         }
+
+
                     }
+                })
+        );
 
-                }
-
-            }
-        });
     }
 
     private void getPendingDeliveries(boolean isInitial){
@@ -311,13 +341,11 @@ public class DriverDeliveriesFragment extends Fragment implements
             currentQuery = currentQuery.startAfter(lastDeliverySnapshot);
         }
 
-        final List<Task<QuerySnapshot>> pendingDeliveriesTasks = new ArrayList<>();
+//        final List<Task<QuerySnapshot>> pendingDeliveriesTasks = new ArrayList<>();
 
         final AtomicInteger previousSize  = new AtomicInteger(deliveries.size());
 
         for (GeoQueryBounds b : geoQueryBounds) {
-
-
 
             snapShotListeners.add(currentQuery.startAt(b.startHash).endAt(b.endHash)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -426,6 +454,9 @@ public class DriverDeliveriesFragment extends Fragment implements
                                     }
 
                                 }
+                            }else{
+                                driverDeliveriesProgressBar.setVisibility(View.GONE);
+
                             }
 
                         }
@@ -602,6 +633,8 @@ public class DriverDeliveriesFragment extends Fragment implements
 
                         }
 
+                    }else{
+                        driverDeliveriesProgressBar.setVisibility(View.GONE);
                     }
                 }
             }));
@@ -631,8 +664,8 @@ public class DriverDeliveriesFragment extends Fragment implements
         final TextView currentDeliveryUserNameTv = currentDeliveryLayout.findViewById(R.id.currentDeliveryUserNameTv),
                 currentDeliveryAddressTv = currentDeliveryLayout.findViewById(R.id.currentDeliveryAddressTv),
                 currentDeliveryOrderTimeTv = currentDeliveryLayout.findViewById(R.id.currentDeliveryOrderTimeTv),
-                currentDeliveryTotalPriceTv = currentDeliveryLayout.findViewById(R.id.currentDeliveryTotalPriceTv),
-                currentDeliveryRestaurantCountTv = currentDeliveryLayout.findViewById(R.id.currentDeliveryRestaurantCountTv);
+                currentDeliveryTotalPriceTv = currentDeliveryLayout.findViewById(R.id.customerDeliveryTotalPriceTv),
+                currentDeliveryRestaurantCountTv = currentDeliveryLayout.findViewById(R.id.customerRestaurantCountTv);
 
         final Button currentDeliveryShowItemsBtn = currentDeliveryLayout.findViewById(R.id.currentDeliveryShowItemsBtn)
         ,currentDeliveryShowMapBtn = currentDeliveryLayout.findViewById(R.id.currentDeliveryShowMapBtn);
@@ -647,7 +680,7 @@ public class DriverDeliveriesFragment extends Fragment implements
                 if(documentSnapshot.exists()){
 
                     Picasso.get().load(documentSnapshot.getString("imageURL")).fit().centerCrop().into(currentDeliveryUserImageIv);
-                    currentDeliveryUserNameTv.setText(documentSnapshot.getString("username"));
+                    currentDeliveryUserNameTv.setText(documentSnapshot.getString("name"));
 
                 }
 

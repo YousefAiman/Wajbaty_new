@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Customer.Fragments.MenuItemsFilterFragment">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/filterToolBar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        app:navigationIcon="@drawable/back_arrow_white"
+        android:background="@color/orange"
+        app:title="Filter"
+        app:titleTextAppearance="@style/ToolbarLargeTitleAppearance"
+        app:titleTextColor="@color/white"
+        android:elevation="3dp"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+    <TextView
+        android:id="@+id/restaurantsTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/almarai_regular"
+        android:text="Category"
+        android:textColor="@color/orange"
+        android:layout_marginTop="15dp"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/filterToolBar" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/filterCategoriesRv"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:layout_marginTop="10dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/restaurantsTv" />
+
+    <TextView
+        android:id="@+id/textView19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/almarai_regular"
+        android:text="Filter by"
+        android:textColor="@color/orange"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/filterCategoriesRv" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/filterFiltersRv"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:layout_marginTop="10dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/textView19" />
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/filterFilterBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/filled_button_background"
+        android:elevation="3dp"
+        android:fontFamily="@font/amlarai_bold"
+        android:paddingVertical="10dp"
+        android:text="Filter"
+        android:textAllCaps="false"
+        android:layout_marginTop="15dp"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

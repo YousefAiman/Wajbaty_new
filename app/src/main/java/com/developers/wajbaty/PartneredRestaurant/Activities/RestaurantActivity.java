@@ -609,7 +609,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
     private void setupViewPager(int status){
 
-        final Integer[] icons = {R.drawable.info_icon,R.drawable.menu_icon,R.drawable.red_circle};
+        final Integer[] icons = {R.drawable.info_icon,R.drawable.menu_icon,R.drawable.star_icon};
         final String[] titles = {"About","Menu","Reviews"};
 
         Log.d("ttt","restaurant activity currency: "+

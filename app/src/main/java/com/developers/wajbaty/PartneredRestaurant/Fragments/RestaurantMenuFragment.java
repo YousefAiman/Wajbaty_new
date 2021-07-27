@@ -162,8 +162,6 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
         }
 
-
-
         selectableItems = new ArrayList<>();
         selectableAdapter = new SelectableChecksAdapter(selectableItems,this,-1);
 
@@ -205,12 +203,16 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
         restaurantMenuRv = view.findViewById(R.id.restaurantMenuRv);
         menuProgressBar = view.findViewById(R.id.menuProgressBar);
         noMenuItemTv = view.findViewById(R.id.noMenuItemTv);
+        addToMenuFb = view.findViewById(R.id.addToMenuFb);
+        addToMenuFb.setOnClickListener(this);
 
 
         if(canEditMenu){
-            addToMenuFb = view.findViewById(R.id.addToMenuFb);
-            addToMenuFb.setVisibility(View.VISIBLE);
-            addToMenuFb.setOnClickListener(this);
+            addToMenuFb.setIconResource(R.drawable.add_icon_white);
+            addToMenuFb.setText("Add To Menu");
+        }else{
+            addToMenuFb.setIconResource(R.drawable.scooter_marker_icon);
+            addToMenuFb.setText("Order From Restaurant");
         }
 
         restaurantMenuRv.setAdapter(adapter);
@@ -236,11 +238,41 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
             Log.d("ttt","clicked add to menu");
 //            requireActivity().startActivityIfNeeded();
 
+            if(canEditMenu) {
 
-            intentLauncher.launch(new Intent(requireContext(), MenuItemModifierActivity.class)
-            .putExtra("restaurantId",restaurant.getID())
-            .putExtra("currency",currency));
 
+                Intent intent = new Intent(requireContext(), MenuItemModifierActivity.class)
+                        .putExtra("restaurantId", restaurant.getID())
+                        .putExtra("currency", currency);
+
+
+                String region = null;
+
+                if (restaurant.getAddress() != null) {
+
+                    if (restaurant.getAddress().containsKey("adminArea")) {
+                        region = restaurant.getAddress().get("adminArea");
+                    } else if (restaurant.getAddress().containsKey("region")) {
+                        region = restaurant.getAddress().get("region");
+                    } else if (restaurant.getAddress().containsKey("county")) {
+                        region = restaurant.getAddress().get("county");
+                    } else if (restaurant.getAddress().containsKey("city")) {
+                        region = restaurant.getAddress().get("city");
+                    }
+
+                }
+
+                if (region != null) {
+                    intent.putExtra("restaurantRegion", region);
+                }
+
+                intentLauncher.launch(intent);
+
+            }else{
+
+
+
+            }
         }
 
     }
@@ -621,7 +653,7 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
 
     @Override
-    public void itemSelected(int position) {
+    public void itemSelected(int position,String type) {
 
         final int previousSelected = selectableAdapter.getSelectedItem();
 
