@@ -120,7 +120,18 @@ public class RegisterActivity extends AppCompatActivity {
 
                 selectType();
 
+                
+                firebaseFirestore.collection("Customer")
+                        .get()
+                        .addOnCompleteListener(command -> {
+                    if (command.isSuccessful()) {
+
+                    }
+                });
+
                 Intent intent = new Intent(this, VerifyAccountActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("email", email);
                 intent.putExtra("phoneNumber", fullMobile);
                 startActivity(intent);
 
@@ -178,15 +189,15 @@ public class RegisterActivity extends AppCompatActivity {
             case R.id.customerRadioButton:
                 if (checked)
                     Toast.makeText(this, "زبون", Toast.LENGTH_SHORT).show();
-                    break;
+                break;
             case R.id.restaurantRadioButton:
                 if (checked)
                     Toast.makeText(this, "مطعم", Toast.LENGTH_SHORT).show();
-                    break;
+                break;
             case R.id.deliveryRadioButton:
                 if (checked)
                     Toast.makeText(this, "ديليفري", Toast.LENGTH_SHORT).show();
-                    break;
+                break;
         }
     }
 
@@ -316,7 +327,7 @@ public class RegisterActivity extends AppCompatActivity {
         return phoneNumberUtil.isValidNumber(newNum);
     }
 
-    void selectType (){
+    void selectType() {
         if (customerRadioButton.isChecked()) {
             startActivity(new Intent(this, CustomerHomeActivity.class));
 //            Toast.makeText(this, "زبون", Toast.LENGTH_SHORT).show();
