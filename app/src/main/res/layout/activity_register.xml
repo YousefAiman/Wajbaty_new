@@ -81,7 +81,7 @@
             app:layout_constraintTop_toBottomOf="@+id/til_email">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_password"
+                android:id="@+id/et_password_reg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword" />
@@ -114,7 +114,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:background="@drawable/filled_button_background"
+            android:background="@drawable/btn_design"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -126,7 +126,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="15dp"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:background="@drawable/spinner_custom_layout"
                 android:dropDownWidth="wrap_content"
                 app:layout_constraintBottom_toBottomOf="@+id/register_btn"
@@ -135,7 +135,7 @@
                 tools:listitem="@layout/spinner_item_layout" />
 
             <EditText
-                android:id="@+id/et_phoneNumber"
+                android:id="@+id/et_phoneNumber_reg"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
@@ -246,7 +246,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="already have an account sign in"
+            android:text="Already have an account? sign in"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

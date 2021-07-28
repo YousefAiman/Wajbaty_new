@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 public class DeliveryDriver extends User implements Serializable {
 
-    public static final int STATUS_AVAILABLE = 1,STATUS_UNAVAILABLE = 2,STATUS_DELIVERING = 3;
+    public static final int STATUS_AVAILABLE = 1, STATUS_UNAVAILABLE = 2, STATUS_DELIVERING = 3;
 
     private float rating;
     private String currentDeliveryId;
@@ -15,8 +15,8 @@ public class DeliveryDriver extends User implements Serializable {
     private String geohash;
 
 
-    public DeliveryDriver(String ID, String name, String email, String imageURL, String countryCode, String cloudMessagingToken, int type, float rating, String currentDeliveryId, int status, GeoPoint currentGeoPoint, String geohash) {
-        super(ID, name, email, imageURL, countryCode, cloudMessagingToken, type);
+    public DeliveryDriver(String ID, String name, String email, String phoneNumber, String imageURL, String countryCode, String cloudMessagingToken, int type, float rating, String currentDeliveryId, int status, GeoPoint currentGeoPoint, String geohash) {
+        super(ID, name, email, phoneNumber, imageURL, countryCode, cloudMessagingToken, type);
         this.rating = rating;
         this.currentDeliveryId = currentDeliveryId;
         this.status = status;

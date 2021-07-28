@@ -195,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                             User user = new User(authResult.getUser().getUid(),
                                                     "new customer",
                                                     authResult.getUser().getEmail(),
+                                                    "",
                                                     "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/b60dc8bd-4756-4f9f-b7a2-04c92c97167d%2F17f7d916-6344-462f-a9dd-cb56e0a34091%2FmenuItemImage_0?alt=media&token=8c5480e3-447f-4b8c-bc2f-ae85a30e663a",
                                                     (String) addressMap.get("countryCode"),
                                                     s,
@@ -308,6 +309,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                                                     authResult.getUser().getUid(),
                                                                     "new driver",
                                                                     "driver@gmail.com",
+                                                                    "",
                                                                     "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/5ea62558-cc45-4173-be5d-a0987505612d%2FRestaurant_Main_Image?alt=media&token=54418838-338e-4c5a-8f56-5b4d5778d038" ,
                                                                     (String) addressMap.get("countryCode"),
                                                                     s,
@@ -355,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                         @Override
                         public void onSuccess(AuthResult authResult) {
 
-                            FirebaseFirestore.getInstance().collection("RestaurantAdmins")
+                            FirebaseFirestore.getInstance().collection("Users")
                                     .document(authResult.getUser().getUid())
                                     .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                 @Override
@@ -399,6 +401,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                                             new User(authResult.getUser().getUid(),
                                                                     "restaurant admin",
                                                                     authResult.getUser().getEmail(),
+                                                                    "",
                                                                     "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/d9e4179d-56d9-4408-a7f7-5389158c3517%2FRestaurant_Main_Image?alt=media&token=c102983d-79d8-4657-9f40-ec846e127e92",
                                                                     (String) addressMap.get("countryCode"),
                                                                     s,

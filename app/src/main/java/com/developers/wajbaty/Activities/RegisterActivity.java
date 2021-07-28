@@ -21,24 +21,30 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class RegisterActivity extends AppCompatActivity {
     TextInputEditText usernameEd, emailEd, passwordEd, conf_passwordEd;
@@ -48,6 +54,8 @@ public class RegisterActivity extends AppCompatActivity {
     TextView signinTv;
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
+    DatabaseReference databaseReference;
+
     PhoneAuthProvider.ForceResendingToken forceResendingToken;
     PhoneNumberUtil phoneNumberUtil;
     String phone;
@@ -55,6 +63,8 @@ public class RegisterActivity extends AppCompatActivity {
     RadioGroup radioGroup;
     RadioButton selectedRadioButton;
     RadioButton customerRadioButton, restaurantRadioButton, deliveryRadioButton;
+    User user;
+    String defaultCode = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,9 +115,7 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
 
-                String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;
-                fullMobile = fullMobile.substring(fullMobile.indexOf("+"));
-                Log.d("ttt", fullMobile);
+
 
 
 /*                int id = radioGroup.getCheckedRadioButtonId();
@@ -132,7 +140,58 @@ public class RegisterActivity extends AppCompatActivity {
 
 //                selectType();
 
+
+                FirebaseMessaging.getInstance().getToken()
+                        .addOnSuccessListener(new OnSuccessListener<String>() {
+                            @Override
+                            public void onSuccess(String s) {
+
+                                FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+                                user = new User(currentUser.getUid(), username, email, phone,
+                                        "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2F152cdc23-401e-4751-a86c-920acd380af0?alt=media&token=cb66e735-e348-4f42-967e-d706c13b9192",
+                                        EmojiUtil.countryCodeToEmoji(defaultCode),
+                                        s,
+                                        User.TYPE_CUSTOMER);
+
+                                if (currentUser != null) {
+                                    firebaseFirestore.collection("Users")
+                                            .document(currentUser.getUid())
+                                            .set(user)
+                                            .addOnCompleteListener(command -> {
+                                                Toast.makeText(RegisterActivity.this, username, Toast.LENGTH_SHORT).show();
+                                            })
+                                            .addOnFailureListener(command -> {
+                                                Toast.makeText(RegisterActivity.this, command.getMessage(), Toast.LENGTH_SHORT).show();
+                                            });
+                                } else {
+                                    Toast.makeText(RegisterActivity.this, "No user signed in", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+/*
+                firebaseFirestore.collection("Customer")
+                        .document()
+                        .get()
+                        .addOnCompleteListener(command -> {
+                    if (command.isSuccessful()) {
+
+                    }
+                });*/
+
+                String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;
+                fullMobile = fullMobile.substring(fullMobile.indexOf("+"));
+                Log.d("ttt", fullMobile);
+
                 Intent intent = new Intent(this, VerifyAccountActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("email", email);
                 intent.putExtra("phoneNumber", fullMobile);
                 intent.putExtra("phoneNumber", fullMobile);
                 startActivity(intent);
@@ -158,21 +217,26 @@ public class RegisterActivity extends AppCompatActivity {
 
         });
 
+        signinTv.setOnClickListener(v -> {
+            startActivity(new Intent(this, SigninActivity.class));
+        });
 
     }
 
     private void initItems() {
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
         phoneNumberUtil = PhoneNumberUtil.getInstance();
+
     }
 
     private void initViews() {
         usernameEd = findViewById(R.id.et_username);
         emailEd = findViewById(R.id.et_email);
-        passwordEd = findViewById(R.id.et_password);
+        passwordEd = findViewById(R.id.et_password_reg);
         conf_passwordEd = findViewById(R.id.et_conf_password);
-        phoneNumberEd = findViewById(R.id.et_phoneNumber);
+        phoneNumberEd = findViewById(R.id.et_phoneNumber_reg);
         phoneSpinner = findViewById(R.id.phoneSpinner);
         registerBtn = findViewById(R.id.register_btn);
         signinTv = findViewById(R.id.signin_tv);
@@ -191,15 +255,15 @@ public class RegisterActivity extends AppCompatActivity {
             case R.id.customerRadioButton:
                 if (checked)
                     Toast.makeText(this, "زبون", Toast.LENGTH_SHORT).show();
-                    break;
+                break;
             case R.id.restaurantRadioButton:
                 if (checked)
                     Toast.makeText(this, "مطعم", Toast.LENGTH_SHORT).show();
-                    break;
+                break;
             case R.id.deliveryRadioButton:
                 if (checked)
                     Toast.makeText(this, "ديليفري", Toast.LENGTH_SHORT).show();
-                    break;
+                break;
         }
     }
 
@@ -272,7 +336,6 @@ public class RegisterActivity extends AppCompatActivity {
 
             List<String> supportedCountryCodes = new ArrayList<>(phoneNumberUtil.getSupportedRegions());
 
-            String defaultCode = "";
 
             defaultCode = defaultCode.toUpperCase();
 
@@ -331,15 +394,17 @@ public class RegisterActivity extends AppCompatActivity {
         return phoneNumberUtil.isValidNumber(newNum);
     }
 
-    void selectType (){
+    void selectType() {
         if (customerRadioButton.isChecked()) {
+//            startActivity(new Intent(this, CustomerHomeActivity.class));
+            Toast.makeText(this, "زبون", Toast.LENGTH_SHORT).show();
 //            startActivity(new Intent(this, CustomerHomeActivity.class));
 //            Toast.makeText(this, "زبون", Toast.LENGTH_SHORT).show();
         } else if (restaurantRadioButton.isChecked()) {
 
-//            Toast.makeText(this, "مطعم", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "مطعم", Toast.LENGTH_SHORT).show();
         } else if (deliveryRadioButton.isChecked()) {
-//            Toast.makeText(this, "ديليفري", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "ديليفري", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Please select Type", Toast.LENGTH_SHORT).show();
         }
