@@ -1,4 +1,4 @@
-package com.developers.wajbaty.models;
+package com.developers.wajbaty.Models;
 
 public class UserInfo {
 

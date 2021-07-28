@@ -26,14 +26,12 @@
         android:theme="@style/Theme.Wajbaty">
         <activity android:name=".Activities.CustomerHomeActivity" />
         <activity android:name=".Customer.Activities.CustomerDeliveryMapActivity"></activity>
-        <activity
-            android:name=".Activities.CustomerHomeActivity"
-            android:screenOrientation="portrait" />
+
+        <activity android:name=".Activities.RegisterActivity" />
         <activity android:name=".Activities.SigninActivity" />
-        <activity android:name=".Activities.AddImageProfileActivity" />
         <activity android:name=".Activities.VerifyAccountActivity" />
         <activity
-            android:name=".Activities.MainActivity"
+            android:name=".Activities.AddImageProfileActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -62,24 +60,7 @@
         <activity
             android:name=".Activities.MessagingActivity"
             android:screenOrientation="portrait"></activity>
-        <activity
-            android:name=".DeliveryDriver.Activities.DriverDeliveryMapActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".DeliveryDriver.Activities.DeliveryInfoActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Customer.Activities.DeliveryLocationMapActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Customer.Activities.CategoryActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".PartneredRestaurant.Activities.DiscountOfferActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Customer.Activities.FavoriteActivity"
-            android:screenOrientation="portrait" />
+
         <activity
             android:name=".Activities.HomeActivity"
             android:screenOrientation="portrait" />
@@ -108,7 +89,7 @@
             android:name=".PartneredRestaurant.Activities.RestaurantMediaFillingActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activities.RegisterActivity"
+            android:name=".Activities.MainActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.WelcomeActivity"
@@ -116,18 +97,7 @@
         <activity
             android:name=".PartneredRestaurant.Activities.RestaurantLocationActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activities.MessagingActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity
-            android:name=".Activities.MainActivity"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

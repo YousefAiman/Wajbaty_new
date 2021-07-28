@@ -9,8 +9,8 @@ public class RestaurantAdmin extends User{
 
     private List<String> administratingRestaurants;
 
-    public RestaurantAdmin(String ID, String name, String email, String imageURL, String countryCode, String cloudMessagingToken, int type, List<String> administratingRestaurants) {
-        super(ID, name, email, imageURL, countryCode, cloudMessagingToken, type);
+    public RestaurantAdmin(String ID, String name, String email, String phoneNumber, String imageURL, String countryCode, String cloudMessagingToken, int type, List<String> administratingRestaurants) {
+        super(ID, name, email, phoneNumber, imageURL, countryCode, cloudMessagingToken, type);
         this.administratingRestaurants = administratingRestaurants;
     }
 

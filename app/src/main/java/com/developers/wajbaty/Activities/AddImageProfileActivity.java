@@ -25,8 +25,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.developers.wajbaty.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -72,7 +75,7 @@ public class AddImageProfileActivity extends AppCompatActivity {
 //            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //            startActivityIfNeeded(intent, REQUEST_IMAGE_CAPTURE);
 
-            final CharSequence[] options = {"take photo","choose_from_gallery", "cancel"};
+            final CharSequence[] options = {"take_photo","choose_from_gallery", "cancel"};
 
             AlertDialog.Builder builder = new AlertDialog.Builder(AddImageProfileActivity.this);
             builder.setTitle("add_photo");
@@ -95,13 +98,15 @@ public class AddImageProfileActivity extends AppCompatActivity {
             firebaseFirestore = FirebaseFirestore.getInstance();
             storageReference = FirebaseStorage.getInstance().getReference();
 
+            startActivity(new Intent(this, MainActivity.class));
+
             uploadImage();
 
         });
 
         TextView skip = findViewById(R.id.skip_Tv);
         skip.setOnClickListener(v -> {
-
+            startActivity(new Intent(this, MainActivity.class));
         });
     }
 
@@ -131,10 +136,12 @@ public class AddImageProfileActivity extends AppCompatActivity {
 
 
         } else if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
-            Uri selectedImageUri = data.getData();
-            if (null != selectedImageUri) {
-                Picasso.get().load(selectedImageUri).fit().centerCrop().into(add_Im);
+            uri = data.getData();
+            if (uri != null) {
+                Picasso.get().load(uri).fit().centerCrop().into(add_Im);
                 icon_Im.setVisibility(View.INVISIBLE);
+            } else {
+                Toast.makeText(this, "no image", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -148,6 +155,7 @@ public class AddImageProfileActivity extends AppCompatActivity {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        intent.putExtra();
         startActivityIfNeeded(intent, PICK_IMAGE);
 
     }
@@ -230,7 +238,6 @@ public class AddImageProfileActivity extends AppCompatActivity {
 
     private void uploadImage() {
         if (uri != null) {
-
 //                dialog.setTitle("Uploading...");
 //                dialog.show();
             final StorageReference storageRef2 = storageReference.child("images/" + UUID.randomUUID().toString());
@@ -248,7 +255,6 @@ public class AddImageProfileActivity extends AppCompatActivity {
 
                             storageRef2.getDownloadUrl()
                                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @RequiresApi(api = Build.VERSION_CODES.N)
                                         @Override
                                         public void onSuccess(Uri uri) {
 
@@ -256,9 +262,23 @@ public class AddImageProfileActivity extends AppCompatActivity {
                                             long currentTime = System.currentTimeMillis() / 1000;
                                             map.put("imageURL", uri.toString());
 
+                                            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
-                                            firebaseFirestore.collection("Customer").add(map);
-
+                                            firebaseFirestore.collection("Users")
+                                                    .document(firebaseAuth.getCurrentUser().getUid())
+                                                    .update("imageURL", uri.toString())
+                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            startActivity(new Intent(AddImageProfileActivity.this, MainActivity.class));
+                                                        }
+                                                    })
+                                                    .addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Toast.makeText(AddImageProfileActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
 
                                         }
                                     });

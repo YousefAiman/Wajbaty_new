@@ -10,6 +10,7 @@ public class User {
     private String ID;
     private String name;
     private String email;
+    private String phoneNumber;
     private String imageURL;
     private String countryCode;
     private String cloudMessagingToken;
@@ -18,10 +19,11 @@ public class User {
     public User() {
     }
 
-    public User(String ID, String name, String email, String imageURL, String countryCode,String cloudMessagingToken, int type) {
+    public User(String ID, String name, String email, String phoneNumber, String imageURL, String countryCode,String cloudMessagingToken, int type) {
         this.ID = ID;
         this.name = name;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.imageURL = imageURL;
         this.countryCode = countryCode;
         this.cloudMessagingToken = cloudMessagingToken;
@@ -50,6 +52,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getCloudMessagingToken() {
