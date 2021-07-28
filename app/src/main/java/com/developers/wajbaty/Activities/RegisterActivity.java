@@ -80,30 +80,48 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void initClicks() {
         registerBtn.setOnClickListener(v -> {
+
             String username = usernameEd.getText().toString().trim();
             String email = emailEd.getText().toString().trim();
-            String password = passwordEd.getText().toString().trim();
-            String confPassword = conf_passwordEd.getText().toString().trim();
-
+//            String password = passwordEd.getText().toString().trim();
+//            String confPassword = conf_passwordEd.getText().toString().trim();
             String phone = phoneNumberEd.getText().toString().trim();
-            if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confPassword.isEmpty() || phone.isEmpty()) {
 
-//                Toast.makeText(this, "Please fill all fields..", Toast.LENGTH_SHORT).show();
+            if (username.isEmpty()){
                 usernameEd.setError("Field can't be empty");
+            }
+
+            if (email.isEmpty()){
                 emailEd.setError("Field can't be empty");
-
-
-            } else if (!validateEmail(email)) {
+            }else if (!validateEmail(email)) {
 //                Toast.makeText(this, "Invalid Email", Toast.LENGTH_SHORT).show();
+            }
 
-            } else if (!validatePassword(password)) {
-//                Toast.makeText(this, "Invalid Password", Toast.LENGTH_SHORT).show();
-//                passwordEd.setError("Invalid Password");
-//                Toast.makeText(this, "Password must contain mix of upper and lower case letters as well as digits and one special character(4-20)", Toast.LENGTH_SHORT).show();
+            if (phone.isEmpty()){
+                phoneNumberEd.setError("Field can't be empty");
+            }
 
-            } else if (!confPassword.equals(password)) {
-                Toast.makeText(RegisterActivity.this, "password doesn't compatible", Toast.LENGTH_SHORT).show();
-            } else {
+
+//            if (username.isEmpty() || email.isEmpty()
+////                    || password.isEmpty() || confPassword.isEmpty()
+//                    || phone.isEmpty()) {
+////                Toast.makeText(this, "Please fill all fields..", Toast.LENGTH_SHORT).show();
+//                usernameEd.setError("Field can't be empty");
+//                emailEd.setError("Field can't be empty");
+//
+//            } else if (!validateEmail(email)) {
+////                Toast.makeText(this, "Invalid Email", Toast.LENGTH_SHORT).show();
+//
+//            }
+//            else if (!validatePassword(password)) {
+////                Toast.makeText(this, "Invalid Password", Toast.LENGTH_SHORT).show();
+////                passwordEd.setError("Invalid Password");
+////                Toast.makeText(this, "Password must contain mix of upper and lower case letters as well as digits and one special character(4-20)", Toast.LENGTH_SHORT).show();
+//
+//            } else if (!confPassword.equals(password)) {
+//                Toast.makeText(RegisterActivity.this, "password doesn't compatible", Toast.LENGTH_SHORT).show();
+//            }
+            else {
 
                 if (!checkPhoneNumber(phone, phoneSpinner.getSelectedItem().toString().split("\\+")[1])) {
 
@@ -114,9 +132,6 @@ public class RegisterActivity extends AppCompatActivity {
 
                     return;
                 }
-
-
-
 
 /*                int id = radioGroup.getCheckedRadioButtonId();
                 
@@ -129,7 +144,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                 int id = radioGroup.getCheckedRadioButtonId();
 
-                int userType;
+                int userType = 0;
                 if(id == customerRadioButton.getId()){
                     userType = User.TYPE_CUSTOMER;
                 }else if(id == restaurantRadioButton.getId()){
@@ -138,61 +153,62 @@ public class RegisterActivity extends AppCompatActivity {
                     userType = User.TYPE_DELIVERY;
                 }
 
+                Log.d("ttt","userType: "+userType);
 //                selectType();
-
-
-                FirebaseMessaging.getInstance().getToken()
-                        .addOnSuccessListener(new OnSuccessListener<String>() {
-                            @Override
-                            public void onSuccess(String s) {
-
-                                FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-                                user = new User(currentUser.getUid(), username, email, phone,
-                                        "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2F152cdc23-401e-4751-a86c-920acd380af0?alt=media&token=cb66e735-e348-4f42-967e-d706c13b9192",
-                                        EmojiUtil.countryCodeToEmoji(defaultCode),
-                                        s,
-                                        User.TYPE_CUSTOMER);
-
-                                if (currentUser != null) {
-                                    firebaseFirestore.collection("Users")
-                                            .document(currentUser.getUid())
-                                            .set(user)
-                                            .addOnCompleteListener(command -> {
-                                                Toast.makeText(RegisterActivity.this, username, Toast.LENGTH_SHORT).show();
-                                            })
-                                            .addOnFailureListener(command -> {
-                                                Toast.makeText(RegisterActivity.this, command.getMessage(), Toast.LENGTH_SHORT).show();
-                                            });
-                                } else {
-                                    Toast.makeText(RegisterActivity.this, "No user signed in", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-/*
-                firebaseFirestore.collection("Customer")
-                        .document()
-                        .get()
-                        .addOnCompleteListener(command -> {
-                    if (command.isSuccessful()) {
-
-                    }
-                });*/
-
+//                FirebaseMessaging.getInstance().getToken()
+//                        .addOnSuccessListener(new OnSuccessListener<String>() {
+//                            @Override
+//                            public void onSuccess(String s) {
+//
+//                                FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+//
+//                                user = new User(currentUser.getUid(), username, email, phone,
+//                                        "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2F152cdc23-401e-4751-a86c-920acd380af0?alt=media&token=cb66e735-e348-4f42-967e-d706c13b9192",
+//                                        EmojiUtil.countryCodeToEmoji(defaultCode),
+//                                        s,
+//                                        User.TYPE_CUSTOMER);
+//
+//                                if (currentUser != null) {
+//                                    firebaseFirestore.collection("Users")
+//                                            .document(currentUser.getUid())
+//                                            .set(user)
+//                                            .addOnCompleteListener(command -> {
+//                                                Toast.makeText(RegisterActivity.this, username, Toast.LENGTH_SHORT).show();
+//                                            })
+//                                            .addOnFailureListener(command -> {
+//                                                Toast.makeText(RegisterActivity.this, command.getMessage(), Toast.LENGTH_SHORT).show();
+//                                            });
+//                                } else {
+//                                    Toast.makeText(RegisterActivity.this, "No user signed in", Toast.LENGTH_SHORT).show();
+//                                }
+//                            }
+//                        })
+//                        .addOnFailureListener(new OnFailureListener() {
+//                            @Override
+//                            public void onFailure(@NonNull Exception e) {
+//                                Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
+//
+///*
+//                firebaseFirestore.collection("Customer")
+//                        .document()
+//                        .get()
+//                        .addOnCompleteListener(command -> {
+//                    if (command.isSuccessful()) {
+//
+//                    }
+//                });*/
+//
                 String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;
                 fullMobile = fullMobile.substring(fullMobile.indexOf("+"));
-                Log.d("ttt", fullMobile);
+//                Log.d("ttt", fullMobile);
+//
 
                 Intent intent = new Intent(this, VerifyAccountActivity.class);
                 intent.putExtra("username", username);
                 intent.putExtra("email", email);
-                intent.putExtra("phoneNumber", fullMobile);
+                intent.putExtra("userType",userType);
                 intent.putExtra("phoneNumber", fullMobile);
                 startActivity(intent);
 

@@ -38,20 +38,22 @@
         <activity android:name=".Customer.Activities.CustomerDeliveryMapActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".Activities.RegisterActivity" />
-        <activity android:name=".Activities.SigninActivity" />
-        <activity android:name=".Activities.VerifyAccountActivity" />
-        <activity
-            android:name=".Activities.AddImageProfileActivity"
-            android:screenOrientation="portrait">
+        <activity android:name=".Activities.RegisterActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
-            android:name=".Activities.MessagingActivity"
-            android:screenOrientation="portrait" />
+        <activity android:name=".Activities.SigninActivity" />
+        <activity android:name=".Activities.VerifyAccountActivity" />
+        <activity
+            android:name=".Activities.AddImageProfileActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+
         <activity
             android:name=".DeliveryDriver.Activities.DriverDeliveryMapActivity"
             android:screenOrientation="portrait" />
@@ -103,7 +105,11 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.MainActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait" >
+
+
+
+        </activity>
         <activity
             android:name=".Activities.WelcomeActivity"
             android:screenOrientation="portrait" >
@@ -112,12 +118,6 @@
         <activity
             android:name=".PartneredRestaurant.Activities.RestaurantLocationActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activities.MainActivity"
-            android:screenOrientation="portrait">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
