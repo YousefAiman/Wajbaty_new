@@ -272,8 +272,7 @@ public class PartneredRestaurantModel extends Observable {
                         tasksList.add(restaurantDocumentRef.set(firestoreRestaurantMap, SetOptions.merge()));
 
                         tasksList.add(firestore.collection("Users").document(
-                                currentUid).update("administratingRestaurants",
-                                FieldValue.arrayUnion(restaurantId)));
+                                currentUid).update("myRestaurantID", restaurantId));
 
                         Tasks.whenAllComplete(tasksList).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
                             @Override

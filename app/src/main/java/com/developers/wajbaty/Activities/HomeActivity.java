@@ -2,38 +2,32 @@ package com.developers.wajbaty.Activities;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.content.pm.PackageManager;
+import android.content.ServiceConnection;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
-import android.os.Parcelable;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.developers.wajbaty.Customer.Activities.CartActivity;
 import com.developers.wajbaty.Customer.Activities.FavoriteActivity;
@@ -42,27 +36,20 @@ import com.developers.wajbaty.Customer.Fragments.MenuItemsFragment;
 import com.developers.wajbaty.Customer.Fragments.NearbyRestaurantsFragment;
 import com.developers.wajbaty.DeliveryDriver.Fragments.DriverDeliveriesFragment;
 import com.developers.wajbaty.Fragments.MessagesFragment;
+import com.developers.wajbaty.Models.DeliveryDriver;
 import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantActivity;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Services.LocationService;
 import com.developers.wajbaty.Services.MyFirebaseMessaging;
 import com.developers.wajbaty.Utils.GlobalVariables;
 import com.developers.wajbaty.Utils.LocationListenerUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
@@ -74,6 +61,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -81,12 +69,17 @@ import java.util.Map;
 public class HomeActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener,
         NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener,
-        LocationListenerUtil.LocationChangeObserver {
+//        LocationListenerUtil.LocationChangeObserver ,
+        LocationService.LocationChangeObserver{
 
     private static final int
             REQUEST_CHECK_SETTINGS = 100,
             REQUEST_LOCATION_PERMISSION = 10,
             MIN_UPDATE_DISTANCE = 10;
+
+    private Map<String, Object> addressMap;
+    private int userType;
+
 
     //views
     private DrawerLayout homeDrawerLayout;
@@ -95,19 +88,23 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     private BottomNavigationView homeBottomNavigationView;
     private NavigationView homeNavigationView;
     private Button navigationLogoutBtn;
-    private Map<String, Object> addressMap;
-    private int userType;
+    private ImageView headerUserImageIv;
+    private TextView headerUsernameTv;
 
 
    // driver location
     private Location currentLocation;
     private String currentGeoHash;
-    private DocumentReference driverRef;
+    private DocumentReference userRef;
     private DocumentReference currentDriverDeliveryRef;
-    private ListenerRegistration driverSnapshotListener;
+    private ListenerRegistration userSnapshotListener;
 //    private boolean requestingLocationUpdates;
 //    private LocationRequest locationRequest;
 //    private LocationCallback locationCallback;
+
+    private Intent service;
+
+    private ServiceConnection serviceConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,18 +122,83 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         setClickListeners();
 
+        userRef = FirebaseFirestore.getInstance().collection("Users")
+                .document(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
 
         if (userType == User.TYPE_CUSTOMER) {
 
-            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
+            userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                    if(documentSnapshot.exists()){
+
+                        if(documentSnapshot.contains("imageURL")){
+                            String imageUrl = documentSnapshot.getString("imageURL");
+
+                            if(imageUrl!=null && !imageUrl.isEmpty()){
+                                Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
+                            }
+                        }
+
+                        if(documentSnapshot.contains("name")){
+                            String name = documentSnapshot.getString("name");
+
+                            if(name!=null && !name.isEmpty()){
+                                headerUsernameTv.setText(name);
+                            }
+                        }
+
+                    }
+
+                }
+            });
+
+//            userSnapshotListener = userRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//                boolean isInitial = true;
+//                @Override
+//                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+//
+//                    if(value != null){
+//
+//                        if(isInitial){
+//
+//                            if(value.contains("imageURL")){
+//                                String imageUrl = value.getString("imageURL");
+//
+//                                if(imageUrl!=null && !imageUrl.isEmpty()){
+//                                    Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
+//                                }
+//                            }
+//
+//                            if(value.contains("name")){
+//                                String name = value.getString("name");
+//
+//                                if(name!=null && !name.isEmpty()){
+//                                    headerUsernameTv.setText(name);
+//                                }
+//                            }
+//
+//                        }
+//
+//                    }else{
+//
+//
+//                    }
+//
+//                }
+//            });
+
             replaceFragment(HomeFragment.newInstance(addressMap));
+            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
 
         } else if (userType == User.TYPE_DELIVERY) {
 
-            driverRef = FirebaseFirestore.getInstance().collection("Users")
-                    .document(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-            driverSnapshotListener =  driverRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            userSnapshotListener = userRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+               private boolean isInitial = true;
+               private long currentStatus;
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
@@ -149,6 +211,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                             if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
                                 currentDriverDeliveryRef = FirebaseFirestore.getInstance()
                                 .collection("Deliveries").document(currentDeliveryId);
+
+
+
                             }else{
                                 currentDriverDeliveryRef = null;
                             }
@@ -158,12 +223,67 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                             currentDriverDeliveryRef = null;
 
                         }
+
+                        if(isInitial){
+
+                            if(value.contains("imageURL")){
+                                String imageUrl = value.getString("imageURL");
+
+                                if(imageUrl!=null && !imageUrl.isEmpty()){
+                                    Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
+                                }
+                            }
+                            if(value.contains("name")){
+                                String name = value.getString("name");
+
+                                if(name!=null && !name.isEmpty()){
+                                    headerUsernameTv.setText(name);
+                                }
+                            }
+
+                            if(value.contains("status")){
+                                currentStatus = value.getLong("status");
+
+
+                                if(currentStatus == DeliveryDriver.STATUS_AVAILABLE ||
+                                        currentStatus == DeliveryDriver.STATUS_DELIVERING){
+                                    startLocationService();
+                                }
+//                                else if(status == DeliveryDriver.STATUS_UNAVAILABLE){
+//                                    stopService();
+//                                }
+                            }
+
+                            isInitial = false;
+                        }else{
+
+                            if(value.contains("status")){
+                                long status = value.getLong("status");
+
+                                if((status == DeliveryDriver.STATUS_AVAILABLE &&
+                                        currentStatus!= DeliveryDriver.STATUS_AVAILABLE)
+                                        ||
+                                        (status == DeliveryDriver.STATUS_DELIVERING &&
+                                        currentStatus != DeliveryDriver.STATUS_DELIVERING)){
+
+                                    startLocationService();
+
+                                } else if(status == DeliveryDriver.STATUS_UNAVAILABLE
+                                        && currentStatus!= DeliveryDriver.STATUS_UNAVAILABLE){
+                                    stopService();
+                                }
+                                currentStatus = status;
+                            }
+
+                        }
+
+
                     }
 
                 }
             });
 
-            checkAndRequestPermissions();
+//            checkAndRequestPermissions();
 
             homeBottomNavigationView.setSelectedItemId(R.id.show_deliveries_action);
             replaceFragment(DriverDeliveriesFragment.newInstance(addressMap));
@@ -182,6 +302,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         homeNavigationView = findViewById(R.id.homeNavigationView);
         navigationLogoutBtn = findViewById(R.id.navigationLogoutBtn);
 
+        View headerView = homeNavigationView.getHeaderView(0);
+
+        headerUserImageIv = headerView.findViewById(R.id.headerUserImageIv);
+        headerUsernameTv = headerView.findViewById(R.id.headerUsernameTv);
+
+
 //        new int[homeBottomNavigationView];
 //
 //        BottomNavigationMenuView bottomNavigationViews = (BottomNavigationMenuView) homeBottomNavigationView[];
@@ -197,31 +323,33 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         userType = getIntent().getIntExtra("userType", 0);
 
-        int menu;
+        int bottomMenu;
+        int sideMenu;
 
         switch (userType) {
 
             default:
 
-                menu = R.menu.customer_bottom_navigation_menu;
+                bottomMenu = R.menu.customer_bottom_navigation_menu;
+                sideMenu = R.menu.customer_side_nav_menu;
 
                 break;
             case User.TYPE_ADMIN:
 
-                menu = R.menu.restaurant_bottom_navigation_menu;
-
+                bottomMenu = R.menu.restaurant_bottom_navigation_menu;
+                sideMenu = R.menu.restaurant_side_nav_menu;
                 break;
             case User.TYPE_DELIVERY:
 
-                menu = R.menu.driver_bottom_navigation_menu;
-
+                bottomMenu = R.menu.driver_bottom_navigation_menu;
+                sideMenu = R.menu.driver_side_nav_menu;
                 break;
         }
 
-        homeNavigationView.inflateMenu(R.menu.customer_side_nav_menu);
-
         homeBottomNavigationView.getMenu().clear();
-        homeBottomNavigationView.inflateMenu(menu);
+        homeBottomNavigationView.inflateMenu(bottomMenu);
+
+        homeNavigationView.inflateMenu(sideMenu);
 
     }
 
@@ -231,6 +359,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 .replace(homeFrameLayout.getId(), fragment).commit();
 
     }
+
+
 
     private void checkAndRequestPermissions(){
 
@@ -245,7 +375,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         if (LocationRequester.areLocationPermissionsEnabled(this)) {
 
-            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
+//            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
             LocationListenerUtil.getInstance().startListening(this);
 
 
@@ -269,7 +399,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                             }
 
                             if (allAccepted) {
-                                LocationListenerUtil.getInstance().addLocationChangeObserver(HomeActivity.this);
+//                                LocationListenerUtil.getInstance().addLocationChangeObserver(HomeActivity.this);
                                 LocationListenerUtil.getInstance().startListening(HomeActivity.this);
                             }
                         }
@@ -414,12 +544,23 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             FirebaseAuth.getInstance().signOut();
 
+            try {
+                stopService(new Intent(this, MyFirebaseMessaging.class));
+
+            }catch (SecurityException | IllegalStateException e){
+                if(e.getMessage()!=null){
+                    Log.d("ttt","can't stop serivce: "+e.getMessage());
+                }
+            }
+
+            startActivity(new Intent(this,WelcomeActivity.class));
+            finish();
+
 //            getPackageManager().setComponentEnabledSetting(
 //                    new ComponentName(HomeActivity.this, MyFirebaseMessaging.class),
 //                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
 //                    PackageManager.DONT_KILL_APP);
 
-            finish();
 
         }
     }
@@ -461,7 +602,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //                location.getLatitude() + "-" + location.getLongitude());
 //
 //
-//        driverRef.update(
+//        userRef.update(
 //                "currentGeoPoint",
 //                new GeoPoint( location.getLatitude(), location.getLongitude())).addOnSuccessListener(new OnSuccessListener<Void>() {
 //            @Override
@@ -490,7 +631,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //
 //            currentGeoHash = hash;
 //
-//            driverRef.update("geohash",hash).addOnSuccessListener(new OnSuccessListener<Void>() {
+//            userRef.update("geohash",hash).addOnSuccessListener(new OnSuccessListener<Void>() {
 //                @Override
 //                public void onSuccess(Void aVoid) {
 //
@@ -597,17 +738,17 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                     new GeoLocation(location.getLatitude(), location.getLongitude()));
         }
 
-
-        if (currentLocation != null &&
-                currentLocation.distanceTo(location) < MIN_UPDATE_DISTANCE) {
-            return;
-        }
+//
+//        if (currentLocation != null &&
+//                currentLocation.distanceTo(location) < MIN_UPDATE_DISTANCE) {
+//            return;
+//        }
 
         Log.d("ttt", "new location is: " +
                 location.getLatitude() + "-" + location.getLongitude());
 
 
-        driverRef.update(
+        userRef.update(
                 "currentGeoPoint",
                 new GeoPoint( location.getLatitude(), location.getLongitude())).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -640,7 +781,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             currentGeoHash = hash;
 
-            driverRef.update("geohash",hash).addOnSuccessListener(new OnSuccessListener<Void>() {
+            userRef.update("geohash",hash).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
 
@@ -665,10 +806,35 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     protected void onDestroy() {
         super.onDestroy();
 
-        if(driverSnapshotListener!=null){
-            driverSnapshotListener.remove();
+        if(userSnapshotListener !=null){
+            userSnapshotListener.remove();
         }
     }
+
+
+
+
+//    public void createChannel() {
+//        if (Build.VERSION.SDK_INT >= 26) {
+//
+//            NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+//
+//                NotificationChannel channel = new NotificationChannel("com.getlocationbackground",
+//                        "Location Service", NotificationManager.IMPORTANCE_NONE);
+//
+//                channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+//
+//            manager.createNotificationChannel(channel);
+//
+//            Notification.Builder builder = new Notification.Builder(this,"com.getlocationbackground");
+//            Notification notification = builder.setOngoing(true).setContentTitle("This app is using your gps")
+//                    .setCategory(Notification.CATEGORY_SERVICE).build();
+//
+//            startForegroundService()
+//
+//        }
+//    }
+
 
     //
 
@@ -693,4 +859,62 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //
 //
 //    }
+
+    private boolean isServiceRunning(Class<?> serviceClass){
+
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+
+        for(ActivityManager.RunningServiceInfo serviceInfo:manager.getRunningServices(Integer.MAX_VALUE)){
+            if(serviceInfo.getClass().getName().equals(serviceClass.getName())){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void startLocationService(){
+
+        if(!isServiceRunning(LocationService.class)){
+
+             service = new Intent(this,LocationService.class);
+
+            startService(service);
+
+            serviceConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+
+                    Log.d("ttt","onServiceConnected");
+                    LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
+                    LocationService locationService = locationBinder.getService();
+                    locationService.addObserver(HomeActivity.this);
+
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    Log.d("ttt","onServiceDisconnected");
+                }
+            };
+
+            bindService(service,serviceConnection ,0);
+
+        }
+    }
+
+    private void stopService(){
+
+//        if(locationService!=null){
+//            locationService.stopForeground(true);
+//        }
+
+        if(serviceConnection!=null){
+            unbindService(serviceConnection);
+            serviceConnection = null;
+        }
+
+        stopService(service);
+    }
+
 }

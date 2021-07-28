@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -24,7 +25,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Wajbaty">
-        <activity android:name=".Customer.Activities.CustomerDeliveryMapActivity"></activity>
+
+        <activity android:name=".Activities.ConnectionActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".Activities.SliderActivity"
+            android:screenOrientation="portrait">
+
+
+        </activity>
+        <activity android:name=".Customer.Activities.CustomerDeliveryMapActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".Activities.CustomerHomeActivity"
             android:screenOrientation="portrait" />
@@ -33,7 +44,7 @@
         <activity android:name=".Activities.VerifyAccountActivity" />
         <activity
             android:name=".Activities.MessagingActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".DeliveryDriver.Activities.DriverDeliveryMapActivity"
             android:screenOrientation="portrait" />
@@ -84,13 +95,16 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.WelcomeActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait" >
+
+        </activity>
         <activity
             android:name=".PartneredRestaurant.Activities.RestaurantLocationActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.MainActivity"
             android:screenOrientation="portrait">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -134,6 +148,21 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <service android:name=".Services.LocationService"
+            android:enabled="true"
+            android:foregroundServiceType="location"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".BroadcastReceivers.BackgroundServiceReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="restartservice" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

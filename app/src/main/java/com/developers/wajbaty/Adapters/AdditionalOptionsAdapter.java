@@ -15,21 +15,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.developers.wajbaty.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class AdditionalOptionsAdapter extends RecyclerView.Adapter<AdditionalOptionsAdapter.ServicesVh> {
 
   private final static int OPTION_LIMIT = 100;
-  private final ArrayList<String> options;
-  private final String option;
+  private final List<String> options;
+  private final String hint;
 
-//  public interface ScrollToBottomListener{
-//    void scrollToBottom();
-//  }
-
-  public AdditionalOptionsAdapter(ArrayList<String> options,
-                                  String option) {
+  public AdditionalOptionsAdapter(List<String> options, String hint) {
     this.options = options;
-    this.option = option;
+    this.hint = hint;
   }
 
   @NonNull
@@ -46,7 +43,7 @@ public class AdditionalOptionsAdapter extends RecyclerView.Adapter<AdditionalOpt
 
   private void addPollItem() {
 
-    options.add(option);
+    options.add("");
     notifyItemInserted(options.size());
 
   }
@@ -58,11 +55,12 @@ public class AdditionalOptionsAdapter extends RecyclerView.Adapter<AdditionalOpt
 
   public class ServicesVh extends RecyclerView.ViewHolder implements TextWatcher{
 
-    private final EditText optionEd;
     private final ImageView addOptionIv;
+    private final EditText optionEd;
 
     public ServicesVh(@NonNull View itemView) {
       super(itemView);
+
       optionEd = itemView.findViewById(R.id.optionEd);
       addOptionIv = itemView.findViewById(R.id.addOptionIv);
 
@@ -72,7 +70,7 @@ public class AdditionalOptionsAdapter extends RecyclerView.Adapter<AdditionalOpt
 
     private void bind(int position){
 
-//      optionEd.setHint(options.get(position));
+      optionEd.setHint(hint+" "+position);
 
 
 

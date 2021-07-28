@@ -7,18 +7,18 @@ import java.util.List;
 @IgnoreExtraProperties
 public class RestaurantAdmin extends User{
 
-    private List<String> administratingRestaurants;
+    private String myRestaurantID;
 
-    public RestaurantAdmin(String ID, String name, String email, String imageURL, String countryCode, String cloudMessagingToken, int type, List<String> administratingRestaurants) {
+    public RestaurantAdmin(String ID, String name, String email, String imageURL, String countryCode, String cloudMessagingToken, int type, String myRestaurantID) {
         super(ID, name, email, imageURL, countryCode, cloudMessagingToken, type);
-        this.administratingRestaurants = administratingRestaurants;
+        this.myRestaurantID = myRestaurantID;
     }
 
-    public List<String> getAdministratingRestaurants() {
-        return administratingRestaurants;
+    public String getMyRestaurantID() {
+        return myRestaurantID;
     }
 
-    public void setAdministratingRestaurants(List<String> administratingRestaurants) {
-        this.administratingRestaurants = administratingRestaurants;
+    public void setMyRestaurantID(String myRestaurantID) {
+        this.myRestaurantID = myRestaurantID;
     }
 }

@@ -173,9 +173,10 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
                                 currentDeliveryLocation = new Location("currentDeliveryLocation");
                                 currentDeliveryLocation.setLatitude(lat);
-                                currentDeliveryLocation.setLatitude(lng);
+                                currentDeliveryLocation.setLongitude(lng);
 
                                 LatLng latLng = new LatLng(lat,lng);
+
                            driverMarker = map.addMarker(new MarkerOptions().position(latLng).title("Your Delivery")
                                    .icon(bitmapDescriptorFromVector(CustomerDeliveryMapActivity.this)));
 
@@ -190,7 +191,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
                                 currentDeliveryLocation = new Location("currentDeliveryLocation");
                                 currentDeliveryLocation.setLatitude(lat);
-                                currentDeliveryLocation.setLatitude(lng);
+                                currentDeliveryLocation.setLongitude(lng);
 
                                 if(driverMarker!=null){
                                     Log.d("ttt","delivery updated location: "+
@@ -252,7 +253,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
 
         allDeliveryCourses.add(new DeliveryCourse(
-                "Delivery Location",
+                "Driver Location",
                 currentDeliveryLocation,
                 0,
                 true,

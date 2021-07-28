@@ -8,6 +8,7 @@ import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +23,7 @@ import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.CartItem;
 import com.developers.wajbaty.Models.CartItemRestaurantHeader;
 import com.developers.wajbaty.Models.Delivery;
+import com.developers.wajbaty.Models.DeliveryDriver;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.TimeFormatter;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -36,6 +38,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -73,6 +76,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
     private String currentUid;
     private ProgressDialogFragment progressDialogFragment;
 
+    private Location currentLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +97,10 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
         if(intent.hasExtra("isForShow")){
             isForShow = intent.getBooleanExtra("isForShow",false);
         }
+        if(intent.hasExtra("currentLocation")){
+            currentLocation = (Location) intent.getParcelableExtra("currentLocation");
+        }
+
 
         setUpListeners();
 
@@ -102,7 +111,6 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
             if(!isForShow){
                 listenToDeliveryChanges();
             }
-
 
             populateViews();
         }else if(intent.hasExtra("deliveryID")){
@@ -341,8 +349,11 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
      private void listenToDeliveryChanges(){
 
-         deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+
+        ListenerRegistration deliverySnapshotListener=
+                deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
              boolean isInitial = true;
+             boolean driverWasAccepted = false;
              @Override
              public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
@@ -384,7 +395,6 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                                      return;
 
                                  if(proposingMap.get("driverID").equals(currentUid)){
-
 //                                     if(!proposingMap.containsKey("status") || !(proposingMap.get("status") instanceof Boolean)){
 //
 //                                         hideProgressFragment();
@@ -397,10 +407,20 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 //                                         return;
 //                                     }
 
-                                     if((boolean) proposingMap.get("status")){
+                                     if(proposingMap.containsKey("hasDecided") &&
+                                             proposingMap.get("hasDecided") != null &&
+                                             (Boolean)proposingMap.get("hasDecided") &&
+                                             !driverWasAccepted){
+                                         driverWasAccepted = true;
+
+                                     if(proposingMap.containsKey("status") &&
+                                             proposingMap.get("status") != null &&
+                                     (Boolean) proposingMap.get("status")){
+
 
                                          firestore.collection("Users").document(currentUid)
-                                                 .update("currentDeliveryId",delivery.getID())
+                                                 .update("currentDeliveryId",delivery.getID(),
+                                                         "status", DeliveryDriver.STATUS_DELIVERING)
                                                  .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                      @Override
                                                      public void onSuccess(Void aVoid) {
@@ -414,8 +434,14 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                                                                          hideProgressFragment();
 
-                                                                         startActivity(new Intent(DeliveryInfoActivity.this,DriverDeliveryMapActivity.class)
-                                                                                 .putExtra("delivery",delivery));
+                                                                         Intent intent = new Intent(DeliveryInfoActivity.this,DriverDeliveryMapActivity.class)
+                                                                                 .putExtra("delivery",delivery);
+
+                                                                         if(currentLocation!=null){
+                                                                                 intent.putExtra("currentLocation",currentLocation);
+                                                                         }
+
+                                                                         startActivity(intent);
 
                                                                      }
                                                                  }).addOnFailureListener(new OnFailureListener() {
@@ -449,6 +475,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                                          Toast.makeText(DeliveryInfoActivity.this,
                                                  "User refused your delivery request", Toast.LENGTH_SHORT).show();
+
+                                     }
 
                                      }
 
@@ -504,6 +532,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
             HashMap<String,Object> proposingMap = new HashMap<>();
             proposingMap.put("driverID",currentUid);
             proposingMap.put("status",null);
+            proposingMap.put("hasDecided",false);
 
             deliveryRef.update("proposingDriverMap",proposingMap)
             .addOnFailureListener(new OnFailureListener() {

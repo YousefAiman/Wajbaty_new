@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/show_cart_action"
-        android:title="Cart"
-        android:icon="@drawable/cart_icon"/>
-
-    <item android:id="@+id/show_favorite_action"
-        android:title="Favorites"
-        android:icon="@drawable/heart_icon"/>
+    <item android:id="@+id/previous_Deliveries_action"
+        android:title="My Deliveries"
+        android:icon="@drawable/scooter_marker_icon"/>
 
     <item android:id="@+id/show_notifications_action"
         android:title="Notifications"

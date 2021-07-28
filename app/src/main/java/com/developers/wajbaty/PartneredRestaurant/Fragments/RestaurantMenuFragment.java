@@ -586,13 +586,12 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
                     case MenuItemModel.UN_FAVORING_SUCCESS:
 
-                        getLikedMenuItems().add(menuItem.getID());
+                        getLikedMenuItems().remove(menuItem.getID());
                         adapter.notifyItemChanged(position);
 
                         break;
                 case MenuItemModel.FAVORING_SUCCESS:
-
-                    getLikedMenuItems().remove(menuItem.getID());
+                    getLikedMenuItems().add(menuItem.getID());
                     adapter.notifyItemChanged(position);
 
                         break;

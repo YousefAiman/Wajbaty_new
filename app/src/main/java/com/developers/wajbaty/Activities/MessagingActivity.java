@@ -276,9 +276,9 @@ public class MessagingActivity extends AppCompatActivity
                 .compareTo(messagingUserId.toUpperCase()) < 0;
         String id;
         if(currentUidIsFirst){
-            id = currentUserId+"-"+messagingUserId;
+            id = currentUserId +"-"+ messagingUserId +"-"+ intendedDeliveryID;
         }else{
-            id = messagingUserId+"-"+currentUserId;
+            id = messagingUserId +"-"+ currentUserId +"-"+ intendedDeliveryID;
         }
 
         messagingChildRef =
@@ -869,7 +869,7 @@ public class MessagingActivity extends AppCompatActivity
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
 
-            if (isFetchingMoreMessages && !messageRv.canScrollVertically(-1)) {
+            if (!isFetchingMoreMessages && !messageRv.canScrollVertically(-1)) {
 
                     Log.d("realTimeActivity", "geeting more messages");
                     getMoreTopMessages();

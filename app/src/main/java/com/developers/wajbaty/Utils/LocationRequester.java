@@ -96,6 +96,7 @@ public class LocationRequester {
     @SuppressLint("MissingPermission")
     void getLastKnownLocation() {
 
+
         Log.d("ttt", "getting last known location");
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
 

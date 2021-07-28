@@ -98,12 +98,8 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
 
         reviews = new ArrayList<>();
 
-
-
 //        checkUserHasReviewed();
-
 //        reviewModel.getReviewSummary();
-
 //        if(reviewSummary == null){
 //
 //            final HashMap<Byte,Integer> emptyRatingMap = new HashMap<>();
@@ -219,7 +215,6 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
 
         reviewModel.addReview(comment,rating);
 
-
     }
 
 
@@ -229,7 +224,9 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
             progressDialog = new ProgressDialogFragment();
         }
 
-        progressDialog.show(getChildFragmentManager(),"progress");
+        if(isAdded()){
+            progressDialog.show(getChildFragmentManager(),"progress");
+        }
 
     }
 
@@ -277,16 +274,24 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
                 switch ((int) arg){
 
                     case UserReviewModel.LIKED_REVIEWS_SUCCESS:
-                        adapter = new ReviewsAdapter(reviews,FirebaseReviewsFragment.this,reviewModel.getLikedReviews());
+
+                        adapter = new ReviewsAdapter(reviews,FirebaseReviewsFragment.this,
+                                reviewModel.getLikedReviews());
+
                         break;
                     case UserReviewModel.LIKED_REVIEWS_FAILED:
                         Log.d("ttt","liked reviews result failed");
 
-                        adapter = new ReviewsAdapter(reviews,FirebaseReviewsFragment.this,new ArrayList<>());
-                        break;
+                        adapter = new ReviewsAdapter(reviews,FirebaseReviewsFragment.this,
+                                new ArrayList<>());
 
+
+                        break;
                 }
 
+                if(reviewsRv!=null){
+                    reviewsRv.setAdapter(adapter);
+                }
 
                 reviewsRef.document(userId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -304,11 +309,6 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
                         Log.d("ttt","checking liked onSuccess");
 
 //                        adapter.setUserHasReviewed(snapshot.exists());
-
-                        if(reviewsRv!=null){
-                            reviewsRv.setAdapter(adapter);
-                        }
-
                     }
                 }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override

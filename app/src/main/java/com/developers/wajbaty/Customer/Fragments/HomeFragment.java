@@ -219,38 +219,63 @@ public class HomeFragment extends Fragment implements
         firestore.collection("Users")
                 .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    String currentDeliveryID;
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
                         if(value!=null){
 
-                            if(value.contains("currentDeliveryID")){
+                            if(currentDeliveryID == null){
 
-                              String currentDeliveryID = value.getString("currentDeliveryID");
+                                if(value.contains("currentDeliveryID")){
 
-                              if(currentDeliveryID!=null && !currentDeliveryID.isEmpty()){
+                                    currentDeliveryID = value.getString("currentDeliveryID");
 
-                                  firestore.collection("Deliveries").document(currentDeliveryID)
-                                          .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                      @Override
-                                      public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                          if(documentSnapshot.exists()){
-                                              showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
-                                          }
-                                      }
-                                  });
+                                    if(currentDeliveryID!=null && !currentDeliveryID.isEmpty()){
 
-                              }else{
+                                        firestore.collection("Deliveries").document(currentDeliveryID)
+                                                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                if(documentSnapshot.exists()){
+                                                    showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+                                                }
+                                            }
+                                        });
 
-                                  currentDeliveryID = null;
-                                  customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                                    }
 
                                 }
-
                             }else{
 
-                                currentDeliveryID = null;
-                                customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                                if(value.contains("currentDeliveryID")){
+
+                                   String newDeliveryID = value.getString("currentDeliveryID");
+
+                                   if(newDeliveryID!=null && !newDeliveryID.isEmpty() && !newDeliveryID.equals(currentDeliveryID)){
+
+                                       currentDeliveryID = newDeliveryID;
+
+                                       firestore.collection("Deliveries").document(currentDeliveryID)
+                                               .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                           @Override
+                                           public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                               if(documentSnapshot.exists()){
+                                                   showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+                                               }
+                                           }
+                                       });
+
+                                   }else{
+                                       currentDeliveryID = null;
+                                       customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                                   }
+
+                                }else{
+                                    currentDeliveryID = null;
+                                    customerCurrentDeliveryLayout.setVisibility(View.GONE);
+
+                                }
 
                             }
 
@@ -267,7 +292,9 @@ public class HomeFragment extends Fragment implements
 
     private void showCurrentDelivery(Delivery delivery){
 
-        currentDeliveryID = delivery.getID();
+        if(delivery.getDriverID() == null || delivery.getDriverID().isEmpty()){
+            return;
+        }
 
         customerCurrentDeliveryLayout.setVisibility(View.VISIBLE);
 

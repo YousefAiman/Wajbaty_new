@@ -88,11 +88,11 @@ public class MenuItemModifierActivity extends AppCompatActivity implements Obser
     private ArrayList<String> ingredients;
 
     //currency spinner
-//    private Spinner currencySpinner;
+    //private Spinner currencySpinner;
     private String currency;
     private TextView currencyTv;
-//    private ArrayAdapter<String> currencySpinnerAdapter;
-//    private ArrayList<String> currencies;
+    //private ArrayAdapter<String> currencySpinnerAdapter;
+    //private ArrayList<String> currencies;
 
     //firebase
     private ProgressDialogFragment progressDialog;
@@ -100,7 +100,6 @@ public class MenuItemModifierActivity extends AppCompatActivity implements Obser
     private MenuItemModel menuItemModel;
 
     private String language;
-
 
     public MenuItemModifierActivity(){
 
@@ -219,7 +218,7 @@ public class MenuItemModifierActivity extends AppCompatActivity implements Obser
 
         ingredients = new ArrayList<>();
         ingredients.add(null);
-        ingredientsAdapter = new AdditionalOptionsAdapter(ingredients,"options");
+        ingredientsAdapter = new AdditionalOptionsAdapter(ingredients,"ingredient");
 
 //        currencies = new ArrayList<>();
 //        currencySpinnerAdapter = new ArrayAdapter<>(this,

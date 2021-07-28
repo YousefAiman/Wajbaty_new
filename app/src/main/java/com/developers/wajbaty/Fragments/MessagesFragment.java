@@ -236,7 +236,11 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                                             }
 
                                         }
-                                        messagesProgressBar.setVisibility(View.GONE);
+
+                                        if(noMessagesTv.getVisibility() == View.VISIBLE){
+                                            noMessagesTv.setVisibility(View.INVISIBLE);
+                                            chatsRv.setVisibility(View.VISIBLE);
+                                        }
 
                                     }else{
 
@@ -250,9 +254,12 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                                     }
 
                                 }else{
-                                    messagesProgressBar.setVisibility(View.GONE);
-                                }
 
+                                    noMessagesTv.setVisibility(View.VISIBLE);
+                                    chatsRv.setVisibility(View.INVISIBLE);
+
+                                }
+                                messagesProgressBar.setVisibility(View.GONE);
                                 initialSnapshots = false;
                             }else{
 

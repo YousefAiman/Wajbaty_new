@@ -26,11 +26,20 @@ public class ProgressDialogFragment extends DialogFragment {
     }
 
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        setStyle(DialogFragment.STYLE_NORMAL, R.style.FullScreenDialogTheme);
+    }
 
     @Override
     public void onStart() {
         super.onStart();
-        requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        requireDialog().getWindow().setLayout(title!=null || message!=null?ViewGroup.LayoutParams.MATCH_PARENT:
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
     }
 
 

@@ -1,17 +1,16 @@
 package com.developers.wajbaty.Activities;
 
 import android.Manifest;
-import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -19,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.developers.wajbaty.Models.DeliveryDriver;
-import com.developers.wajbaty.Models.RestaurantAdmin;
 import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantLocationActivity;
 import com.developers.wajbaty.R;
@@ -27,6 +25,7 @@ import com.developers.wajbaty.Services.MyFirebaseMessaging;
 import com.developers.wajbaty.Utils.GeocoderUtil;
 import com.developers.wajbaty.Utils.GlobalVariables;
 import com.developers.wajbaty.Utils.LocationRequester;
+import com.developers.wajbaty.Utils.WifiUtil;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.maps.model.LatLng;
@@ -44,14 +43,22 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements LocationRequester.LocationRequestAction,
-        GeocoderUtil.GeocoderResultListener {
+        GeocoderUtil.GeocoderResultListener , View.OnClickListener {
 
-    ActivityResultLauncher<String> requestPermissionLauncher =
+    private static final int TO_SLIDER_ACTIVITY = 1,TO_CONNECTION_ACTIVITY = 2,
+            TO_HOME_ACTIVITY = 3,TO_WELCOME_ACTIVITY = 4,TO_MESSAGING_ACTIVITY = 5;
+
+    private int targetActivity;
+    private Long userType;
+    private  FirebaseUser currentUser;
+
+    int lastClicked;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
 
@@ -62,191 +69,100 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                     Toast.makeText(this,
                             "You need to grant location access permission in order " +
                                     "to show nearby restaurants!", Toast.LENGTH_SHORT).show();
-
                 }
             });
 
+    private ActivityResultLauncher<Intent> activityResultLauncher;
 
-    int lastClicked = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final FirebaseAuth auth = FirebaseAuth.getInstance();
-        final FirebaseUser currentUser = auth.getCurrentUser();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        Button normalUserBtn = findViewById(R.id.normalUserBtn);
-        Button driverUserBtn = findViewById(R.id.driverUserBtn);
-        Button restaurantAdminUserBtn = findViewById(R.id.restaurantAdminUserBtn);
 
-        normalUserBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            lastClicked = 1;
-//        if(currentUser!=null){
 
-            requestLocation();
-//            FirebaseFirestore.getInstance().collection("Users")
-//                    .document(currentUser.getUid())
-//                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//                @Override
-//                public void onSuccess(DocumentSnapshot snapshot) {
-//
-//                    if(snapshot.exists()){
-//
-//                        if(snapshot.getLong("type") == User.TYPE_ADMIN){
-//
-//                            final RestaurantAdmin admin = snapshot.toObject(RestaurantAdmin.class);
-//
-//                            GlobalVariables.setCurrentRestaurantId(admin.getAdministratingRestaurants().get(0));
-//
-//                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
-//
-//                        }
-//
-//                    }
-//
-//                }
-//            });
+        findViewById(R.id.normalUserBtn).setOnClickListener(this);
+        findViewById(R.id.driverUserBtn).setOnClickListener(this);
+        findViewById(R.id.restaurantAdminUserBtn).setOnClickListener(this);
 
-//        }else{
-//
-//            final ProgressDialogFragment progressDialogFragment = new ProgressDialogFragment();
-//            progressDialogFragment.setMessage("Creating new user");
-//            progressDialogFragment.show(getSupportFragmentManager(),"progress");
-//
-//            auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-//                @Override
-//                public void onSuccess(AuthResult authResult) {
-//
-//                    final FirebaseUser user = authResult.getUser();
-//                    final String userId = user.getUid();
-//
-//                    final HashMap<String,Object> userTestMap = new HashMap<>();
-//
-//                    userTestMap.put("ID",userId);
-//                    userTestMap.put("type",1);
-//
-//                    FirebaseFirestore.getInstance().collection("Users")
-//                            .document(userId).set(userTestMap).addOnSuccessListener(new OnSuccessListener<Void>() {
-//                        @Override
-//                        public void onSuccess(Void aVoid) {
-//                            finish();
-//                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
-//
-//                        }
-//                    });
-//                }
-//            });
-//
-//        }
 
-            }
-        });
-
-        driverUserBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                lastClicked = 2;
-                requestLocation();
-            }
-        });
-
-        restaurantAdminUserBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                lastClicked = 3;
-                requestLocation();
-            }
-        });
-
+//        directUserToAppropriateActivity();
     }
 
-    private void requestLocation(){
+    private void directUserToAppropriateActivity(){
 
+        if (WifiUtil.isConnectedToInternet(this)) {
 
-        final String locationPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+            final SharedPreferences sharedPreferences =
+                    getSharedPreferences("Wajbaty", Context.MODE_PRIVATE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                ContextCompat.checkSelfPermission(this, locationPermission)
-                        == PackageManager.PERMISSION_GRANTED) {
+            if(!sharedPreferences.contains("notFirstTime")){
 
+                targetActivity = TO_SLIDER_ACTIVITY;
+                requestLocation();
 
-            LocationRequester locationRequester = new LocationRequester(MainActivity.this,MainActivity.this);
-            locationRequester.getCurrentLocation();
+            }else if(FirebaseAuth.getInstance().getCurrentUser() != null){
 
+                if (getIntent().hasExtra("messagingBundle")) {
+                    targetActivity = TO_MESSAGING_ACTIVITY;
+                } else {
+                    targetActivity = TO_HOME_ACTIVITY;
+                }
 
-        }else{
+                requestLocation();
+            }else{
 
+                targetActivity = TO_WELCOME_ACTIVITY;
+                requestLocation();
 
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        } else {
+
+            startConnectionActivity();
 
         }
 
     }
 
-    private void toRestaurantAcitvity(FirebaseUser currentUser,Map<String, Object> addressMap){
-
-        FirebaseFirestore.getInstance().collection("PartneredRestaurant")
-                .whereEqualTo("ownerUid",currentUser.getUid())
-                .limit(1).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot snapshots) {
-
-                if(snapshots!=null && !snapshots.isEmpty()){
-
-                    startMessagingService();
-
-                    final String currentRestaurantId = snapshots.getDocuments().get(0).getId();
-
-                    GlobalVariables.setCurrentRestaurantId(currentRestaurantId);
-                    finish();
-                    startActivity(new Intent(MainActivity.this, HomeActivity.class)
-                    .putExtra("addressMap", (Serializable) addressMap));
-                }
-
-            }
-        }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(!task.isSuccessful() || task.getResult() == null || task.getResult().isEmpty()){
-                    finish();
-                    startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
-
-                }
-            }
-        });
-
-    }
-
-    private void startMessagingService() {
-
-        startService(new Intent(MainActivity.this, MyFirebaseMessaging.class));
-
-//        getApplicationContext().getPackageManager().setComponentEnabledSetting(
-//                new ComponentName(MainActivity.this.getApplicationContext(), MyFirebaseMessaging.class),
-//                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//                PackageManager.DONT_KILL_APP);
-
-
-    }
-
     @Override
     public void locationFetched(LatLng latLng) {
-
         Log.d("ttt","gotten latLng in main: "+latLng.latitude + "-"+latLng.longitude);
         GeocoderUtil.getLocationAddress(this,latLng,this);
-
     }
 
     @Override
     public void addressFetched(Map<String, Object> addressMap) {
 
         LatLng latLng = (LatLng) addressMap.get("latLng");
-        Log.d("ttt","gotten latLng in main from geocoder: "+latLng.latitude + "-"+latLng.longitude);
+//        Log.d("ttt","gotten latLng in main from geocoder: "+latLng.latitude + "-"+latLng.longitude);
+//
+//        switch (targetActivity){
+//
+//            case TO_SLIDER_ACTIVITY:
+//                startActivity(new Intent(this,SliderActivity.class)
+//                        .putExtra("addressMap",(Serializable) addressMap));
+//                finish();
+//                break;
+//
+//            case TO_HOME_ACTIVITY:
+//
+//            case TO_MESSAGING_ACTIVITY:
+//
+//                startTargetActivity(addressMap);
+//
+//                break;
+//
+//            case TO_WELCOME_ACTIVITY:
+//
+//                startActivity(new Intent(this,WelcomeActivity.class)
+//                        .putExtra("addressMap",(Serializable) addressMap));
+//                finish();
+//
+//                break;
+//
+//        }
 
         if(lastClicked == 1){
 
@@ -256,11 +172,11 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                         public void onSuccess(AuthResult authResult) {
 
                             startMessagingService();
-
-                            finish();
                             startActivity(new Intent(MainActivity.this, HomeActivity.class)
                                     .putExtra("userType",User.TYPE_CUSTOMER)
                                     .putExtra("addressMap", (Serializable) addressMap));
+
+                            finish();
 
                         }
                     }).addOnFailureListener(new OnFailureListener() {
@@ -292,11 +208,11 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                                 public void onSuccess(Void aVoid) {
 
                                                     startMessagingService();
-
-                                                    finish();
                                                     startActivity(new Intent(MainActivity.this, HomeActivity.class)
                                                             .putExtra("userType",User.TYPE_CUSTOMER)
                                                             .putExtra("addressMap", (Serializable) addressMap));
+                                                    finish();
+
 
                                                 }
                                             });
@@ -347,11 +263,11 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                         public void onSuccess(AuthResult authResult) {
 
                             startMessagingService();
-
-                            finish();
                             startActivity(new Intent(MainActivity.this, HomeActivity.class)
                                     .putExtra("userType",User.TYPE_DELIVERY)
                                     .putExtra("addressMap", (Serializable) addressMap));
+
+                            finish();
 
 //                  FirebaseFirestore.getInstance().collection("Users")
 //                    .document(authResult.getUser().getUid())
@@ -413,11 +329,11 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                                         public void onSuccess(Void aVoid) {
 
                                                             startMessagingService();
-
-                                                            finish();
                                                             startActivity(new Intent(MainActivity.this, HomeActivity.class)
                                                                     .putExtra("userType",User.TYPE_DELIVERY)
                                                                     .putExtra("addressMap", (Serializable) addressMap));
+
+                                                            finish();
 
                                                         }
                                                     });
@@ -451,12 +367,12 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 
                                         GlobalVariables.setCurrentRestaurantId(
                                                 ((List<String>)documentSnapshot.get("administratingRestaurants")).get(0));
-
-                                        finish();
-
                                         startActivity(new Intent(MainActivity.this, HomeActivity.class)
                                                 .putExtra("userType",User.TYPE_ADMIN)
                                                 .putExtra("addressMap", (Serializable) addressMap));
+
+                                        finish();
+
 
                                     }
 
@@ -479,22 +395,19 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                                 @Override
                                                 public void onSuccess(String s) {
 
-                                                    List<String> adminRestaurants = new ArrayList<>();
-
-                                                    RestaurantAdmin restaurantAdmin =
-                                                            new RestaurantAdmin(authResult.getUser().getUid(),
+                                                    User userInfo =
+                                                            new User(authResult.getUser().getUid(),
                                                                     "restaurant admin",
                                                                     authResult.getUser().getEmail(),
                                                                     "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/d9e4179d-56d9-4408-a7f7-5389158c3517%2FRestaurant_Main_Image?alt=media&token=c102983d-79d8-4657-9f40-ec846e127e92",
                                                                     (String) addressMap.get("countryCode"),
                                                                     s,
-                                                                    User.TYPE_ADMIN,
-                                                                    adminRestaurants);
+                                                                    User.TYPE_ADMIN);
 
 
                                                     FirebaseFirestore.getInstance().collection("Users")
                                                             .document(authResult.getUser().getUid())
-                                                            .set(restaurantAdmin).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                            .set(userInfo).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                         @Override
                                                         public void onSuccess(Void aVoid) {
 
@@ -518,6 +431,184 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 
     @Override
     public void addressFetchFailed(String errorMessage) {
+
+    }
+
+    private void requestLocation(){
+
+        final String locationPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                ContextCompat.checkSelfPermission(this, locationPermission)
+                        == PackageManager.PERMISSION_GRANTED) {
+
+            LocationRequester locationRequester = new LocationRequester(MainActivity.this,MainActivity.this);
+            locationRequester.getCurrentLocation();
+        }else{
+
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+    }
+
+    private void toRestaurantAcitvity(FirebaseUser currentUser,Map<String, Object> addressMap){
+
+        FirebaseFirestore.getInstance().collection("PartneredRestaurant")
+                .whereEqualTo("ownerUid",currentUser.getUid())
+                .limit(1).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot snapshots) {
+
+                if(snapshots!=null && !snapshots.isEmpty()){
+
+                    startMessagingService();
+
+                    final String currentRestaurantId = snapshots.getDocuments().get(0).getId();
+
+                    GlobalVariables.setCurrentRestaurantId(currentRestaurantId);
+                    startActivity(new Intent(MainActivity.this, HomeActivity.class)
+                            .putExtra("addressMap", (Serializable) addressMap));
+                    finish();
+                }
+
+            }
+        }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(!task.isSuccessful() || task.getResult() == null || task.getResult().isEmpty()){
+                    finish();
+                    startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
+
+                }
+            }
+        });
+
+    }
+
+    private void startMessagingService() {
+        startService(new Intent(MainActivity.this, MyFirebaseMessaging.class));
+    }
+
+
+    private void startTargetActivity(Map<String,Object> addressMap) {
+
+        startService(new Intent(this, MyFirebaseMessaging.class));
+
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(currentUser.getUid())
+                .get().addOnSuccessListener(snapshot -> {
+
+            if(snapshot.exists()){
+                userType = snapshot.getLong("type");
+
+
+                if(targetActivity == TO_HOME_ACTIVITY){
+
+                    Intent intent = new Intent(MainActivity.this, HomeActivity.class)
+                            .putExtra("userType",userType)
+                            .putExtra("addressMap", (Serializable) addressMap);
+
+                    if(userType == User.TYPE_ADMIN){
+
+                        if(snapshot.contains("myRestaurantID")){
+
+                            String restaurantId = snapshot.getString("myRestaurantID");
+
+                            if(restaurantId == null || restaurantId.isEmpty()){
+
+                                startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
+
+                            }else{
+                                GlobalVariables.setCurrentRestaurantId(restaurantId);
+                                startActivity(intent);
+                                finish();
+                            }
+
+                        }else{
+                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
+                        }
+
+                    }else{
+                        startActivity(intent);
+                        finish();
+                    }
+
+//                    startHomeActivity(addressMap);
+
+                }else if(targetActivity == TO_MESSAGING_ACTIVITY){
+
+                    startActivity(new Intent(MainActivity.this, MessagingActivity.class)
+                            .putExtra("userType",userType)
+                            .putExtra("messagingBundle",
+                                    getIntent().getBundleExtra("messagingBundle")));
+
+                    finish();
+
+                }
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+                finish();
+            }
+        });
+    }
+
+    private void startHomeActivity(Map<String,Object> addressMap) {
+
+        Intent intent = new Intent(MainActivity.this, MessagingActivity.class)
+                .putExtra("userType",userType)
+                .putExtra("addressMap", (Serializable) addressMap);
+
+        if(userType == User.TYPE_ADMIN){
+
+
+
+        }else{
+            startActivity(intent);
+            finish();
+
+        }
+
+    }
+
+
+    private void startConnectionActivity() {
+
+        activityResultLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),result -> {
+
+                    if (result.getResultCode() == ConnectionActivity.CONNECTION_RESULT) {
+                        directUserToAppropriateActivity();
+                    }
+
+                });
+
+        activityResultLauncher.launch(new Intent(MainActivity.this, ConnectionActivity.class));
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        if(v.getId() == R.id.normalUserBtn){
+
+            lastClicked = 1;
+            requestLocation();
+
+        }else if(v.getId() == R.id.driverUserBtn){
+            lastClicked = 2;
+            requestLocation();
+
+        }else if(v.getId() == R.id.restaurantAdminUserBtn){
+            lastClicked = 3;
+            requestLocation();
+
+        }
 
     }
 }

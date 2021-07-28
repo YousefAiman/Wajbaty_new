@@ -574,7 +574,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                     intent.putExtra("cartItems",cartItems);
                     Log.d("ttt","cart items task completed");
                     startActivity(intent);
-
+                    finish();
                 }
             });
 

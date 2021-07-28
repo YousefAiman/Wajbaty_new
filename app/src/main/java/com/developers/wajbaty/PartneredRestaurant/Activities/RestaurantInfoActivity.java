@@ -138,7 +138,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
         additionalServices = new ArrayList<>();
         additionalServices.add(null);
 
-        additionalOptionsAdapter = new AdditionalOptionsAdapter(additionalServices,"options");
+        additionalOptionsAdapter = new AdditionalOptionsAdapter(additionalServices,"option");
 
         contacts = new ArrayList<>();
         contactInfoAdapter = new FillOptionsAdapter(contacts);

@@ -2,8 +2,11 @@ package com.developers.wajbaty.DeliveryDriver.Fragments;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
 
@@ -15,6 +18,8 @@ import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.IBinder;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,11 +31,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.developers.wajbaty.Activities.HomeActivity;
 import com.developers.wajbaty.Adapters.DriverDeliveriesAdapter;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
 import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
 import com.developers.wajbaty.Models.Delivery;
+import com.developers.wajbaty.Models.DeliveryDriver;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Services.LocationService;
 import com.developers.wajbaty.Utils.LocationListenerUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
 import com.developers.wajbaty.Utils.TimeFormatter;
@@ -39,11 +47,12 @@ import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.common.util.concurrent.Monitor;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -62,16 +71,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DriverDeliveriesFragment extends Fragment implements
         CompoundButton.OnCheckedChangeListener,DriverDeliveriesAdapter.DriverDeliveriesListener,
-        LocationListenerUtil.LocationChangeObserver{
+//        LocationListenerUtil.LocationChangeObserver,
+        LocationService.LocationChangeObserver
+{
 
     private static final String ADDRESS_MAP = "addressMap";
 
     private static final int PENDING_DELIVERIES_LIMIT = 10;
 
-    private static final int
-            REQUEST_CHECK_SETTINGS = 100,
-            REQUEST_LOCATION_PERMISSION = 10,
-            MIN_UPDATE_DISTANCE = 10;
+//    private static final int
+//            REQUEST_CHECK_SETTINGS = 100,
+//            REQUEST_LOCATION_PERMISSION = 10,
+//            MIN_UPDATE_DISTANCE = 10;
 
     private static final int RADIUS = 10 * 1000;
 
@@ -85,6 +96,7 @@ public class DriverDeliveriesFragment extends Fragment implements
     private RecyclerView driverDeliveriesRv;
     private View currentDeliveryLayout;
     private ProgressBar driverDeliveriesProgressBar;
+    private TextView driverDeliveriesNotWorkingTv,driverDeliveriesWorkingTv;
 
     //adapter
     private DriverDeliveriesAdapter deliveriesAdapter;
@@ -96,14 +108,17 @@ public class DriverDeliveriesFragment extends Fragment implements
 
     //location
     private List<GeoQueryBounds> geoQueryBounds;
-
+    private ServiceConnection serviceConnection;
 
     //delivery listener
     private String currentDeliveryID;
+    private ListenerRegistration currentDeliverySnapshotListener;
     private List<ListenerRegistration> snapShotListeners;
+
 
     //location
     private Location currentLocation;
+    private DocumentReference driverRef;
 
     public DriverDeliveriesFragment() {
     }
@@ -122,18 +137,27 @@ public class DriverDeliveriesFragment extends Fragment implements
 
         if (getArguments() != null) {
             addressMap = (HashMap<String, Object>) getArguments().getSerializable(ADDRESS_MAP);
+
         }
 
         deliveries = new ArrayList<>();
         deliveriesAdapter = new DriverDeliveriesAdapter(deliveries,this);
 
         currentUID = FirebaseAuth.getInstance().getUid();
+        driverRef = FirebaseFirestore.getInstance().collection("Users").document(currentUID);
 
         snapShotListeners = new ArrayList<>();
 
         deliveriesRef =  FirebaseFirestore.getInstance().collection("Deliveries");
 
         final LatLng latLng = (LatLng) addressMap.get("latLng");
+
+        Log.d("ttt","latlng: "+latLng.latitude + "," + latLng.longitude);
+
+        currentLocation = new Location("currentLocation");
+        currentLocation.setLatitude(latLng.latitude);
+        currentLocation.setLongitude(latLng.longitude);
+
 
         final GeoLocation center = new GeoLocation(latLng.latitude, latLng.longitude);
 
@@ -145,7 +169,7 @@ public class DriverDeliveriesFragment extends Fragment implements
                         .orderBy("orderTimeInMillis", Query.Direction.DESCENDING)
                         .limit(PENDING_DELIVERIES_LIMIT);
 
-        checkAndRequestPermissions();
+//        checkAndRequestPermissions();
 
     }
 
@@ -162,6 +186,8 @@ public class DriverDeliveriesFragment extends Fragment implements
         driverDeliveriesRv = view.findViewById(R.id.driverDeliveriesRv);
         currentDeliveryLayout = view.findViewById(R.id.currentDeliveryLayout);
         driverDeliveriesProgressBar = view.findViewById(R.id.driverDeliveriesProgressBar);
+        driverDeliveriesNotWorkingTv = view.findViewById(R.id.driverDeliveriesNotWorkingTv);
+        driverDeliveriesWorkingTv = view.findViewById(R.id.driverDeliveriesWorkingTv);
 
         driverDeliveriesWorkingSwitch.setOnCheckedChangeListener(this);
 
@@ -192,9 +218,9 @@ public class DriverDeliveriesFragment extends Fragment implements
 //        activeStatuses.add(Delivery.STATUS_ACCEPTED);
 //        activeStatuses.add(Delivery.STATUS_PICKED_UP);
 
-        FirebaseFirestore.getInstance().collection("Users").document(currentUID)
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        driverRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     boolean isInitial = true;
+                    private long currentStatus;
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
@@ -204,22 +230,77 @@ public class DriverDeliveriesFragment extends Fragment implements
 
                                 String currentDeliveryId = value.getString("currentDeliveryId");
 
-                                if(currentDeliveryId!=null){
-                                    listenToCurrentDelivery(currentDeliveryId,isInitial);
-                                }else{
-                                    getPendingDeliveries(true);
-                                }
+                                if(isInitial){
+                                    if(currentDeliveryId!=null){
+                                        currentDeliveryID = currentDeliveryId;
+                                        listenToCurrentDelivery(currentDeliveryId,isInitial);
+                                    }
 
+
+                                    getPendingDeliveries(true);
+                                }else{
+
+                                    if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
+                                        if(currentDeliveryID == null){
+                                            currentDeliveryID = currentDeliveryId;
+                                            listenToCurrentDelivery(currentDeliveryID,isInitial);
+                                        }
+                                    }else if(currentDeliveryID != null){
+
+                                        driverDeliveriesWorkingTv.setVisibility(View.VISIBLE);
+                                        driverDeliveriesWorkingSwitch.setVisibility(View.VISIBLE);
+
+                                        currentDeliveryID = null;
+                                        currentDeliveryLayout.setVisibility(View.GONE);
+                                        currentDeliverySnapshotListener.remove();
+                                    }
+                                }
                             }else{
 
-                                if(isInitial){
-                                    getPendingDeliveries(true);
-                                }
+                                driverDeliveriesWorkingTv.setVisibility(View.VISIBLE);
+                                driverDeliveriesWorkingSwitch.setVisibility(View.VISIBLE);
 
                                 currentDeliveryID = null;
                                 currentDeliveryLayout.setVisibility(View.GONE);
+                                currentDeliverySnapshotListener.remove();
+                            }
+
+                            if(isInitial){
+
+                                if(value.contains("status")){
+                                    currentStatus = value.getLong("status");
+                                    if(currentStatus == DeliveryDriver.STATUS_AVAILABLE){
+                                        driverDeliveriesWorkingSwitch.setChecked(true);
+//                                        startLocationService();
+                                    }else if(currentStatus == DeliveryDriver.STATUS_UNAVAILABLE){
+                                        driverDeliveriesNotWorkingTv.setVisibility(View.VISIBLE);
+                                    }
+                                }
+
+
+                                Log.d("ttt","getPendingDeliveries 2");
+                                getPendingDeliveries(true);
 
                             }
+                            if(value.contains("status")){
+                                long status = value.getLong("status");
+
+                                if(status == DeliveryDriver.STATUS_AVAILABLE && currentStatus != DeliveryDriver.STATUS_AVAILABLE){
+
+                                    bindToLocationService();
+                                    startListeningToNewDeliveries();
+
+                                } else if(status == DeliveryDriver.STATUS_UNAVAILABLE && currentStatus != DeliveryDriver.STATUS_UNAVAILABLE){
+
+                                    unBindService();
+                                    stopListeningToNewDeliveries();
+
+                                }
+                                currentStatus = status;
+                            }
+
+
+
 //
 //                            if(isInitial){
 //
@@ -267,8 +348,8 @@ public class DriverDeliveriesFragment extends Fragment implements
 //                                currentDeliveryLayout.setVisibility(View.GONE);
 //                            }
 
-                        }else{
-
+                        }else if(isInitial){
+                            Log.d("ttt","getPendingDeliveries 3");
                             getPendingDeliveries(true);
 
                         }
@@ -282,9 +363,10 @@ public class DriverDeliveriesFragment extends Fragment implements
 
     private void listenToCurrentDelivery(String currentDeliveryId,boolean isInitial){
 
-        int index = snapShotListeners.isEmpty()?0:snapShotListeners.size()-1;
+//        int index = snapShotListeners.isEmpty()?0:snapShotListeners.size()-1;
 
-        snapShotListeners.add(deliveriesRef.document(currentDeliveryId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        currentDeliverySnapshotListener = deliveriesRef.document(currentDeliveryId)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     boolean deliverySnapshotIsInitial = true;
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -296,9 +378,20 @@ public class DriverDeliveriesFragment extends Fragment implements
                                 deliverySnapshotIsInitial = false;
 
                                 currentDeliveryID = value.getId();
-                                showCurrentDelivery(value.toObject(Delivery.class));
+                                Delivery delivery = value.toObject(Delivery.class);
+
+                                showCurrentDelivery(delivery);
 
                                 if(isInitial){
+
+                                    if(!isDeliveryMapActivityRunning() && isAdded()){
+                                        startActivity(new Intent(requireContext(), DriverDeliveryMapActivity.class)
+                                                .putExtra("delivery",delivery)
+                                                .putExtra("currentLocation",currentLocation));
+                                    }
+
+
+                                    Log.d("ttt","getPendingDeliveries 4");
                                     getPendingDeliveries(true);
                                 }
 
@@ -308,23 +401,28 @@ public class DriverDeliveriesFragment extends Fragment implements
                                     long status = value.getLong("status");
                                     if(status == Delivery.STATUS_DELIVERED){
 
+                                        driverDeliveriesWorkingTv.setVisibility(View.VISIBLE);
+                                        driverDeliveriesWorkingSwitch.setVisibility(View.VISIBLE);
+
                                         currentDeliveryID = null;
                                         currentDeliveryLayout.setVisibility(View.GONE);
-                                        snapShotListeners.get(index).remove();
-                                        snapShotListeners.remove(index);
+                                        currentDeliverySnapshotListener.remove();
+
+//                                        currentDeliverySnapshotListener.remove();
+//                                        currentDeliverySnapshotListener = null;
 
                                     }
                                 }
 
                             }
                         }else if(isInitial){
+                            Log.d("ttt","getPendingDeliveries 5");
                             getPendingDeliveries(true);
                         }
 
 
                     }
-                })
-        );
+                });
 
     }
 
@@ -541,9 +639,11 @@ public class DriverDeliveriesFragment extends Fragment implements
 //        final List<Task<QuerySnapshot>> offerTasks = new ArrayList<>();
 
         for (GeoQueryBounds b : geoQueryBounds) {
-            snapShotListeners.add(query.startAt(b.startHash).endAt(b.endHash).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            snapShotListeners.add(query.startAt(b.startHash).endAt(b.endHash)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
-                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                public void onEvent(@Nullable QuerySnapshot value,
+                                    @Nullable FirebaseFirestoreException error) {
 
                     Log.d("ttt","new deliveriy added");
 
@@ -604,23 +704,23 @@ public class DriverDeliveriesFragment extends Fragment implements
                                     long status = snapshot.getLong("status");
 
                                      if(status != Delivery.STATUS_PENDING) {
-
-                                         if(snapshot.contains("driverID")){
-
-                                             final String driverId=  snapshot.getString("driverID");
-
-                                             if(driverId.equals(currentUID)){
-                                                 showCurrentDelivery(snapshot.toObject(Delivery.class));
-                                             }else{
-
-                                                 findAndRemoveDelivery(snapshot.getId());
-
-                                             }
-                                         }else{
-
-                                             findAndRemoveDelivery(snapshot.getId());
-
-                                         }
+                                         findAndRemoveDelivery(snapshot.getId());
+//                                         if(snapshot.contains("driverID")){
+//
+//                                             final String driverId=  snapshot.getString("driverID");
+//
+////                                             if(driverId.equals(currentUID)){
+////                                                 showCurrentDelivery(snapshot.toObject(Delivery.class));
+////                                             }else{
+//
+//                                                 findAndRemoveDelivery(snapshot.getId());
+//
+////                                             }
+//                                         }else{
+//
+//                                             findAndRemoveDelivery(snapshot.getId());
+//
+//                                         }
 
                                      }
 
@@ -656,6 +756,9 @@ public class DriverDeliveriesFragment extends Fragment implements
 
     private void showCurrentDelivery(Delivery delivery){
 
+        driverDeliveriesWorkingTv.setVisibility(View.GONE);
+        driverDeliveriesWorkingSwitch.setVisibility(View.GONE);
+
         currentDeliveryID = delivery.getID();
 
         currentDeliveryLayout.setVisibility(View.VISIBLE);
@@ -683,8 +786,6 @@ public class DriverDeliveriesFragment extends Fragment implements
                     currentDeliveryUserNameTv.setText(documentSnapshot.getString("name"));
 
                 }
-
-
             }
         });
 
@@ -697,9 +798,11 @@ public class DriverDeliveriesFragment extends Fragment implements
             @Override
             public void onClick(View v) {
 
-                startActivity(new Intent(requireContext(),DeliveryInfoActivity.class)
+                Intent intent = new Intent(requireContext(),DeliveryInfoActivity.class)
                         .putExtra("isForShow",true)
-                .putExtra("delivery",delivery));
+                        .putExtra("delivery",delivery);
+
+                startActivity(intent);
 
             }
         });
@@ -708,7 +811,15 @@ public class DriverDeliveriesFragment extends Fragment implements
             @Override
             public void onClick(View v) {
 
-                startActivity(new Intent(requireContext(), DriverDeliveryMapActivity.class)
+                if(currentLocation == null){
+                    Log.d("ttt","currentLocation is null");
+
+                }else{
+                    Log.d("ttt","currentLocation is not null");
+
+                }
+
+            startActivity(new Intent(requireContext(), DriverDeliveryMapActivity.class)
                 .putExtra("delivery",delivery)
                 .putExtra("currentLocation",currentLocation));
 
@@ -732,6 +843,14 @@ public class DriverDeliveriesFragment extends Fragment implements
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+        if(isChecked){
+            driverRef.update("status",DeliveryDriver.STATUS_AVAILABLE);
+        }else{
+            driverRef.update("status",DeliveryDriver.STATUS_UNAVAILABLE);
+
+//            requireActivity().stopService(new Intent(requireContext(), LocationService.class));
+        }
+
     }
 
 
@@ -744,6 +863,10 @@ public class DriverDeliveriesFragment extends Fragment implements
             }
         }
 
+        if (currentDeliverySnapshotListener != null) {
+            currentDeliverySnapshotListener.remove();
+        }
+
         super.onDestroy();
     }
 
@@ -752,8 +875,17 @@ public class DriverDeliveriesFragment extends Fragment implements
     public void onDeliveryClicked(int position) {
 
         if(currentDeliveryID == null){
-            startActivity(new Intent(requireContext(),DeliveryInfoActivity.class)
-                    .putExtra("delivery",deliveries.get(position)));
+
+            Intent intent = new Intent(requireContext(),DeliveryInfoActivity.class)
+//                    .putExtra("isForShow",true)
+                    .putExtra("delivery",deliveries.get(position));
+
+            if(currentLocation != null){
+                intent.putExtra("currentLocation", currentLocation);
+            }
+
+            startActivity(intent);
+
         }else{
             Toast.makeText(requireContext(),
                     "You can't start other deliveries until you end the current one!",
@@ -773,7 +905,7 @@ public class DriverDeliveriesFragment extends Fragment implements
 
         if (LocationRequester.areLocationPermissionsEnabled(requireContext())) {
 
-            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
+//            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
             LocationListenerUtil.getInstance().startListening(requireActivity());
 
         } else {
@@ -794,20 +926,16 @@ public class DriverDeliveriesFragment extends Fragment implements
 
                         if (allAccepted) {
 
-                            LocationListenerUtil.getInstance().addLocationChangeObserver(DriverDeliveriesFragment.this);
+//                            LocationListenerUtil.getInstance().addLocationChangeObserver(DriverDeliveriesFragment.this);
                             LocationListenerUtil.getInstance().startListening(requireActivity());
 
                         }
                     });
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-
                 requestPermissionLauncher.launch(permissions);
-
             }else{
-
                 requestPermissionLauncher.launch(new String[]{permissions[0],permissions[1]});
-
             }
 
         }
@@ -817,9 +945,95 @@ public class DriverDeliveriesFragment extends Fragment implements
 
     @Override
     public void notifyObservers(Location location) {
+
+        Log.d("ttt","location in driver delivereis fragment: "+location.getLatitude()
+        + ","+location.getLatitude());
+
         currentLocation = location;
 
+        final GeoLocation center = new GeoLocation(location.getLatitude(), location.getLongitude());
+        geoQueryBounds = GeoFireUtils.getGeoHashQueryBounds(center, RADIUS);
 
+    }
+
+    private void bindToLocationService(){
+
+        if(!isAdded())
+            return;
+
+        Intent service = new Intent(requireContext(),LocationService.class);
+
+        serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+
+                Log.d("ttt","onServiceConnected");
+                LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
+                LocationService locationService = locationBinder.getService();
+                locationService.addObserver(DriverDeliveriesFragment.this);
+
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d("ttt","onServiceDisconnected");
+            }
+        };
+
+        requireContext().bindService(service,serviceConnection ,0);
+
+    }
+
+    private void unBindService(){
+        if(serviceConnection!=null){
+            requireContext().unbindService(serviceConnection);
+            serviceConnection = null;
+        }
+    }
+
+    private void startListeningToNewDeliveries(){
+
+        driverDeliveriesNotWorkingTv.setVisibility(View.GONE);
+        getPendingDeliveries(true);
+        listenToNewDeliveryRequests();
+
+    }
+
+    private void stopListeningToNewDeliveries(){
+
+
+        if(deliveries!=null){
+            deliveries.clear();
+            if(deliveriesAdapter!=null){
+                deliveriesAdapter.notifyDataSetChanged();
+            }
+        }
+        lastDeliverySnapshot = null;
+
+        driverDeliveriesNotWorkingTv.setVisibility(View.VISIBLE);
+
+        if(snapShotListeners!=null && !snapShotListeners.isEmpty()){
+           for(ListenerRegistration listenerRegistration:snapShotListeners){
+               listenerRegistration.remove();
+           }
+        }
+    }
+
+    public boolean isDeliveryMapActivityRunning() {
+
+        if(isAdded()){
+
+        ActivityManager activityManager =
+                (ActivityManager) requireContext().getSystemService (Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> activitys = activityManager.getRunningTasks(Integer.MAX_VALUE);
+        for (int i = 0; i < activitys.size(); i++) {
+            if (activitys.get(i).topActivity.toString().equalsIgnoreCase("ComponentInfo{com.developers.wajbaty/com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity}")) {
+                return true;
+            }
+        }
+        }
+
+        return false;
     }
 
 
@@ -831,7 +1045,7 @@ public class DriverDeliveriesFragment extends Fragment implements
                     !recyclerView.canScrollVertically(1) &&
                     newState == RecyclerView.SCROLL_STATE_IDLE) {
 
-
+                Log.d("ttt","getPendingDeliveries 6");
                 getPendingDeliveries(false);
 
             }

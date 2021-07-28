@@ -40,7 +40,9 @@ public class UserReviewModel extends Observable {
             UNLIKE_RESULT_SUCCESS = 3,
             UNLIKE_RESULT_FAILED = 4,
             LIKED_REVIEWS_SUCCESS = 5,
-            LIKED_REVIEWS_FAILED = 6;
+            LIKED_REVIEWS_FAILED = 6,
+            ALREADY_REVIEWED = 7,
+            HAS_NOT_REVIEWED = 8;
 
     private final CollectionReference reviewsRef;
 
@@ -87,7 +89,7 @@ public class UserReviewModel extends Observable {
     public void addReview(String comment,int rating){
 
 //        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        final String userId = UUID.randomUUID().toString();
+        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         final UserReview userReview = new UserReview(userId,rating,System.currentTimeMillis(),comment);
 
@@ -99,7 +101,7 @@ public class UserReviewModel extends Observable {
                     @Override
                     public void onSuccess(DocumentSnapshot snapshot) {
 
-                        if(!snapshot.contains("reviewSummary") && snapshot.get("reviewSummary")!=null){
+                        if(!snapshot.contains("reviewSummary") || snapshot.get("reviewSummary") == null){
 
                             final HashMap<String,Long> ratingMap = new HashMap<>();
 
@@ -109,7 +111,6 @@ public class UserReviewModel extends Observable {
 
                                 ratingMap.put(String.valueOf(i),0L);
                             }
-
 
                             ratingMap.put(String.valueOf(rating),1L);
 
@@ -168,9 +169,21 @@ public class UserReviewModel extends Observable {
 
     private void updatedRatingSummary(int rating,UserReview userReview,DocumentSnapshot snapshot){
 
+        if(!snapshot.contains("reviewSummary")){
+            return;
+        }
 
-        final ReviewSummary reviewSummary =
-                new ReviewSummary((HashMap<String,Object>) snapshot.get("reviewSummary"));
+        Object object = snapshot.get("reviewSummary");
+
+        if(object == null){
+            return;
+        }
+
+        if(!(object instanceof HashMap)){
+            return;
+        }
+
+        final ReviewSummary reviewSummary = new ReviewSummary((HashMap<String,Object>) object);
 
 
         final DocumentReference ref = snapshot.getReference();
@@ -341,7 +354,6 @@ public class UserReviewModel extends Observable {
     }
 
 
-
     public void getUserLikedReviews(String userId,String targetId){
 
         Log.d("ttt","getUserLikedReviews");
@@ -389,6 +401,20 @@ public class UserReviewModel extends Observable {
             });
 
     }
+
+    public void checkUserHasReviewed(){
+        reviewsRef.document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                setChanged();
+                notifyObservers(task.getResult().exists()?ALREADY_REVIEWED:HAS_NOT_REVIEWED);
+            }
+        });
+
+    }
+
+
 //
 //    public void getReviews(){
 //

@@ -6,20 +6,27 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,9 +37,12 @@ import com.developers.wajbaty.Activities.HomeActivity;
 import com.developers.wajbaty.Activities.MainActivity;
 import com.developers.wajbaty.Activities.MessagingActivity;
 import com.developers.wajbaty.Adapters.DeliveryCourseAdapter;
+import com.developers.wajbaty.Customer.Activities.CustomerDeliveryMapActivity;
+import com.developers.wajbaty.DeliveryDriver.Fragments.DriverDeliveriesFragment;
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.DeliveryCourse;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Services.LocationService;
 import com.developers.wajbaty.Utils.LocationListenerUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
 import com.firebase.geofire.GeoFireUtils;
@@ -45,7 +55,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -59,12 +72,16 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMapReadyCallback,
-        View.OnClickListener , LocationListenerUtil.LocationChangeObserver ,
-        LocationRequester.LocationRequestAction{
+        View.OnClickListener ,
+//        LocationListenerUtil.LocationChangeObserver ,
+        LocationRequester.LocationRequestAction,
+        LocationService.LocationChangeObserver
+{
 
     //location
     private static final int
@@ -74,6 +91,8 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
     private Delivery delivery;
     private Location currentLocation;
+    private HashMap<String, Marker> markerMap;
+//    private Marker driverMarker;
 
     //map
     private GoogleMap map;
@@ -92,11 +111,15 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     private DocumentReference deliveryRef;
 
     private LocationRequester locationRequester;
+    private ServiceConnection serviceConnection;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_delivery_map);
+
+        bindToLocationService();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.driverDeliveryMap);
@@ -106,19 +129,13 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
             return;
         }
 
-        mapFragment.getMapAsync(this);
-
         initializeObjects();
 
-
+        mapFragment.getMapAsync(this);
 
         getViews();
 
         setUpListeners();
-
-        if(currentLocation!=null){
-            fetchCourse();
-        }
 
     }
 
@@ -127,16 +144,18 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         final Intent intent = getIntent();
         if(intent!=null && intent.hasExtra("delivery")){
             delivery = (Delivery) intent.getSerializableExtra("delivery");
+
+            if(intent.hasExtra("currentLocation")){
+//                LatLng latLng = (LatLng) intent.getSerializableExtra("currentLatLng");
+
+                currentLocation = (Location) intent.getParcelableExtra("currentLocation");
+                Log.d("ttt","currentLocation: "+currentLocation.getLatitude() +","+currentLocation.getLongitude());
+            }else{
+                requestLocation();
+            }
         }else{
             finish();
             return;
-        }
-
-        if(intent.hasExtra("currentLocation")){
-            currentLocation = (Location) intent.getSerializableExtra("currentLocation");
-        }else{
-
-
         }
 
         deliveryRef = FirebaseFirestore.getInstance().collection("Deliveries")
@@ -145,7 +164,6 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         allDeliveryCourses = new ArrayList<>();
         deliveryCourses = new ArrayList<>();
         adapter = new DeliveryCourseAdapter(deliveryCourses);
-
 
     }
 
@@ -176,8 +194,47 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         map = googleMap;
 
         map.getUiSettings().setMyLocationButtonEnabled(false);
+        map.getUiSettings().setMapToolbarEnabled(false);
 
-        checkAndRequestPermissions();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            map.setMyLocationEnabled(true);
+        }else{
+
+            ActivityResultLauncher<String> requestPermissionLauncher =
+                    registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                            granted -> {
+                        if(granted){
+                            map.setMyLocationEnabled(true);
+                        }
+                            });
+
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        if(currentLocation!=null){
+
+//            LatLng latLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+//            driverMarker = map.addMarker(new MarkerOptions().position(latLng).title("My Location")
+//                    .icon(bitmapDescriptorFromVector()));
+
+            fetchCourse();
+
+            zoomOnCurrentLocation();
+//            if(currentLocation == null){
+//
+//                currentLocation = new Location("currentLocation");
+//                currentLocation.setLatitude(latLng.latitude);
+//                currentLocation.setLongitude(latLng.longitude);
+//
+//                if(deliveryCourses.isEmpty()){
+//                    fetchCourse();
+//                }
+//            }
+
+        }
+
+//        checkAndRequestPermissions();
 
     }
 
@@ -188,7 +245,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         if (LocationRequester.areLocationPermissionsEnabled(this)) {
 
             map.setMyLocationEnabled(true);
-            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
+//            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
             LocationListenerUtil.getInstance().startListening(this);
 
             requestLocation();
@@ -215,7 +272,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                                 map.setMyLocationEnabled(true);
 
-                                LocationListenerUtil.getInstance().addLocationChangeObserver(DriverDeliveryMapActivity.this);
+//                                LocationListenerUtil.getInstance().addLocationChangeObserver(DriverDeliveryMapActivity.this);
                                 LocationListenerUtil.getInstance().startListening(DriverDeliveryMapActivity.this);
 
                                 requestLocation();
@@ -263,12 +320,6 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         driverDeliveryCourseArrowIv.setOnClickListener(this);
     }
 
-    private void populateViews(){
-
-
-
-    }
-
     private void fetchCourse(){
 
         allDeliveryCourses.add(new DeliveryCourse(
@@ -313,6 +364,8 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                                 false,
                                 isFirst[0]));
 
+                        addMarker(name,restaurantLocation);
+
                         isFirst[0] = false;
                          Log.d("ttt","restaurantLocation: "+restaurantLocation.getLatitude()
                          +", "+restaurantLocation.getLongitude());
@@ -331,16 +384,15 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                 deliveryLocation.setLatitude(delivery.getLat());
                 deliveryLocation.setLongitude(delivery.getLng());
 
-                allDeliveryCourses.add(
-                        new DeliveryCourse(
-                        "Delivery Location",
+                allDeliveryCourses.add(new DeliveryCourse("Delivery Location",
                         deliveryLocation,
                         0,
                         false,
                         false));
 
-                deliveryCourses.addAll(allDeliveryCourses);
+                addMarker("Delivery Location",deliveryLocation);
 
+                deliveryCourses.addAll(allDeliveryCourses);
 
                 adapter.notifyDataSetChanged();
 
@@ -349,7 +401,6 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
     }
 
-
     @Override
     public void notifyObservers(Location location) {
 
@@ -357,8 +408,6 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
         map.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(),
                 location.getLongitude())));
-
-
 //
 //        if (currentLocation != null &&
 //                currentLocation.distanceTo(location) < MIN_UPDATE_DISTANCE) {
@@ -476,10 +525,33 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
 
             if(!map.getCameraPosition().target.equals(currentLatLng)){
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.0f));
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18.0f));
             }
         }
     }
+
+    private void addMarker(String name,Location location){
+
+        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+
+        if(markerMap == null){
+            markerMap = new HashMap<>();
+        }
+
+        markerMap.put(name,map.addMarker(new MarkerOptions().position(latLng).title(name)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))));
+
+    }
+
+    private BitmapDescriptor bitmapDescriptorFromVector() {
+        Drawable vectorDrawable = ContextCompat.getDrawable(this, R.drawable.scooter_marker_icon);
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0,0,canvas.getWidth(),canvas.getHeight());
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
 
     @Override
     public void locationFetched(LatLng latLng) {
@@ -498,5 +570,44 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
         }
 
+    }
+
+    private void bindToLocationService(){
+
+    Intent service = new Intent(this,LocationService.class);
+
+    serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            Log.d("ttt","onServiceConnected");
+            LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
+            LocationService locationService = locationBinder.getService();
+            locationService.addObserver(DriverDeliveryMapActivity.this);
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d("ttt","onServiceDisconnected");
+        }
+    };
+
+    bindService(service,serviceConnection ,0);
+
+}
+
+    private void unBindService(){
+        if(serviceConnection!=null){
+            unbindService(serviceConnection);
+            serviceConnection = null;
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        unBindService();
+        super.onDestroy();
     }
 }

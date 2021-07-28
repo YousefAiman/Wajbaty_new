@@ -46,7 +46,8 @@ public class DeliveryModel extends Observable {
         DELIVERY_DRIVERS_NOTIFIED = 4,
         DELIVERY_DRIVER_ACCEPTED_DELIVERY = 5,
             DRIVER_DELIVERY_REQUEST = 6,DRIVER_DELIVERY_REQUEST_ACCEPTED = 7
-            ,RIVER_DELIVERY_REQUEST_DENIED = 8;
+            ,DRIVER_DELIVERY_REQUEST_DENIED = 8,
+    DELIVERY_STARTED = 9;
 
     private final Delivery delivery;
     private final DocumentReference deliveryRef;
@@ -75,11 +76,22 @@ public class DeliveryModel extends Observable {
                     cartTasks.add(deliveryCartRef.document(cartItem.getItemId()).set(cartItem));
                 }
 
-                Tasks.whenAllSuccess(cartTasks).addOnSuccessListener(new OnSuccessListener<List<Object>>() {
+                Tasks.whenAllComplete(cartTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
                     @Override
-                    public void onSuccess(List<Object> objects) {
+                    public void onComplete(@NonNull Task<List<Task<?>>> task) {
 
                         Log.d("ttt","");
+                        for(Task<?> cartTask:cartTasks){
+                            if(!cartTask.isSuccessful()){
+                                deliveryRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        notifyError(DELIVERY_REQUEST_FAILED,"uploading all cart items to delivery failed");
+                                    }
+                                });
+                                return;
+                            }
+                        }
 
                         notifyDeliveryDrivers(locationMap);
 
@@ -280,12 +292,13 @@ public class DeliveryModel extends Observable {
     public ListenerRegistration listenForDriverDeliveryAcceptance(){
 
         return deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            boolean foundDriverRequest = false;
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
                if(value!=null){
 
-                   if(value.contains("proposingDriverMap")) {
+                   if(!foundDriverRequest && value.contains("proposingDriverMap")) {
 
                        HashMap<String, Object> proposingMap = (HashMap<String, Object>) value.get("proposingDriverMap");
 
@@ -294,6 +307,8 @@ public class DeliveryModel extends Observable {
                        }
 
                        if(proposingMap.containsKey("driverID")){
+
+                           foundDriverRequest = true;
 
                            final HashMap<Integer,Object> driverDeliveryRequest = new HashMap<>();
                            driverDeliveryRequest.put(DRIVER_DELIVERY_REQUEST,  proposingMap.get("driverID"));
@@ -338,12 +353,24 @@ public class DeliveryModel extends Observable {
 
     public void acceptDriverRequest(){
 
-        deliveryRef.update("proposingDriverMap.status",true)
+        deliveryRef.update("proposingDriverMap.status",true,
+                "proposingDriverMap.hasDecided",true)
         .addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
+
                 firestore.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .update("currentDeliveryID",delivery.getID());
+                        .update("currentDeliveryID",delivery.getID())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                        setChanged();
+                        notifyObservers(DELIVERY_STARTED);
+
+                    }
+                });
+
             }
         });
 
@@ -395,7 +422,7 @@ public class DeliveryModel extends Observable {
 //            }
 //        });
 
-    }
+}
 
     public void refuseDriverRequest(){
 
@@ -408,6 +435,28 @@ public class DeliveryModel extends Observable {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+
+                        deliveryRef.collection("CartItems")
+                                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot snapshots) {
+
+                                if(snapshots!=null && !snapshots.isEmpty()){
+//                                    List<Task<Void>> deletedTasks = new ArrayList<>();
+//
+//                                    deletedTasks
+                                    for(DocumentSnapshot snapshot:snapshots){
+                                        snapshot.getReference().delete();
+                                    }
+                                }
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+
+                            }
+                        });
                         deliveryRef.delete();
                     }
                 });

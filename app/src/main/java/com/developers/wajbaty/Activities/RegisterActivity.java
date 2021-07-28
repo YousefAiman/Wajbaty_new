@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
+import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
 import com.google.android.material.textfield.TextInputEditText;
@@ -118,9 +119,21 @@ public class RegisterActivity extends AppCompatActivity {
 
                 }*/
 
-                selectType();
+                int id = radioGroup.getCheckedRadioButtonId();
+
+                int userType;
+                if(id == customerRadioButton.getId()){
+                    userType = User.TYPE_CUSTOMER;
+                }else if(id == restaurantRadioButton.getId()){
+                    userType = User.TYPE_ADMIN;
+                }else  if(id == deliveryRadioButton.getId()){
+                    userType = User.TYPE_DELIVERY;
+                }
+
+//                selectType();
 
                 Intent intent = new Intent(this, VerifyAccountActivity.class);
+                intent.putExtra("phoneNumber", fullMobile);
                 intent.putExtra("phoneNumber", fullMobile);
                 startActivity(intent);
 
@@ -191,6 +204,8 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void register(String phoneNumber, String password) {
+
+
         PhoneAuthOptions authOptions = PhoneAuthOptions.newBuilder(firebaseAuth)
                 .setPhoneNumber(phoneNumber)
                 .setActivity(this)
@@ -318,7 +333,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     void selectType (){
         if (customerRadioButton.isChecked()) {
-            startActivity(new Intent(this, CustomerHomeActivity.class));
+//            startActivity(new Intent(this, CustomerHomeActivity.class));
 //            Toast.makeText(this, "زبون", Toast.LENGTH_SHORT).show();
         } else if (restaurantRadioButton.isChecked()) {
 

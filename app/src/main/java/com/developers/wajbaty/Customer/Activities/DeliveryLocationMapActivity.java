@@ -449,7 +449,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     deliveryAcceptanceListener = model.listenForDriverDeliveryAcceptance();
 
-
                     break;
 
                    case DeliveryModel.DELIVERY_DRIVER_ACCEPTED_DELIVERY:
@@ -459,9 +458,20 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     case DeliveryModel.DRIVER_DELIVERY_REQUEST_ACCEPTED:
 
-                        dismissProgressDialog();
+//                        dismissProgressDialog();
+//
+//                        startActivity(new Intent(this, CustomerDeliveryMapActivity.class)
+//                                .putExtra("delivery",currentDelivery));
 
-                        startActivity(new Intent(this, DriverDeliveryMapActivity.class)
+                    break;
+
+                 case DeliveryModel.DELIVERY_STARTED:
+
+                     dismissProgressDialog();
+
+                     finish();
+
+                        startActivity(new Intent(this, CustomerDeliveryMapActivity.class)
                                 .putExtra("delivery",currentDelivery));
 
                     break;
@@ -505,6 +515,8 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                             model.acceptDriverRequest();
 
+//                            DriverDeliveryMapActivity
+
                             Toast.makeText(DeliveryLocationMapActivity.this,
                                     "Delivery Started", Toast.LENGTH_SHORT).show();
 
@@ -514,6 +526,8 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                         public void cancelDelivery() {
 
                             model.refuseDriverRequest();
+
+
 
                             Toast.makeText(DeliveryLocationMapActivity.this,
                                     "Delivery Cancelled", Toast.LENGTH_SHORT).show();

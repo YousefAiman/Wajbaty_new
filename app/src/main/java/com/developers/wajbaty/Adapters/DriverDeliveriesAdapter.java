@@ -193,7 +193,7 @@ public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveri
                 if(documentSnapshot.exists()){
 
                     final String imageURL = documentSnapshot.getString("imageURL"),
-                    username = documentSnapshot.getString("imageURL");
+                    username = documentSnapshot.getString("name");
 
                     Picasso.get().load(imageURL).fit().centerCrop().into(userIv);
                     usernameTv.setText(username);
