@@ -49,6 +49,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.getResult().exists()) {
+
                     String username = task.getResult().getString("name");
                     String phone = task.getResult().getString("phoneNumber");
                     String email = task.getResult().getString("email");
@@ -56,6 +57,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
                     usernameTv.setText(username);
                     phoneTv.setText(phone);
                     emailTv.setText(email);
+
                 } else {
                     Toast.makeText(CustomerProfileActivity.this, "No Profile", Toast.LENGTH_SHORT).show();
                 }
