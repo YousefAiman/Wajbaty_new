@@ -32,6 +32,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -213,6 +214,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                     final String username = documentSnapshot.getString("name");
                     cartToolbar.setTitle("Delivery for "+username);
+                    deliveryInfoUserNameTv.setText(username);
 
                     final String imageURL = documentSnapshot.getString("imageURL");
                     Picasso.get().load(imageURL).fit().centerCrop().into(deliveryInfoUserIv);
@@ -222,14 +224,16 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
         });
 
         deliveryInfoAddressTv.setText("Address: "+delivery.getAddress());
+
         deliveryInfoCoordinatesTv.setText("Coordinates: ["+
                  BigDecimal.valueOf(delivery.getLat())
-                .setScale(2, RoundingMode.DOWN).floatValue() +","+
-                BigDecimal.valueOf(delivery.getLng()).setScale(2,RoundingMode.DOWN)+"]");
+                .setScale(2, RoundingMode.DOWN) +","+
+                BigDecimal.valueOf(delivery.getLng())
+                        .setScale(2,RoundingMode.DOWN)+"]");
 
         deliveryInfoOrderTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         deliveryInfoTotalPriceTv.setText(delivery.getTotalCost() + delivery.getCurrency());
-        deliveryInfoRestaurantCountTv.setText(delivery.getRestaurantMenuItemsMap().size()+" Restaurants");
+        deliveryInfoRestaurantCountTv.setText(delivery.getRestaurantCount()+" Restaurants");
 
         fetchCartItems();
 
@@ -291,54 +295,72 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                                 }));
                     }
 
-
-
                     Tasks.whenAllComplete(tasksList).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
                         @Override
                         public void onComplete(@NonNull Task<List<Task<?>>> task) {
 
                             if(!menuItemRestaurtantMap.isEmpty()){
 
-                                List<Task<DocumentSnapshot>> restaurantTasks = new ArrayList<>();
+                                final List<Task<DocumentSnapshot>> restaurantTasks = new ArrayList<>();
 
-                                for(String restaurant:delivery.getRestaurantMenuItemsMap().keySet()){
-
-                                    restaurantTasks.add(firestore.collection("PartneredRestaurant")
-                                            .document(restaurant).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                                @Override
-                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-                                                    final long count = (long) delivery.getRestaurantMenuItemsMap().get(restaurant).get("itemCount");
-
-                                                    orderedCartItem.add(
-                                                            new CartItemRestaurantHeader("From "+documentSnapshot.getString("name")+
-                                                                    " - "+ count + (count == 1?" item":" items")));
-
-                                                    for(String menuItemRestaurant:menuItemRestaurtantMap.keySet()){
-
-                                                        if(menuItemRestaurtantMap.get(menuItemRestaurant).equals(restaurant)){
-
-                                                            for(CartItem cartItem: cartItems){
-                                                                if(cartItem.getItemId().equals(menuItemRestaurant)){
-                                                                    orderedCartItem.add(cartItem);
-                                                                }
-                                                            }
-
-                                                        }
-                                                    }
-                                                }
-                                            }));
-
-                                }
-
-                                Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+                                deliveryRef.collection("RestaurantsOrdered")
+                                        .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<List<Task<?>>> task) {
+                                    public void onSuccess(QuerySnapshot snapshots) {
 
-                                        cartInfoAdapter.notifyDataSetChanged();
+                                        if(!snapshots.isEmpty()){
+
+                                            final CollectionReference restaruantRef = firestore.collection("PartneredRestaurant");
+
+                                            for(DocumentSnapshot snapshot:snapshots.getDocuments()){
+
+                                                    restaurantTasks.add(restaruantRef.document(snapshot.getId())
+                                                            .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                                @Override
+                                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                                                                    if(documentSnapshot.exists()){
+
+                                                                        final long count = snapshot.getLong("itemCount");
+
+                                                                        orderedCartItem.add(
+                                                                                new CartItemRestaurantHeader("From "+documentSnapshot.getString("name")+
+                                                                                        " - "+ count + (count == 1?" item":" items")));
+
+                                                                        for(String menuItemRestaurant:menuItemRestaurtantMap.keySet()){
+
+                                                                            if(menuItemRestaurtantMap.get(menuItemRestaurant).equals(snapshot.getId())){
+
+                                                                                for(CartItem cartItem: cartItems){
+                                                                                    if(cartItem.getItemId().equals(menuItemRestaurant)){
+                                                                                        orderedCartItem.add(cartItem);
+                                                                                    }
+                                                                                }
+
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }));
+
+                                                }
+
+                                                Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<List<Task<?>>> task) {
+
+                                                        cartInfoAdapter.notifyDataSetChanged();
+
+                                                    }
+                                                });
+
+
+                                        }
 
                                     }
                                 });
+
+
                             }
 
                         }

@@ -28,8 +28,8 @@ public class Delivery implements Serializable {
     private double lng;
     private String geohash;
     private String driverID;
-
-    private HashMap<String, Integer> restaurantMenuItemsMap;
+    private int restaurantCount;
+//    private HashMap<String, Integer> restaurantMenuItemsMap;
 
     @Exclude private String userImageUrl;
     @Exclude private String userUsername;
@@ -46,13 +46,13 @@ public class Delivery implements Serializable {
         this.currency = currency;
     }
 
-    public HashMap<String,Integer> getRestaurantMenuItemsMap() {
-        return restaurantMenuItemsMap;
-    }
-
-    public void setRestaurantMenuItemsMap(HashMap<String,Integer> restaurantMenuItemsMap) {
-        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
-    }
+//    public HashMap<String,Integer> getRestaurantMenuItemsMap() {
+//        return restaurantMenuItemsMap;
+//    }
+//
+//    public void setRestaurantMenuItemsMap(HashMap<String,Integer> restaurantMenuItemsMap) {
+//        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
+//    }
 
     public double getLat() {
         return lat;
@@ -76,6 +76,14 @@ public class Delivery implements Serializable {
 
     public void setDriverID(String driverID) {
         this.driverID = driverID;
+    }
+
+    public int getRestaurantCount() {
+        return restaurantCount;
+    }
+
+    public void setRestaurantCount(int restaurantCount) {
+        this.restaurantCount = restaurantCount;
     }
 
 //    @IgnoreExtraProperties
@@ -162,7 +170,10 @@ public class Delivery implements Serializable {
         }
     }
 
-    public Delivery(String ID, String requesterID, HashMap<String, Float> menuItemPriceMap, int status, long orderTimeInMillis, float totalCost,String currency, String address, double lat,double lng, String geohash,HashMap<String,Integer> restaurantMenuItemsMap) {
+    public Delivery(String ID, String requesterID, HashMap<String, Float> menuItemPriceMap, int status, long orderTimeInMillis, float totalCost,String currency, String address, double lat,double lng, String geohash
+//            ,HashMap<String,Integer> restaurantMenuItemsMap
+                    ,int restaurantCount
+    ) {
         this.ID = ID;
         this.requesterID = requesterID;
         this.menuItemPriceMap = menuItemPriceMap;
@@ -174,7 +185,8 @@ public class Delivery implements Serializable {
         this.geohash = geohash;
         this.setLat(lat);
         this.setLng(lng);
-        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
+        this.restaurantCount = restaurantCount;
+//        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
     }
 
     public String getID() {

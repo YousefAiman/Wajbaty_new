@@ -810,7 +810,7 @@ public class DriverDeliveriesFragment extends Fragment implements
         currentDeliveryAddressTv.setText(delivery.getAddress());
         currentDeliveryOrderTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         currentDeliveryTotalPriceTv.setText(delivery.getTotalCost() + delivery.getCurrency());
-        currentDeliveryRestaurantCountTv.setText(delivery.getRestaurantMenuItemsMap().size()+" Restaurants");
+        currentDeliveryRestaurantCountTv.setText(delivery.getRestaurantCount()+" Restaurants");
 
         currentDeliveryShowItemsBtn.setOnClickListener(new View.OnClickListener() {
             @Override

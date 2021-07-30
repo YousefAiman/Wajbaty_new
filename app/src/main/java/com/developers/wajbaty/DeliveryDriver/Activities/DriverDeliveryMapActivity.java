@@ -83,6 +83,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,6 +129,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     private ServiceConnection serviceConnection;
     private Location currentTargetDestinationLocation;
     private DeliveryCourse currentDeliveryCourse;
+    private CollectionReference restaurantsOrderedRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -360,124 +362,126 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
 //        final boolean[] isFirst = {true};
 
-        final LatLng[] wayPoints = new LatLng[delivery.getRestaurantMenuItemsMap().size()];
+        restaurantsOrderedRef = deliveryRef.collection("RestaurantsOrdered");
 
-        int index = 0;
-        for(String restaurant:delivery.getRestaurantMenuItemsMap().keySet()){
+        restaurantsOrderedRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot snapshots) {
 
-            final int finalIndex = index;
-            restaurantTasks.add(restaurantRef.document(restaurant).get()
-                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (!snapshots.isEmpty()) {
 
-                    if(documentSnapshot.exists()){
+                    final LatLng[] wayPoints = new LatLng[snapshots.size()];
 
-                        double lat = documentSnapshot.getDouble("lat"),
-                                lng = documentSnapshot.getDouble("lng");
+                    int index = 0;
+                    for(DocumentSnapshot restaurantSnap:snapshots.getDocuments()){
+                        final int finalIndex = index;
+                        restaurantTasks.add(restaurantRef.document(restaurantSnap.getId()).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                        wayPoints[finalIndex] = new LatLng(lat,lng);
+                                        if(documentSnapshot.exists()){
 
-                        Log.d("ttt","course lat: "+lat+" , lng: "+lng);
+                                            double lat = documentSnapshot.getDouble("lat"),
+                                                    lng = documentSnapshot.getDouble("lng");
 
-                        final String name = documentSnapshot.getString("name");
-                        Location restaurantLocation = new Location(name);
-                        restaurantLocation.setLatitude(lat);
-                        restaurantLocation.setLongitude(lng);
+                                            wayPoints[finalIndex] = new LatLng(lat,lng);
 
-                        HashMap<String,Object> restaurantMap = delivery.getRestaurantMenuItemsMap().get(restaurant);
+                                            Log.d("ttt","course lat: "+lat+" , lng: "+lng);
 
-                        if(restaurantMap == null)
-                            return;
+                                            final String name = documentSnapshot.getString("name");
+                                            Location restaurantLocation = new Location(name);
+                                            restaurantLocation.setLatitude(lat);
+                                            restaurantLocation.setLongitude(lng);
 
-                        boolean orderPickedUp = (Boolean) restaurantMap.get("orderPickedUp");
+                                            boolean orderPickedUp = restaurantSnap.getBoolean("orderPickedUp");
 
-                         DeliveryCourse deliveryCourse;
+                                            DeliveryCourse deliveryCourse;
 
-                        if(!orderPickedUp && currentTargetDestinationLocation == null){
+                                            if(!orderPickedUp && currentTargetDestinationLocation == null){
 
-                            driverDeliveryConfirmBtn.setText("Confirm pickup from "+name);
-                            deliveryCourse = new DeliveryCourse(
-                                    restaurant,
-                                    name,
-                                    restaurantLocation,
-                                    ((Long) restaurantMap.get("itemCount")).intValue(),
-                                    false,
-                                    true);
+                                                driverDeliveryConfirmBtn.setText("Confirm pickup from "+name);
+                                                deliveryCourse = new DeliveryCourse(
+                                                        restaurantSnap.getId(),
+                                                        name,
+                                                        restaurantLocation,
+                                                        restaurantSnap.getLong("itemCount").intValue(),
+                                                        restaurantSnap.getBoolean("orderPickedUp"),
+                                                        true);
 
-                            currentDeliveryCourse = deliveryCourse;
-                            currentTargetDestinationLocation = restaurantLocation;
-                        }else{
-                            deliveryCourse = new DeliveryCourse(
-                                    restaurant,
-                                    name,
-                                    restaurantLocation,
-                                    ((Long) restaurantMap.get("itemCount")).intValue(),
-                                    true,
-                                    false);
-                        }
+                                                currentDeliveryCourse = deliveryCourse;
+                                                currentTargetDestinationLocation = restaurantLocation;
+                                            }else{
+                                                deliveryCourse = new DeliveryCourse(
+                                                        restaurantSnap.getId(),
+                                                        name,
+                                                        restaurantLocation,
+                                                        restaurantSnap.getLong("itemCount").intValue(),
+                                                        true,
+                                                        false);
+                                            }
 
-                        allDeliveryCourses.add(deliveryCourse);
 
-                        addMarker(name,restaurantLocation);
+                                            allDeliveryCourses.add(deliveryCourse);
 
-//                        isFirst[0] = false;
-                         Log.d("ttt","restaurantLocation: "+restaurantLocation.getLatitude()
-                         +", "+restaurantLocation.getLongitude());
+                                            addMarker(name,restaurantLocation);
+
+                                            Log.d("ttt","restaurantLocation: "+restaurantLocation.getLatitude()
+                                                    +", "+restaurantLocation.getLongitude());
+                                        }
+
+                                    }
+                                }));
+                        index++;
                     }
 
-                }
-            }));
 
-            index++;
-        }
+                    Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+                        @Override
+                        public void onComplete(@NonNull Task<List<Task<?>>> task) {
 
-        Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
-            @Override
-            public void onComplete(@NonNull Task<List<Task<?>>> task) {
+                            Location deliveryLocation = new Location("deliveryLocation");
+                            deliveryLocation.setLatitude(delivery.getLat());
+                            deliveryLocation.setLongitude(delivery.getLng());
 
-                Location deliveryLocation = new Location("deliveryLocation");
-                deliveryLocation.setLatitude(delivery.getLat());
-                deliveryLocation.setLongitude(delivery.getLng());
+                            DeliveryCourse deliveryCourse;
 
-                 DeliveryCourse deliveryCourse;
+                            if(currentTargetDestinationLocation == null){
 
-                if(currentTargetDestinationLocation == null){
+                                driverDeliveryConfirmBtn.setText("Confirm order delivered");
 
-                    driverDeliveryConfirmBtn.setText("Confirm order deliveried");
+                                deliveryCourse = new DeliveryCourse(
+                                        delivery.getID()
+                                        ,"Delivery Location",
+                                        deliveryLocation,
+                                        0,
+                                        false,
+                                        true);
 
-                    deliveryCourse = new DeliveryCourse(
-                            delivery.getID()
-                            ,"Delivery Location",
-                            deliveryLocation,
-                            0,
-                            false,
-                            true);
+                                currentDeliveryCourse = deliveryCourse;
+                                currentTargetDestinationLocation = deliveryLocation;
+                            }else{
 
-                    currentDeliveryCourse = deliveryCourse;
-                    currentTargetDestinationLocation = deliveryLocation;
-                }else{
+                                deliveryCourse = new DeliveryCourse(
+                                        delivery.getID(),
+                                        "Delivery Location",
+                                        deliveryLocation,
+                                        0,
+                                        false,
+                                        false);
 
-                    deliveryCourse = new DeliveryCourse(
-                            delivery.getID(),
-                            "Delivery Location",
-                            deliveryLocation,
-                            0,
-                            false,
-                            false);
+                            }
 
-                }
+                            allDeliveryCourses.add(deliveryCourse);
 
-                allDeliveryCourses.add(deliveryCourse);
+                            addMarker("Delivery Location",deliveryLocation);
 
-                addMarker("Delivery Location",deliveryLocation);
+                            deliveryCourses.addAll(allDeliveryCourses);
 
-                deliveryCourses.addAll(allDeliveryCourses);
+                            adapter.notifyDataSetChanged();
 
-                adapter.notifyDataSetChanged();
-
-                final LatLng startLatLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
+                            final LatLng startLatLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                            final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
 
 //                HashMap<String,String> directionsMap = new HashMap<>();
 //                directionsMap.put("DirectionsJsonObject","asdas");
@@ -531,14 +535,19 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 //                                ,startLatLng,wayPoints,destinationLatLng);
 //                    }
 //                });
+                        }
+                    });
+
+
+                }
+
             }
         });
 
+        }
 
 
 
-
-    }
 
     @Override
     public void notifyObservers(Location location) {
@@ -666,57 +675,72 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                 }else{
 
-                    deliveryRef.update("restaurantMenuItemsMap."+currentDeliveryCourse.getLocationID()+".orderPickedUp",
-                            true).addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
+                    restaurantsOrderedRef.document(currentDeliveryCourse.getLocationID())
+                            .update("orderPickedUp",true)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
 
-                            String message = "Pick up from restaurant "+currentDeliveryCourse.getLocationName()
-                                    +" confirmed";
+                                    String message = "Pick up from restaurant "+currentDeliveryCourse.getLocationName()
+                                            +" confirmed";
 
-                            int index = allDeliveryCourses.indexOf(currentDeliveryCourse);
+                                    int index = allDeliveryCourses.indexOf(currentDeliveryCourse);
 
-                            currentDeliveryCourse.setWasPassed(true);
-                            currentDeliveryCourse.setActive(false);
-                            adapter.notifyItemChanged(index);
+                                    currentDeliveryCourse.setWasPassed(true);
+                                    currentDeliveryCourse.setActive(false);
+                                    adapter.notifyItemChanged(index);
 
-                            if(index == allDeliveryCourses.size()-2){
+                                    if(index == allDeliveryCourses.size()-2){
 
-                                message = message.concat(" !Please proceed to the delivery location!");
-
-
-                                currentDeliveryCourse = allDeliveryCourses.get(allDeliveryCourses.size()-1);
-                                currentDeliveryCourse.setActive(true);
-                                currentDeliveryCourse.setWasPassed(false);
-                                currentLocation = currentDeliveryCourse.getLocation();
-                                adapter.notifyItemChanged(allDeliveryCourses.size()-1);
+                                        message = message.concat(" !Please proceed to the delivery location!");
 
 
-                            }else{
+                                        currentDeliveryCourse = allDeliveryCourses.get(allDeliveryCourses.size()-1);
 
-                                message = message.concat(" !Please pick up next items from "+currentDeliveryCourse.getLocationName());
+                                        driverDeliveryConfirmBtn.setText("Confirm order delivered");
+                                        currentDeliveryCourse.setActive(true);
+                                        currentDeliveryCourse.setWasPassed(false);
+                                        currentLocation = currentDeliveryCourse.getLocation();
+                                        adapter.notifyItemChanged(allDeliveryCourses.size()-1);
 
-                                if(index+1 < allDeliveryCourses.size()){
 
-                                    currentDeliveryCourse = allDeliveryCourses.get(index+1);
-                                    currentDeliveryCourse.setActive(true);
-                                    currentDeliveryCourse.setWasPassed(false);
-                                    currentLocation = currentDeliveryCourse.getLocation();
-                                    adapter.notifyItemChanged(index+1);
+                                    }else{
+
+                                        message = message.concat(" !Please pick up next items from "+
+                                                currentDeliveryCourse.getLocationName());
+
+                                        if(index+1 < allDeliveryCourses.size()){
+
+                                            currentDeliveryCourse = allDeliveryCourses.get(index+1);
+                                            driverDeliveryConfirmBtn.setText("Confirm pickup from "+currentDeliveryCourse.getLocationName());
+
+                                            currentDeliveryCourse.setActive(true);
+                                            currentDeliveryCourse.setWasPassed(false);
+                                            currentLocation = currentDeliveryCourse.getLocation();
+                                            adapter.notifyItemChanged(index+1);
+
+                                        }
+                                    }
+                                    Toast.makeText(DriverDeliveryMapActivity.this,message
+                                            , Toast.LENGTH_LONG).show();
 
                                 }
-                            }
-
-
-                            Toast.makeText(DriverDeliveryMapActivity.this,message
-                                    , Toast.LENGTH_LONG).show();
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                        }
-                    });
+                            });
+//
+//                    deliveryRef.update("restaurantMenuItemsMap."+currentDeliveryCourse.getLocationID()+".orderPickedUp",
+//                            true).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//
+//
+//
+//
+//                        }
+//                    }).addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                        }
+//                    });
 
                 }
 

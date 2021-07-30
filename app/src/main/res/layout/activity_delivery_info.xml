@@ -19,7 +19,6 @@
         android:background="@color/orange"
         app:navigationIcon="@drawable/back_arrow_white" />
 
-
     <androidx.core.widget.NestedScrollView
         android:id="@+id/deliveryInfoNSV"
         android:layout_width="match_parent"

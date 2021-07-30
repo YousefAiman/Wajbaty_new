@@ -193,17 +193,15 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                 }
             }
 
-            final HashMap<String, Float> menuItemPriceMap = new HashMap<>();
-
-            final HashMap<String,Integer> restaurantMenuItemsMap = new HashMap<>();
-
             final float[] totalCost = {0};
-
-//            final CollectionReference restaurant
 
             Tasks.whenAllComplete(tasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
                 @Override
                 public void onComplete(@NonNull Task<List<Task<?>>> task) {
+
+                    final HashMap<String, Float> menuItemPriceMap = new HashMap<>();
+
+                    final HashMap<String,HashMap<String,Object>> restaurantMenuItemsMap = new HashMap<>();
 
                     for (Task<QuerySnapshot> queryTask : tasks) {
                         if(queryTask.isSuccessful() && queryTask.getResult()!=null && !queryTask.getResult().isEmpty()){
@@ -219,25 +217,23 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                                 if(restaurantMenuItemsMap.containsKey(restaurantID)){
 
+//                                    restaurantMenuItemsMap.put(restaurantID,
+//                                            restaurantMenuItemsMap.get(restaurantID)+1);
 
-                                    restaurantMenuItemsMap.put(restaurantID,
-                                            restaurantMenuItemsMap.get(restaurantID)+1);
+                                    HashMap<String,Object> restaurantMap = restaurantMenuItemsMap.get(restaurantID);
 
-
-//                                    HashMap<String,Object> restaurantMap = restaurantMenuItemsMap.get(restaurantID);
-//
-//                                    if(restaurantMap!=null){
-//                                        restaurantMap.put("itemCount",((Integer)restaurantMap.get("itemCount")) + 1);
-//                                    }
+                                    if(restaurantMap!=null){
+                                        restaurantMap.put("itemCount",((Integer)restaurantMap.get("itemCount")) + 1);
+                                    }
 
                                 }else{
-//                                    HashMap<String,Object> restaurantMap = new HashMap<>();
-//                                    restaurantMap.put("itemCount",1);
-//                                    restaurantMap.put("orderPickedUp",false);
-//
-//                                    restaurantMenuItemsMap.put(restaurantID,restaurantMap);
+                                    HashMap<String,Object> restaurantMap = new HashMap<>();
+                                    restaurantMap.put("itemCount",1);
+                                    restaurantMap.put("orderPickedUp",false);
 
-                                    restaurantMenuItemsMap.put(restaurantID,1);
+                                    restaurantMenuItemsMap.put(restaurantID,restaurantMap);
+//
+//                                    restaurantMenuItemsMap.put(restaurantID,1);
 
                                 }
 
@@ -261,11 +257,32 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                             chosenLocation.latitude,
                             chosenLocation.longitude,
                             GeoFireUtils.getGeoHashForLocation(chosenLocation),
-                            restaurantMenuItemsMap);
+                            restaurantMenuItemsMap.size()
+//                             ,
+//                            restaurantMenuItemsMap
+                     );
 
-                    model = new DeliveryModel(currentDelivery);
-                    model.addObserver(DeliveryLocationMapActivity.this);
-                    model.requestDelivery(addressMap,cartItemList);
+
+                    final CollectionReference restaurantOrderedRef = FirebaseFirestore.getInstance()
+                            .collection("Deliveries").document(ID)
+                            .collection("RestaurantsOrdered");
+
+                    List<Task<?>> restaurantOrderedTasks = new ArrayList<>();
+
+                    for(String key:restaurantMenuItemsMap.keySet()){
+                        restaurantOrderedTasks.add(
+                        restaurantOrderedRef.document(key).set(restaurantMenuItemsMap.get(key)));
+                    }
+
+                    Tasks.whenAllComplete(restaurantOrderedTasks).addOnSuccessListener(new OnSuccessListener<List<Task<?>>>() {
+                        @Override
+                        public void onSuccess(List<Task<?>> tasks) {
+                            model = new DeliveryModel(currentDelivery);
+                            model.addObserver(DeliveryLocationMapActivity.this);
+                            model.requestDelivery(addressMap,cartItemList);
+                        }
+                    });
+
 
                 }
             });
@@ -544,8 +561,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                         public void cancelDelivery() {
 
                             model.refuseDriverRequest();
-
-
 
                             Toast.makeText(DeliveryLocationMapActivity.this,
                                     "Delivery Cancelled", Toast.LENGTH_SHORT).show();

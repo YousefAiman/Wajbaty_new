@@ -238,7 +238,7 @@ public class HomeFragment extends Fragment implements
                                             @Override
                                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                 if(documentSnapshot.exists()){
-                                                    showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+                                                    showCurrentDelivery(documentSnapshot);
                                                 }
                                             }
                                         });
@@ -261,7 +261,7 @@ public class HomeFragment extends Fragment implements
                                            @Override
                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                if(documentSnapshot.exists()){
-                                                   showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+                                                   showCurrentDelivery(documentSnapshot);
                                                }
                                            }
                                        });
@@ -290,7 +290,12 @@ public class HomeFragment extends Fragment implements
 
     }
 
-    private void showCurrentDelivery(Delivery delivery){
+    private void showCurrentDelivery(DocumentSnapshot snapshot){
+
+        Delivery delivery = snapshot.toObject(Delivery.class);
+
+        if(delivery == null)
+                return;
 
         if(delivery.getDriverID() == null || delivery.getDriverID().isEmpty()){
             return;
@@ -326,7 +331,8 @@ public class HomeFragment extends Fragment implements
         customerDeliveryAddressTv.setText("Delivery Address: "+delivery.getAddress());
         customerDeliveryOrderTimeTv.setText("Order Time: "+TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         customerDeliveryTotalPriceTv.setText("Total cost: "+delivery.getTotalCost() + delivery.getCurrency());
-        customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantMenuItemsMap().size()+" Restaurants");
+
+        customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantCount()+" Restaurants");
 
         customerShowItemsTv.setOnClickListener(new View.OnClickListener() {
             @Override
