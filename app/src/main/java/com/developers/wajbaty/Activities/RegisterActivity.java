@@ -215,7 +215,7 @@ public class RegisterActivity extends AppCompatActivity {
                 intent.putExtra("userType",userType);
                 intent.putExtra("phoneNumber", fullMobile);
                 startActivity(intent);
-
+                finish();
             }
 
 //            String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;
@@ -239,6 +239,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         signinTv.setOnClickListener(v -> {
             startActivity(new Intent(this, SigninActivity.class));
+
         });
 
     }

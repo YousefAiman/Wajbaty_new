@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.AboutUsActivity"
+    android:background="#ddd    ">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/aboutUsToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="About Us"
+        app:titleTextAppearance="@style/ToolbarTitleAppearance"
+        app:titleTextColor="@color/white"
+        android:background="@color/orange"
+        app:navigationIcon="@drawable/back_arrow_white" />
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/aboutUsToolbar"
+        app:layout_constraintVertical_bias="0.2">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/almarai_regular"
+            android:lineSpacingExtra="4dp"
+            android:text="An application for restaurants in the Gaza Strip so that users can view the surrounding restaurants through the map and browse the restaurant’s menu and prices with other details of the restaurant, and the possibility of ordering through joint deliverymen through the application, or through restaurants shared in the application directly, and allows restaurant owners to subscribe and make advertisements to their restaurants through the application with the possibility of developing and updating it continuously. The goal of the application is to create a space for the residents of the sector to reach the largest number of restaurants and meet their desires and deliver food to their specified locations through the application, and the result of this work will be determined through the comments we get from users, whether they are residents, restaurant owners or delivery drivers, Accordingly, the result of the work indicates how to achieve the objectives or not being able to achieve some of it."
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:padding="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/aboutUsToolbar" />
+
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
