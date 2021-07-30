@@ -5,7 +5,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 @IgnoreExtraProperties
 public class User {
 
-    public static final int TYPE_CUSTOMER = 1,TYPE_ADMIN = 2,TYPE_DELIVERY = 3;
+    public static final int TYPE_CUSTOMER = 1, TYPE_ADMIN = 2, TYPE_DELIVERY = 3;
 
     private String ID;
     private String name;
@@ -19,7 +19,7 @@ public class User {
     public User() {
     }
 
-    public User(String ID, String name, String email, String phoneNumber, String imageURL, String countryCode,String cloudMessagingToken, int type) {
+    public User(String ID, String name, String email, String phoneNumber, String imageURL, String countryCode, String cloudMessagingToken, int type) {
         this.ID = ID;
         this.name = name;
         this.email = email;

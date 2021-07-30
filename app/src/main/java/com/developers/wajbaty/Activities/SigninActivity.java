@@ -52,22 +52,7 @@ public class SigninActivity extends AppCompatActivity {
         iniItems();
 
         createCountryCodeSpinner();
-/*
-        final CharSequence[] options = {"take_photo","choose_from_gallery", "cancel"};
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(SigninActivity.this);
-        builder.setTitle("add_photo");
-        builder.setItems(options, (dialog, which) -> {
-            if (options[which].equals("take_photo")) {
-
-            } else if (options[which].equals("choose_from_gallery")) {
-
-
-            } else if (options[which].equals("cancel")) {
-                dialog.dismiss();
-            }
-        }).show();
-*/
 
         signinBtn.setOnClickListener(v -> {
 
@@ -87,7 +72,7 @@ public class SigninActivity extends AppCompatActivity {
             fullMobile = fullMobile.substring(fullMobile.indexOf("+"));
             Log.d("ttt", fullMobile);
 
-            firebaseFirestore.collection("Users").whereEqualTo("phoneNumber", phone)
+            firebaseFirestore.collection("Users").whereEqualTo("phoneNumber", fullMobile)
                     .limit(1)
                     .get()
                     .addOnCompleteListener(task -> {

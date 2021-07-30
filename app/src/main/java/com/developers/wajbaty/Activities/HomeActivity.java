@@ -93,7 +93,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     private TextView headerUsernameTv;
 
 
-   // driver location
+    // driver location
     private Location currentLocation;
     private String currentGeoHash;
     private DocumentReference userRef;
@@ -196,7 +196,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //                }
 //            });
 
-
+            replaceFragment(HomeFragment.newInstance(addressMap));
+            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
 
         } else if (userType == User.TYPE_DELIVERY) {
 
@@ -438,7 +439,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         final int itemId = item.getItemId();
 
-        if (itemId == R.id.show_Messages_action) {
+        if (itemId == R.id.show_myProfile_action) {
+            startActivity(new Intent(this, CustomerProfileActivity.class));
+            closeDrawer();
+        } else if (itemId == R.id.show_Messages_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Messages_action) {
                 replaceFragment(new MessagesFragment());
@@ -943,7 +947,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         if(item.getItemId() == R.id.search_action){
 
-            
+
 
             return true;
         }
