@@ -22,7 +22,7 @@
         android:src="@drawable/app_logo_round_icon" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/appName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
@@ -45,7 +45,7 @@
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintTop_toBottomOf="@+id/appName" />
 
     <Button
         android:id="@+id/driverUserBtn"

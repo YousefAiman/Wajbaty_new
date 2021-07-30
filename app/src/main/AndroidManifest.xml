@@ -25,35 +25,30 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Wajbaty">
-
-        <activity android:name=".Activities.ConnectionActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".Activities.SliderActivity"
-            android:screenOrientation="portrait">
-
-
-        </activity>
+        <activity android:name=".Customer.Activities.CustomerEditProfileActivity"></activity>
+        <activity android:name=".Customer.Activities.CustomerProfileActivity" />
+        <activity
+            android:name=".Activities.ConnectionActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.SliderActivity"
+            android:screenOrientation="portrait" />
         <activity android:name=".Activities.CustomerHomeActivity" />
-        <activity android:name=".Customer.Activities.CustomerDeliveryMapActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".Activities.RegisterActivity" >
+        <activity
+            android:name=".Customer.Activities.CustomerDeliveryMapActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".Activities.RegisterActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity android:name=".Activities.SigninActivity" />
         <activity android:name=".Activities.VerifyAccountActivity" />
         <activity
             android:name=".Activities.AddImageProfileActivity"
-            android:screenOrientation="portrait">
-
-        </activity>
-
+            android:screenOrientation="portrait" />
         <activity
             android:name=".DeliveryDriver.Activities.DriverDeliveryMapActivity"
             android:screenOrientation="portrait" />
@@ -74,8 +69,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.MessagingActivity"
-            android:screenOrientation="portrait"></activity>
-
+            android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.HomeActivity"
             android:screenOrientation="portrait" />
@@ -105,20 +99,13 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.MainActivity"
-            android:screenOrientation="portrait" >
-
-
-
-        </activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.WelcomeActivity"
-            android:screenOrientation="portrait" >
-
-        </activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".PartneredRestaurant.Activities.RestaurantLocationActivity"
             android:screenOrientation="portrait" />
-
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -156,11 +143,11 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <service android:name=".Services.LocationService"
+        <service
+            android:name=".Services.LocationService"
             android:enabled="true"
-            android:foregroundServiceType="location"
-            android:exported="false"/>
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <receiver
             android:name=".BroadcastReceivers.BackgroundServiceReceiver"
@@ -170,7 +157,6 @@
                 <action android:name="restartservice" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

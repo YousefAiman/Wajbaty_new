@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="10dp"
+    android:layout_marginBottom="20dp"
+    tools:context=".Customer.Activities.CustomerEditProfileActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="Update Profile"
+        android:textColor="@color/orange"
+        android:textSize="30sp" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_username_upd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:drawableStart="@drawable/ic_user"
+        android:drawablePadding="10dp"
+        android:hint="Username"
+        android:paddingLeft="10dp"
+        android:textColor="@color/black" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_phone_upd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:drawableStart="@drawable/ic_mobile_phone"
+        android:drawablePadding="8dp"
+        android:hint="Phone Number"
+        android:textColor="@color/black" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_email_upd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:drawableStart="@drawable/ic_email"
+        android:drawablePadding="10dp"
+        android:hint="Email"
+        android:paddingLeft="10dp"
+        android:textColor="@color/black" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/save_profile_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+
+        android:background="@drawable/filled_button_background"
+        android:text="Save Profile"
+        android:textColor="@color/white" />
+</LinearLayout>

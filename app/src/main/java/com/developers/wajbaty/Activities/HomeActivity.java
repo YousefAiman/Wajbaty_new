@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import com.developers.wajbaty.Customer.Activities.CartActivity;
 import com.developers.wajbaty.Customer.Activities.FavoriteActivity;
+import com.developers.wajbaty.Customer.Activities.CustomerProfileActivity;
 import com.developers.wajbaty.Customer.Fragments.HomeFragment;
 import com.developers.wajbaty.Customer.Fragments.MenuItemsFragment;
 import com.developers.wajbaty.Customer.Fragments.NearbyRestaurantsFragment;
@@ -70,7 +71,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener,
 //        LocationListenerUtil.LocationChangeObserver ,
-        LocationService.LocationChangeObserver{
+        LocationService.LocationChangeObserver {
 
     private static final int
             REQUEST_CHECK_SETTINGS = 100,
@@ -92,7 +93,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     private TextView headerUsernameTv;
 
 
-   // driver location
+    // driver location
     private Location currentLocation;
     private String currentGeoHash;
     private DocumentReference userRef;
@@ -132,20 +133,20 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                    if(documentSnapshot.exists()){
+                    if (documentSnapshot.exists()) {
 
-                        if(documentSnapshot.contains("imageURL")){
+                        if (documentSnapshot.contains("imageURL")) {
                             String imageUrl = documentSnapshot.getString("imageURL");
 
-                            if(imageUrl!=null && !imageUrl.isEmpty()){
+                            if (imageUrl != null && !imageUrl.isEmpty()) {
                                 Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
                             }
                         }
 
-                        if(documentSnapshot.contains("name")){
+                        if (documentSnapshot.contains("name")) {
                             String name = documentSnapshot.getString("name");
 
-                            if(name!=null && !name.isEmpty()){
+                            if (name != null && !name.isEmpty()) {
                                 headerUsernameTv.setText(name);
                             }
                         }
@@ -197,56 +198,56 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
 
             userSnapshotListener = userRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-               private boolean isInitial = true;
-               private long currentStatus;
+                private boolean isInitial = true;
+                private long currentStatus;
+
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                    if(value!=null){
+                    if (value != null) {
 
-                        if(value.contains("currentDeliveryId")){
+                        if (value.contains("currentDeliveryId")) {
 
                             String currentDeliveryId = value.getString("currentDeliveryId");
 
-                            if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
+                            if (currentDeliveryId != null && !currentDeliveryId.isEmpty()) {
                                 currentDriverDeliveryRef = FirebaseFirestore.getInstance()
-                                .collection("Deliveries").document(currentDeliveryId);
+                                        .collection("Deliveries").document(currentDeliveryId);
 
 
-
-                            }else{
+                            } else {
                                 currentDriverDeliveryRef = null;
                             }
 
-                        }else{
+                        } else {
 
                             currentDriverDeliveryRef = null;
 
                         }
 
-                        if(isInitial){
+                        if (isInitial) {
 
-                            if(value.contains("imageURL")){
+                            if (value.contains("imageURL")) {
                                 String imageUrl = value.getString("imageURL");
 
-                                if(imageUrl!=null && !imageUrl.isEmpty()){
+                                if (imageUrl != null && !imageUrl.isEmpty()) {
                                     Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
                                 }
                             }
-                            if(value.contains("name")){
+                            if (value.contains("name")) {
                                 String name = value.getString("name");
 
-                                if(name!=null && !name.isEmpty()){
+                                if (name != null && !name.isEmpty()) {
                                     headerUsernameTv.setText(name);
                                 }
                             }
 
-                            if(value.contains("status")){
+                            if (value.contains("status")) {
                                 currentStatus = value.getLong("status");
 
 
-                                if(currentStatus == DeliveryDriver.STATUS_AVAILABLE ||
-                                        currentStatus == DeliveryDriver.STATUS_DELIVERING){
+                                if (currentStatus == DeliveryDriver.STATUS_AVAILABLE ||
+                                        currentStatus == DeliveryDriver.STATUS_DELIVERING) {
                                     startLocationService();
                                 }
 //                                else if(status == DeliveryDriver.STATUS_UNAVAILABLE){
@@ -255,21 +256,21 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                             }
 
                             isInitial = false;
-                        }else{
+                        } else {
 
-                            if(value.contains("status")){
+                            if (value.contains("status")) {
                                 long status = value.getLong("status");
 
-                                if((status == DeliveryDriver.STATUS_AVAILABLE &&
-                                        currentStatus!= DeliveryDriver.STATUS_AVAILABLE)
+                                if ((status == DeliveryDriver.STATUS_AVAILABLE &&
+                                        currentStatus != DeliveryDriver.STATUS_AVAILABLE)
                                         ||
                                         (status == DeliveryDriver.STATUS_DELIVERING &&
-                                        currentStatus != DeliveryDriver.STATUS_DELIVERING)){
+                                                currentStatus != DeliveryDriver.STATUS_DELIVERING)) {
 
                                     startLocationService();
 
-                                } else if(status == DeliveryDriver.STATUS_UNAVAILABLE
-                                        && currentStatus!= DeliveryDriver.STATUS_UNAVAILABLE){
+                                } else if (status == DeliveryDriver.STATUS_UNAVAILABLE
+                                        && currentStatus != DeliveryDriver.STATUS_UNAVAILABLE) {
                                     stopService();
                                 }
                                 currentStatus = status;
@@ -361,8 +362,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     }
 
 
-
-    private void checkAndRequestPermissions(){
+    private void checkAndRequestPermissions() {
 
         boolean permissionsGranted;
 
@@ -409,9 +409,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
                 requestPermissionLauncher.launch(permissions);
 
-            }else{
+            } else {
 
-                requestPermissionLauncher.launch(new String[]{permissions[0],permissions[1]});
+                requestPermissionLauncher.launch(new String[]{permissions[0], permissions[1]});
 
             }
 
@@ -433,7 +433,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         final int itemId = item.getItemId();
 
-        if (itemId == R.id.show_Messages_action) {
+        if (itemId == R.id.show_myProfile_action) {
+            startActivity(new Intent(this, CustomerProfileActivity.class));
+            closeDrawer();
+        } else if (itemId == R.id.show_Messages_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Messages_action) {
                 replaceFragment(new MessagesFragment());
@@ -456,15 +459,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 replaceFragment(HomeFragment.newInstance(addressMap));
                 return true;
             }
-        }else if (itemId == R.id.show_Menu_items_action) {
+        } else if (itemId == R.id.show_Menu_items_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Menu_items_action) {
 
                 String region = null;
 
-                if(addressMap.containsKey("adminArea")){
+                if (addressMap.containsKey("adminArea")) {
                     region = (String) addressMap.get("adminArea");
-                }else if(addressMap.containsKey("village")){
+                } else if (addressMap.containsKey("village")) {
                     region = (String) addressMap.get("village");
                 } else if (addressMap.containsKey("region")) {
                     region = (String) addressMap.get("region");
@@ -547,13 +550,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             try {
                 stopService(new Intent(this, MyFirebaseMessaging.class));
 
-            }catch (SecurityException | IllegalStateException e){
-                if(e.getMessage()!=null){
-                    Log.d("ttt","can't stop serivce: "+e.getMessage());
+            } catch (SecurityException | IllegalStateException e) {
+                if (e.getMessage() != null) {
+                    Log.d("ttt", "can't stop serivce: " + e.getMessage());
                 }
             }
 
-            startActivity(new Intent(this,WelcomeActivity.class));
+            startActivity(new Intent(this, WelcomeActivity.class));
             finish();
 
 //            getPackageManager().setComponentEnabledSetting(
@@ -728,12 +731,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     @Override
     public void notifyObservers(Location location) {
 
-                Log.d("ttt","lat: "+location.getLatitude()+" lng:"+
+        Log.d("ttt", "lat: " + location.getLatitude() + " lng:" +
                 location.getLongitude());
 
 
-        if(currentLocation == null){
-            Log.d("ttt","currentLocation == null");
+        if (currentLocation == null) {
+            Log.d("ttt", "currentLocation == null");
             currentGeoHash = GeoFireUtils.getGeoHashForLocation(
                     new GeoLocation(location.getLatitude(), location.getLongitude()));
         }
@@ -750,48 +753,48 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         userRef.update(
                 "currentGeoPoint",
-                new GeoPoint( location.getLatitude(), location.getLongitude())).addOnSuccessListener(new OnSuccessListener<Void>() {
+                new GeoPoint(location.getLatitude(), location.getLongitude())).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
 
-                Log.d("ttt","updated driver location");
+                Log.d("ttt", "updated driver location");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                Log.d("ttt",e.getMessage());
+                Log.d("ttt", e.getMessage());
 
             }
         });
 
-        if(currentDriverDeliveryRef != null){
-            currentDriverDeliveryRef.update("lat",location.getLatitude(),
-                    "lng",location.getLongitude());
+        if (currentDriverDeliveryRef != null) {
+            currentDriverDeliveryRef.update("lat", location.getLatitude(),
+                    "lng", location.getLongitude());
         }
 
         String hash = GeoFireUtils.getGeoHashForLocation(
                 new GeoLocation(location.getLatitude(), location.getLongitude()));
 
-        Log.d("ttt","currentGeoHash: "+currentGeoHash);
-        Log.d("ttt","new hash: "+hash);
+        Log.d("ttt", "currentGeoHash: " + currentGeoHash);
+        Log.d("ttt", "new hash: " + hash);
 
 
-        if(!hash.equals(currentGeoHash)){
+        if (!hash.equals(currentGeoHash)) {
 
             currentGeoHash = hash;
 
-            userRef.update("geohash",hash).addOnSuccessListener(new OnSuccessListener<Void>() {
+            userRef.update("geohash", hash).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
 
-                    Log.d("ttt","updated driver geohash");
+                    Log.d("ttt", "updated driver geohash");
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
 
-                    Log.d("ttt",e.getMessage());
+                    Log.d("ttt", e.getMessage());
 
                 }
             });
@@ -806,12 +809,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     protected void onDestroy() {
         super.onDestroy();
 
-        if(userSnapshotListener !=null){
+        if (userSnapshotListener != null) {
             userSnapshotListener.remove();
         }
     }
-
-
 
 
 //    public void createChannel() {
@@ -860,12 +861,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //
 //    }
 
-    private boolean isServiceRunning(Class<?> serviceClass){
+    private boolean isServiceRunning(Class<?> serviceClass) {
 
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 
-        for(ActivityManager.RunningServiceInfo serviceInfo:manager.getRunningServices(Integer.MAX_VALUE)){
-            if(serviceInfo.getClass().getName().equals(serviceClass.getName())){
+        for (ActivityManager.RunningServiceInfo serviceInfo : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceInfo.getClass().getName().equals(serviceClass.getName())) {
                 return true;
             }
         }
@@ -873,11 +874,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         return false;
     }
 
-    private void startLocationService(){
+    private void startLocationService() {
 
-        if(!isServiceRunning(LocationService.class)){
+        if (!isServiceRunning(LocationService.class)) {
 
-             service = new Intent(this,LocationService.class);
+            service = new Intent(this, LocationService.class);
 
             startService(service);
 
@@ -885,7 +886,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
 
-                    Log.d("ttt","onServiceConnected");
+                    Log.d("ttt", "onServiceConnected");
                     LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
                     LocationService locationService = locationBinder.getService();
                     locationService.addObserver(HomeActivity.this);
@@ -894,22 +895,22 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    Log.d("ttt","onServiceDisconnected");
+                    Log.d("ttt", "onServiceDisconnected");
                 }
             };
 
-            bindService(service,serviceConnection ,0);
+            bindService(service, serviceConnection, 0);
 
         }
     }
 
-    private void stopService(){
+    private void stopService() {
 
 //        if(locationService!=null){
 //            locationService.stopForeground(true);
 //        }
 
-        if(serviceConnection!=null){
+        if (serviceConnection != null) {
             unbindService(serviceConnection);
             serviceConnection = null;
         }

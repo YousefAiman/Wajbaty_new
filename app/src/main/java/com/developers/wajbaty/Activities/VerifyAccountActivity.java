@@ -9,13 +9,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.developers.wajbaty.Models.User;
+import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantLocationActivity;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.EmojiUtil;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +38,11 @@ public class VerifyAccountActivity extends AppCompatActivity {
     PhoneAuthProvider.ForceResendingToken forceResendingToken;
     PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks;
     String mVerificationId;
+    FirebaseFirestore firebaseFirestore;
+    User user;
+    String defaultCode = "";
+    String username, email, phone;
+    int userType = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +53,11 @@ public class VerifyAccountActivity extends AppCompatActivity {
         initItems();
         initClicks();
 
-        String phone = getIntent().getStringExtra("phoneNumber");
+        username = getIntent().getStringExtra("username");
+        email = getIntent().getStringExtra("email");
+        phone = getIntent().getStringExtra("phoneNumber");
+        userType = getIntent().getIntExtra("userType", 0);
+
         sendVerificationCode(phone);
 
     }
@@ -69,14 +86,14 @@ public class VerifyAccountActivity extends AppCompatActivity {
         });
 
         resendBtn.setOnClickListener(v -> {
-
-//            verifyCodeNumber(mVerificationId, code);
-
+            sendVerificationCode(phone);
         });
     }
 
     private void initItems() {
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseFirestore = FirebaseFirestore.getInstance();
+
         callbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
             public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken token) {
@@ -150,10 +167,11 @@ public class VerifyAccountActivity extends AppCompatActivity {
                 .addOnSuccessListener(command -> {
                     String phone = firebaseAuth.getCurrentUser().getPhoneNumber();
 
+                    storeUser();
 
 
                     Toast.makeText(this, "Logged in as " + phone, Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, AddImageProfileActivity.class));
+//                    startActivity(new Intent(this, AddImageProfileActivity.class));
                 })
                 .addOnFailureListener(command -> {
                     Toast.makeText(this, command.getMessage(), Toast.LENGTH_SHORT).show();
@@ -164,5 +182,46 @@ public class VerifyAccountActivity extends AppCompatActivity {
         verifyBtn = findViewById(R.id.verify_code_btn);
         resendBtn = findViewById(R.id.resend_code_btn);
         codeEt = findViewById(R.id.et_code);
+    }
+
+    void storeUser(){
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(new OnSuccessListener<String>() {
+                    @Override
+                    public void onSuccess(String s) {
+
+                        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+                        user = new User(currentUser.getUid(), username, email, phone,
+                                "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2F152cdc23-401e-4751-a86c-920acd380af0?alt=media&token=cb66e735-e348-4f42-967e-d706c13b9192",
+                                EmojiUtil.countryCodeToEmoji(defaultCode),
+                                s,
+                                userType);
+
+                        if (currentUser != null) {
+                            firebaseFirestore.collection("Users")
+                                    .document(currentUser.getUid())
+                                    .set(user)
+                                    .addOnCompleteListener(command -> {
+                                        if (userType != user.TYPE_ADMIN){
+                                            startActivity(new Intent(VerifyAccountActivity.this, AddImageProfileActivity.class));
+                                        } else {
+                                            startActivity(new Intent(VerifyAccountActivity.this, RestaurantLocationActivity.class));
+                                        }
+                                        Toast.makeText(VerifyAccountActivity.this, username, Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(command -> {
+                                        Toast.makeText(VerifyAccountActivity.this, command.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        } else {
+                            Toast.makeText(VerifyAccountActivity.this, "No user signed in", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(VerifyAccountActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
