@@ -365,7 +365,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         int index = 0;
         for(String restaurant:delivery.getRestaurantMenuItemsMap().keySet()){
 
-            final int finalIndex = index;
+/*            final int finalIndex = index;
             restaurantTasks.add(restaurantRef.document(restaurant).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
@@ -385,7 +385,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                         restaurantLocation.setLatitude(lat);
                         restaurantLocation.setLongitude(lng);
 
-                        HashMap<String,Object> restaurantMap = delivery.getRestaurantMenuItemsMap().get(restaurant);
+//                        HashMap<String,Object> restaurantMap = delivery.getRestaurantMenuItemsMap().get(restaurant);
 
                         if(restaurantMap == null)
                             return;
@@ -429,7 +429,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                 }
             }));
 
-            index++;
+            index++;*/
         }
 
         Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {

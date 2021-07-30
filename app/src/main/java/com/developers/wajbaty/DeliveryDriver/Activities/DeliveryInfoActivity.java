@@ -308,7 +308,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                                                 @Override
                                                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                                                    final long count = (long) delivery.getRestaurantMenuItemsMap().get(restaurant).get("itemCount");
+                                                    final long count = (long) delivery.getRestaurantMenuItemsMap().get(restaurant);
 
                                                     orderedCartItem.add(
                                                             new CartItemRestaurantHeader("From "+documentSnapshot.getString("name")+

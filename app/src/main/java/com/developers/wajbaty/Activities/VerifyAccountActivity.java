@@ -13,6 +13,7 @@ import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantLocationActivity;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
+import com.google.android.gms.dynamic.IFragmentWrapper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
@@ -43,6 +44,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
     String defaultCode = "";
     String username, email, phone;
     int userType = 0;
+    boolean fromSignin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,10 @@ public class VerifyAccountActivity extends AppCompatActivity {
         phone = getIntent().getStringExtra("phoneNumber");
         userType = getIntent().getIntExtra("userType", 0);
 
+/*        if (){
+
+        }*/
+
         sendVerificationCode(phone);
 
     }
@@ -65,7 +71,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
     private void initClicks() {
         verifyBtn.setOnClickListener(v -> {
             String code = codeEt.getText().toString().trim();
-            if (code.isEmpty()){
+            if (code.isEmpty()) {
                 codeEt.setError("Enter valid code");
                 codeEt.requestFocus();
                 return;
@@ -111,7 +117,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
             public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
                 signInWithPhoneAuthCredential(phoneAuthCredential);
                 String code = phoneAuthCredential.getSmsCode();
-                if (code != null){
+                if (code != null) {
                     codeEt.setText(code);
                     verifyCodeNumber(mVerificationId, code);
                 }
@@ -140,6 +146,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
     private void verifyCodeNumber(String verificationId, String code) {
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
         signInWithPhoneAuthCredential(credential);
+
     }
 
     private void register(String phoneNumber) {
@@ -165,12 +172,16 @@ public class VerifyAccountActivity extends AppCompatActivity {
     void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         firebaseAuth.signInWithCredential(credential)
                 .addOnSuccessListener(command -> {
-                    String phone = firebaseAuth.getCurrentUser().getPhoneNumber();
 
-                    storeUser();
+                    if (getIntent().getBooleanExtra("Signin", false)) {
+                        Toast.makeText(this, "Signin", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(VerifyAccountActivity.this, HomeActivity.class));
+                    } else {
+                        String phone = firebaseAuth.getCurrentUser().getPhoneNumber();
+                        storeUser();
+                        Toast.makeText(this, "Logged in as " + phone, Toast.LENGTH_SHORT).show();
+                    }
 
-
-                    Toast.makeText(this, "Logged in as " + phone, Toast.LENGTH_SHORT).show();
 //                    startActivity(new Intent(this, AddImageProfileActivity.class));
                 })
                 .addOnFailureListener(command -> {
@@ -184,7 +195,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
         codeEt = findViewById(R.id.et_code);
     }
 
-    void storeUser(){
+    void storeUser() {
         FirebaseMessaging.getInstance().getToken()
                 .addOnSuccessListener(new OnSuccessListener<String>() {
                     @Override
@@ -197,12 +208,13 @@ public class VerifyAccountActivity extends AppCompatActivity {
                                 s,
                                 userType);
 
+
                         if (currentUser != null) {
                             firebaseFirestore.collection("Users")
                                     .document(currentUser.getUid())
                                     .set(user)
                                     .addOnCompleteListener(command -> {
-                                        if (userType != user.TYPE_ADMIN){
+                                        if (userType != user.TYPE_ADMIN) {
                                             startActivity(new Intent(VerifyAccountActivity.this, AddImageProfileActivity.class));
                                         } else {
                                             startActivity(new Intent(VerifyAccountActivity.this, RestaurantLocationActivity.class));
@@ -215,6 +227,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(VerifyAccountActivity.this, "No user signed in", Toast.LENGTH_SHORT).show();
                         }
+
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

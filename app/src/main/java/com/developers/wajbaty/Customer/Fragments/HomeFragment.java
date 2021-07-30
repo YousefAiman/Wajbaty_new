@@ -238,7 +238,7 @@ public class HomeFragment extends Fragment implements
                                             @Override
                                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                 if(documentSnapshot.exists()){
-                                                    showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
+//                                                    showCurrentDelivery(documentSnapshot.toObject(Delivery.class));
                                                 }
                                             }
                                         });
@@ -326,7 +326,7 @@ public class HomeFragment extends Fragment implements
         customerDeliveryAddressTv.setText("Delivery Address: "+delivery.getAddress());
         customerDeliveryOrderTimeTv.setText("Order Time: "+TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         customerDeliveryTotalPriceTv.setText("Total cost: "+delivery.getTotalCost() + delivery.getCurrency());
-        customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantMenuItemsMap().size()+" Restaurants");
+//        customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantMenuItemsMap().size()+" Restaurants");
 
         customerShowItemsTv.setOnClickListener(new View.OnClickListener() {
             @Override

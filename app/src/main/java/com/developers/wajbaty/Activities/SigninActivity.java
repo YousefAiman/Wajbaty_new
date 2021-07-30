@@ -42,6 +42,7 @@ public class SigninActivity extends AppCompatActivity {
     PhoneNumberUtil phoneNumberUtil;
     String defaultCode = "";
     String fullMobile;
+    boolean fromSignin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +80,7 @@ public class SigninActivity extends AppCompatActivity {
                         if (!task.getResult().isEmpty()) {
                             Intent intent = new Intent(this, VerifyAccountActivity.class);
                             intent.putExtra("phoneNumber", fullMobile);
+                            intent.putExtra("Signin", true);
                             startActivity(intent);
                         } else {
                             Toast.makeText(SigninActivity.this, "Phone Number does't registered", Toast.LENGTH_SHORT).show();

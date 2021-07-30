@@ -382,8 +382,9 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                                 restaurantLocation.setLatitude(lat);
                                 restaurantLocation.setLongitude(lng);
 
-                                HashMap<String,Object> restaurantMap = delivery.getRestaurantMenuItemsMap().get(restaurant);
+//                                HashMap<String,Object> restaurantMap = delivery.getRestaurantMenuItemsMap().get(restaurant);
 
+/*
                                 if(restaurantMap == null)
                                     return;
 
@@ -395,6 +396,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                                         ((Long) restaurantMap.get("itemCount")).intValue(),
                                         (Boolean) restaurantMap.get("orderPickedUp"),
                                         isFirst[0]));
+*/
 
                                 addMarker(name,restaurantLocation);
 
