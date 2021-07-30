@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.developers.wajbaty.Customer.Activities.CartActivity;
+import com.developers.wajbaty.Customer.Activities.CustomerProfileActivity;
 import com.developers.wajbaty.Customer.Activities.FavoriteActivity;
 import com.developers.wajbaty.Customer.Fragments.HomeFragment;
 import com.developers.wajbaty.Customer.Fragments.MenuItemsFragment;
