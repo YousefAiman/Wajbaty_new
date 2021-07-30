@@ -226,6 +226,7 @@ public class RegisterActivity extends AppCompatActivity {
                             intent.putExtra("phoneNumber", finalFullMobile);
                             intent.putExtra("addressMap", (Serializable) addressMap);
                             startActivity(intent);
+                            finish();
                         }else{
 
                             Toast.makeText(RegisterActivity.this,
@@ -242,6 +243,13 @@ public class RegisterActivity extends AppCompatActivity {
 
 
 
+                Intent intent = new Intent(this, VerifyAccountActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("email", email);
+                intent.putExtra("userType",userType);
+                intent.putExtra("phoneNumber", fullMobile);
+                startActivity(intent);
+                finish();
             }
 
 //            String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;

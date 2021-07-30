@@ -25,7 +25,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Wajbaty">
-        <activity android:name=".Customer.Activities.CustomerEditProfileActivity"></activity>
+        <activity android:name=".Activities.RegisterActivity"></activity>
+        <activity android:name=".Customer.Activities.CustomerEditProfileActivity" />
         <activity android:name=".Customer.Activities.CustomerProfileActivity" />
         <activity
             android:name=".Activities.ConnectionActivity"
@@ -99,9 +100,13 @@
             android:name=".PartneredRestaurant.Activities.RestaurantMediaFillingActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activities.RegisterActivity"
+            android:name=".Activities.AboutUsActivity"
             android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <activity
