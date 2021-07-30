@@ -33,29 +33,14 @@
         <activity
             android:name=".Activities.SliderActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".Activities.CustomerHomeActivity" />
         <activity
             android:name=".Customer.Activities.CustomerDeliveryMapActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".Activities.RegisterActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".Customer.Activities.SearchActivity" />
         <activity android:name=".Activities.NotificationsActivity" />
-        <activity
-            android:name=".Activities.ConnectionActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activities.SliderActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Customer.Activities.CustomerDeliveryMapActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".Activities.RegisterActivity" />
         <activity android:name=".Activities.SigninActivity" />
         <activity android:name=".Activities.VerifyAccountActivity" />
         <activity
@@ -118,7 +103,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-            android:screenOrientation="portrait" />
+
         <activity
             android:name=".Activities.WelcomeActivity"
             android:screenOrientation="portrait" />
