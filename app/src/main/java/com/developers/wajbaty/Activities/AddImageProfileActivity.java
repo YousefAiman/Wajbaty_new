@@ -39,6 +39,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,10 +62,15 @@ public class AddImageProfileActivity extends AppCompatActivity {
     Uri imageUri;
     Uri uri;
 
+    private Map<String,Object> addressMap;
+    private int userType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_image_profile);
+
+        addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+        userType = getIntent().getIntExtra("userType",0);
 
         add_Im = findViewById(R.id.add_Im);
         icon_Im = findViewById(R.id.icon_Im);
@@ -98,7 +104,7 @@ public class AddImageProfileActivity extends AppCompatActivity {
             firebaseFirestore = FirebaseFirestore.getInstance();
             storageReference = FirebaseStorage.getInstance().getReference();
 
-            startActivity(new Intent(this, MainActivity.class));
+//            startActivity(new Intent(this, HomeActivity.class));
 
             uploadImage();
 
@@ -106,7 +112,9 @@ public class AddImageProfileActivity extends AppCompatActivity {
 
         TextView skip = findViewById(R.id.skip_Tv);
         skip.setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, HomeActivity.class)
+                    .putExtra("userType",userType)
+                    .putExtra("addressMap", (Serializable) addressMap));
         });
     }
 
@@ -270,7 +278,9 @@ public class AddImageProfileActivity extends AppCompatActivity {
                                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<Void> task) {
-                                                            startActivity(new Intent(AddImageProfileActivity.this, MainActivity.class));
+                                                            startActivity(new Intent(AddImageProfileActivity.this, HomeActivity.class)
+                                                                    .putExtra("userType",userType)
+                                                                    .putExtra("addressMap", (Serializable) addressMap));
                                                         }
                                                     })
                                                     .addOnFailureListener(new OnFailureListener() {

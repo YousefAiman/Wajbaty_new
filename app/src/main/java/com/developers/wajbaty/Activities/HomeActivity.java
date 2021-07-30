@@ -65,6 +65,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener,
@@ -113,7 +114,23 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+        final Intent intent = getIntent();
+
+        if(intent!=null){
+
+            if (intent.hasExtra("addressMap")) {
+                addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+            }
+
+            if (intent.hasExtra("userType")) {
+                userType = getIntent().getIntExtra("userType",0);
+            }
+
+        }else{
+            finish();
+            return;
+        }
+
 
         LatLng latLng = (LatLng) addressMap.get("latLng");
         Log.d("ttt", "gotten latLng in home intent: " + latLng.latitude + "-" + latLng.longitude);
@@ -132,7 +149,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             homeToolbar.inflateMenu(R.menu.customer_home_menu);
             homeToolbar.setOnMenuItemClickListener(this);
-            replaceFragment(HomeFragment.newInstance(addressMap));
+            replaceFragment(HomeFragment.newInstance(addressMap),"HomeFragment");
             homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
 
             userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -197,8 +214,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //                }
 //            });
 
-            replaceFragment(HomeFragment.newInstance(addressMap));
-            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
+//            replaceFragment(HomeFragment.newInstance(addressMap));
+//            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
 
         } else if (userType == User.TYPE_DELIVERY) {
 
@@ -293,7 +310,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //            checkAndRequestPermissions();
 
             homeBottomNavigationView.setSelectedItemId(R.id.show_deliveries_action);
-            replaceFragment(DriverDeliveriesFragment.newInstance(addressMap));
+            replaceFragment(DriverDeliveriesFragment.newInstance(addressMap),"DriverDeliveriesFragment");
 
 
         }
@@ -360,10 +377,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
     }
 
-    private void replaceFragment(Fragment fragment) {
+    private void replaceFragment(Fragment fragment,String tag) {
 
         getSupportFragmentManager().beginTransaction()
-                .replace(homeFrameLayout.getId(), fragment).commit();
+                .replace(homeFrameLayout.getId(), fragment,tag).commit();
 
     }
 
@@ -446,7 +463,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         } else if (itemId == R.id.show_Messages_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Messages_action) {
-                replaceFragment(new MessagesFragment());
+                replaceFragment(new MessagesFragment(),"MessagesFragment");
             }
 
             return true;
@@ -463,7 +480,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         else if (itemId == R.id.show_home_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_home_action) {
-                replaceFragment(HomeFragment.newInstance(addressMap));
+                replaceFragment(HomeFragment.newInstance(addressMap),"HomeFragment");
                 return true;
             }
         }else if (itemId == R.id.show_Menu_items_action) {
@@ -494,7 +511,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                     region = (String) addressMap.get("city");
                 }
 
-                replaceFragment(MenuItemsFragment.newInstance(region));
+                replaceFragment(MenuItemsFragment.newInstance(region),"MenuItemsFragment");
 
                 return true;
             }
@@ -502,14 +519,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_map_action) {
-                replaceFragment(NearbyRestaurantsFragment.newInstance(addressMap));
+                replaceFragment(NearbyRestaurantsFragment.newInstance(addressMap),"NearbyRestaurantsFragment");
                 return true;
             }
         } else if (itemId == R.id.show_deliveries_action) {
 
             if (userType == User.TYPE_DELIVERY) {
 
-                replaceFragment(DriverDeliveriesFragment.newInstance(addressMap));
+                replaceFragment(DriverDeliveriesFragment.newInstance(addressMap),"DriverDeliveriesFragment");
 
             }
 
@@ -579,7 +596,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 }
             }
 
-            startActivity(new Intent(this,WelcomeActivity.class));
+            startActivity(new Intent(this,WelcomeActivity.class)
+                    .putExtra("addressMap", (Serializable) addressMap));
+
             finish();
 
 //            getPackageManager().setComponentEnabledSetting(
@@ -600,7 +619,27 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         } else {
 
-            super.onBackPressed();
+            final List<Fragment> fragmentList = getSupportFragmentManager().getFragments();
+            final String lastFragTag =  fragmentList.get(fragmentList.size()-1).getTag();
+
+            if(lastFragTag != null){
+
+                if(userType == User.TYPE_CUSTOMER && !lastFragTag.equals("HomeFragment")){
+                    replaceFragment(new HomeFragment(),"HomeFragment");
+                }else if(userType == User.TYPE_DELIVERY && !lastFragTag.equals("DriverDeliveriesFragment")){
+                    replaceFragment(new DriverDeliveriesFragment(),"DriverDeliveriesFragment");
+                }
+                else if(userType == User.TYPE_ADMIN && !lastFragTag.equals("HomeFragment")){
+
+
+                }else{
+                    super.onBackPressed();
+                }
+
+
+            }else{
+                super.onBackPressed();
+            }
 
         }
     }

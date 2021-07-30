@@ -13,6 +13,7 @@ import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantLocationActivity;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
+import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.dynamic.IFragmentWrapper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -23,10 +24,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static android.content.ContentValues.TAG;
@@ -45,6 +49,8 @@ public class VerifyAccountActivity extends AppCompatActivity {
     String username, email, phone;
     int userType = 0;
     boolean fromSignin;
+
+    private Map<String,Object> addressMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +103,9 @@ public class VerifyAccountActivity extends AppCompatActivity {
     }
 
     private void initItems() {
+
+        addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
 
@@ -175,11 +184,41 @@ public class VerifyAccountActivity extends AppCompatActivity {
 
                     if (getIntent().getBooleanExtra("Signin", false)) {
                         Toast.makeText(this, "Signin", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(VerifyAccountActivity.this, HomeActivity.class));
+
+                        firebaseFirestore.collection("Users")
+                                .document(command.getUser().getUid())
+                                .get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot userDoc) {
+
+                                        userType = userDoc.getLong("type").intValue();
+
+                                        if (userType == User.TYPE_ADMIN && (!userDoc.contains("myRestaurantID") ||
+                                                userDoc.getString("myRestaurantID") == null)) {
+
+                                            startActivity(new Intent(VerifyAccountActivity.this, RestaurantLocationActivity.class));
+
+                                        } else {
+
+                                            if(userType == User.TYPE_ADMIN){
+                                                GlobalVariables.setCurrentRestaurantId(userDoc.getString("myRestaurantID"));
+                                            }
+
+                                            startActivity(new Intent(VerifyAccountActivity.this, HomeActivity.class)
+                                                    .putExtra("userType",userType)
+                                                    .putExtra("addressMap", (Serializable) addressMap));
+                                        }
+
+                                        finish();
+                                    }
+                                });
+
+
+
                     } else {
-                        String phone = firebaseAuth.getCurrentUser().getPhoneNumber();
+//                        String phone = firebaseAuth.getCurrentUser().getPhoneNumber();
                         storeUser();
-                        Toast.makeText(this, "Logged in as " + phone, Toast.LENGTH_SHORT).show();
                     }
 
 //                    startActivity(new Intent(this, AddImageProfileActivity.class));
@@ -203,30 +242,28 @@ public class VerifyAccountActivity extends AppCompatActivity {
 
                         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
                         user = new User(currentUser.getUid(), username, email, phone,
-                                "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2F152cdc23-401e-4751-a86c-920acd380af0?alt=media&token=cb66e735-e348-4f42-967e-d706c13b9192",
+                                null,
                                 EmojiUtil.countryCodeToEmoji(defaultCode),
                                 s,
                                 userType);
 
+                        firebaseFirestore.collection("Users")
+                                .document(currentUser.getUid())
+                                .set(user)
+                                .addOnCompleteListener(command -> {
+                                    if (userType != User.TYPE_ADMIN) {
+                                        startActivity(new Intent(VerifyAccountActivity.this, AddImageProfileActivity.class)
+                                                .putExtra("userType",userType)
+                                                .putExtra("addressMap", (Serializable) addressMap));
+                                    } else {
 
-                        if (currentUser != null) {
-                            firebaseFirestore.collection("Users")
-                                    .document(currentUser.getUid())
-                                    .set(user)
-                                    .addOnCompleteListener(command -> {
-                                        if (userType != user.TYPE_ADMIN) {
-                                            startActivity(new Intent(VerifyAccountActivity.this, AddImageProfileActivity.class));
-                                        } else {
-                                            startActivity(new Intent(VerifyAccountActivity.this, RestaurantLocationActivity.class));
-                                        }
-                                        Toast.makeText(VerifyAccountActivity.this, username, Toast.LENGTH_SHORT).show();
-                                    })
-                                    .addOnFailureListener(command -> {
-                                        Toast.makeText(VerifyAccountActivity.this, command.getMessage(), Toast.LENGTH_SHORT).show();
-                                    });
-                        } else {
-                            Toast.makeText(VerifyAccountActivity.this, "No user signed in", Toast.LENGTH_SHORT).show();
-                        }
+                                        startActivity(new Intent(VerifyAccountActivity.this, RestaurantLocationActivity.class));
+                                    }
+                                    Toast.makeText(VerifyAccountActivity.this, username, Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(command -> {
+                                    Toast.makeText(VerifyAccountActivity.this, command.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
 
                     }
                 })

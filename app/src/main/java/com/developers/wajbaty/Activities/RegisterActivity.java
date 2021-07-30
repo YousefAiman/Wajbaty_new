@@ -34,10 +34,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -206,15 +208,39 @@ public class RegisterActivity extends AppCompatActivity {
 //
                 String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;
                 fullMobile = fullMobile.substring(fullMobile.indexOf("+"));
+
+                int finalUserType = userType;
+                String finalFullMobile = fullMobile;
+                firebaseFirestore.collection("Users")
+                        .whereEqualTo("phoneNumber",fullMobile)
+                        .limit(1)
+                        .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot snapshots) {
+
+                        if(snapshots.isEmpty()){
+                            Intent intent = new Intent(RegisterActivity.this, VerifyAccountActivity.class);
+                            intent.putExtra("username", username);
+                            intent.putExtra("email", email);
+                            intent.putExtra("userType", finalUserType);
+                            intent.putExtra("phoneNumber", finalFullMobile);
+                            intent.putExtra("addressMap", (Serializable) addressMap);
+                            startActivity(intent);
+                        }else{
+
+                            Toast.makeText(RegisterActivity.this,
+                                    "This phone number is already used by another account!" +
+                                            "Please enter another number", Toast.LENGTH_LONG).show();
+
+                        }
+
+                    }
+                });
+
 //                Log.d("ttt", fullMobile);
 //
 
-                Intent intent = new Intent(this, VerifyAccountActivity.class);
-                intent.putExtra("username", username);
-                intent.putExtra("email", email);
-                intent.putExtra("userType",userType);
-                intent.putExtra("phoneNumber", fullMobile);
-                startActivity(intent);
+
 
             }
 
@@ -359,8 +385,6 @@ public class RegisterActivity extends AppCompatActivity {
             List<String> supportedCountryCodes = new ArrayList<>(phoneNumberUtil.getSupportedRegions());
 
 
-            defaultCode = defaultCode.toUpperCase();
-
             String defaultCode;
 
 
@@ -399,22 +423,20 @@ public class RegisterActivity extends AppCompatActivity {
 
 
             Log.d("ttt", "list size: " + spinnerArray.size());
-            if (this != null) {
 
-                final ArrayAdapter<String> ad
-                        = new ArrayAdapter<>(
-                        this,
-                        R.layout.spinner_item_layout,
-                        spinnerArray);
+            final ArrayAdapter<String> ad
+                    = new ArrayAdapter<>(
+                    this,
+                    R.layout.spinner_item_layout,
+                    spinnerArray);
 
-                ad.setDropDownViewResource(R.layout.spinner_item_layout);
+            ad.setDropDownViewResource(R.layout.spinner_item_layout);
 
-                phoneSpinner.post(() -> {
-                    phoneSpinner.setAdapter(ad);
+            phoneSpinner.post(() -> {
+                phoneSpinner.setAdapter(ad);
 
-                    phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
-                });
-            }
+                phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
+            });
         }).start();
     }
 

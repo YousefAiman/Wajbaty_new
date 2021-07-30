@@ -120,7 +120,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
 
         isLoadingItems = true;
 
-        Query currentQuery = null;
+        Query currentQuery = mainQuery;
 
         if (restaurantSummaries.isEmpty()) {
 

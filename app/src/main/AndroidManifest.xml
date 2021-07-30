@@ -37,7 +37,11 @@
             android:name=".Customer.Activities.CustomerDeliveryMapActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".Activities.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".Customer.Activities.SearchActivity" />
         <activity android:name=".Activities.NotificationsActivity" />
@@ -97,11 +101,7 @@
         <activity
             android:name=".Activities.RegisterActivity"
             android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <activity

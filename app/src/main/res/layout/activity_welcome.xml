@@ -48,6 +48,7 @@
         android:textColor="@color/orange"
         android:textSize="20sp"
         android:layout_margin="35dp"
+        android:visibility="gone"
         app:layout_constraintWidth_percent="0.8"
         app:layout_constraintEnd_toEndOf="@+id/sign_btn"
         app:layout_constraintStart_toStartOf="@+id/sign_btn"

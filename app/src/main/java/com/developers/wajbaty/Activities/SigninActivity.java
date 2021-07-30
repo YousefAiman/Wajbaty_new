@@ -26,12 +26,16 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class SigninActivity extends AppCompatActivity {
+
     TextView registerTv;
     //TextInputEditText phoneEd, passwordEd;
     AppCompatButton signinBtn;
@@ -43,6 +47,8 @@ public class SigninActivity extends AppCompatActivity {
     String defaultCode = "";
     String fullMobile;
     boolean fromSignin;
+
+    private Map<String,Object> addressMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +87,7 @@ public class SigninActivity extends AppCompatActivity {
                             Intent intent = new Intent(this, VerifyAccountActivity.class);
                             intent.putExtra("phoneNumber", fullMobile);
                             intent.putExtra("Signin", true);
+                            intent.putExtra("addressMap", (Serializable) addressMap);
                             startActivity(intent);
                         } else {
                             Toast.makeText(SigninActivity.this, "Phone Number does't registered", Toast.LENGTH_SHORT).show();
@@ -110,6 +117,9 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void iniItems() {
+
+        addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
         phoneNumberUtil = PhoneNumberUtil.getInstance();
@@ -127,15 +137,26 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     void createCountryCodeSpinner() {
+
         new Thread(() -> {
 
             List<String> supportedCountryCodes = new ArrayList<>(phoneNumberUtil.getSupportedRegions());
 
 
+            String defaultCode;
+
+
+            if (addressMap != null && addressMap.containsKey("countryCode")) {
+                defaultCode = (String) addressMap.get("countryCode");
+            } else {
+                defaultCode = Locale.getDefault().getCountry();
+            }
+
             defaultCode = defaultCode.toUpperCase();
 
             final String defaultSpinnerChoice = EmojiUtil.countryCodeToEmoji(defaultCode)
                     + " +" + phoneNumberUtil.getCountryCodeForRegion(defaultCode);
+
 
 
             final List<String> spinnerArray = new ArrayList<>(supportedCountryCodes.size());
@@ -161,22 +182,20 @@ public class SigninActivity extends AppCompatActivity {
 
 
             Log.d("ttt", "list size: " + spinnerArray.size());
-            if (this != null) {
 
-                final ArrayAdapter<String> ad
-                        = new ArrayAdapter<>(
-                        this,
-                        R.layout.spinner_item_layout,
-                        spinnerArray);
+            final ArrayAdapter<String> ad
+                    = new ArrayAdapter<>(
+                    this,
+                    R.layout.spinner_item_layout,
+                    spinnerArray);
 
-                ad.setDropDownViewResource(R.layout.spinner_item_layout);
+            ad.setDropDownViewResource(R.layout.spinner_item_layout);
 
-                phoneSpinner.post(() -> {
-                    phoneSpinner.setAdapter(ad);
+            phoneSpinner.post(() -> {
+                phoneSpinner.setAdapter(ad);
 
-                    phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
-                });
-            }
+                phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
+            });
         }).start();
     }
 

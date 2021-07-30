@@ -10,14 +10,13 @@ import android.view.View;
 import android.widget.Button;
 
 import com.developers.wajbaty.Adapters.FragmentsPagerAdapter;
+import com.developers.wajbaty.Customer.Fragments.FavoriteMenuItemsFragment;
 import com.developers.wajbaty.Customer.Fragments.FavoriteRestaurantsFragment;
 import com.developers.wajbaty.R;
 
 public class FavoriteActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    //views
-    private Toolbar favoriteToolbar;
     private Button favRestaurantBtn,favMenuItemsBtn;
     private ViewPager2 favoritesViewPager;
 
@@ -39,7 +38,7 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
 
     private void initializeObjects(){
 
-        final Fragment[] fragments = {new FavoriteRestaurantsFragment(),new FavoriteRestaurantsFragment()};
+        final Fragment[] fragments = {new FavoriteRestaurantsFragment(),new FavoriteMenuItemsFragment()};
         pagerAdapter = new FragmentsPagerAdapter(this,fragments);
 
     }
@@ -47,7 +46,8 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
     
     private void getViews(){
 
-        favoriteToolbar = findViewById(R.id.favoriteToolbar);
+        //views
+        Toolbar favoriteToolbar = findViewById(R.id.favoriteToolbar);
         favoritesViewPager = findViewById(R.id.favoritesViewPager);
         favRestaurantBtn = findViewById(R.id.favRestaurantBtn);
         favMenuItemsBtn = findViewById(R.id.favMenuItemsBtn);
@@ -57,6 +57,33 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
         favoritesViewPager.setAdapter(pagerAdapter);
         favRestaurantBtn.setOnClickListener(this);
         favMenuItemsBtn.setOnClickListener(this);
+
+        favoritesViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                if(position == 0){
+                    favRestaurantBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);
+                    favMenuItemsBtn.setBackgroundResource(R.drawable.option_un_checked_background);
+                }else{
+                    favMenuItemsBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);
+                    favRestaurantBtn.setBackgroundResource(R.drawable.option_un_checked_background);
+                }
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
+            }
+        });
+
     }
 
 
