@@ -352,7 +352,9 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                     });
         }else if(lastClicked == 3){
 
-            FirebaseAuth.getInstance().signInWithEmailAndPassword("restaurantAdmin@gmail.com","123456").
+            String email = "restaurantAdmin2@gmail.com";
+
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email,"123456").
                     addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
                         public void onSuccess(AuthResult authResult) {
@@ -383,12 +385,11 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 
 
                         }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
+                    }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
 
-                            FirebaseAuth.getInstance().createUserWithEmailAndPassword("restaurantAdmin@gmail.com","123456")
+                            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,"123456")
                                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                         @Override
                                         public void onSuccess(AuthResult authResult) {

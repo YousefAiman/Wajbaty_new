@@ -9,6 +9,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.MenuItem;
@@ -85,6 +86,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     private String ID;
     private String currentUid;
 
+    private boolean onSavedState;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +105,12 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
         addListeners();
 
 
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        onSavedState = true;
     }
 
     private void intializeObjects(){
@@ -166,12 +174,18 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
         if(progressDialog == null){
             progressDialog = new ProgressDialogFragment();
         }
-        progressDialog.show(getSupportFragmentManager(),"progress");
+        if(!onSavedState){
+            progressDialog.show(getSupportFragmentManager(),"progress");
+        }
     }
 
     private void hideProgressDialog(){
 
+
         if(progressDialog!=null && progressDialog.isVisible()){
+
+
+
             progressDialog.dismiss();
         }
 

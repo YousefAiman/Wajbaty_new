@@ -149,6 +149,13 @@ public class CloudMessagingNotificationsSender {
             this.type = type;
         }
 
+//        public static class MessageData extends Data{
+//
+//            String
+//
+//
+//        }
+
         public String getSenderID() {
             return senderID;
         }

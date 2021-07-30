@@ -13,7 +13,7 @@ import java.util.Map;
 public class Delivery implements Serializable {
 
     public static final int STATUS_PENDING = 1,STATUS_ACCEPTED = 2,STATUS_PICKED_UP = 3,
-            STATUS_DELIVERED = 4;
+    STATUS_WAITING_USER_APPROVAL = 4,STATUS_USER_DENIED_APPROVAL = 5,STATUS_DELIVERED = 6;
 
     private String ID;
     private String requesterID;
@@ -29,7 +29,7 @@ public class Delivery implements Serializable {
     private String geohash;
     private String driverID;
 
-    private Map<String,Integer> restaurantMenuItemsMap;
+    private HashMap<String, Integer> restaurantMenuItemsMap;
 
     @Exclude private String userImageUrl;
     @Exclude private String userUsername;
@@ -46,11 +46,11 @@ public class Delivery implements Serializable {
         this.currency = currency;
     }
 
-    public Map<String, Integer> getRestaurantMenuItemsMap() {
+    public HashMap<String,Integer> getRestaurantMenuItemsMap() {
         return restaurantMenuItemsMap;
     }
 
-    public void setRestaurantMenuItemsMap(Map<String, Integer> restaurantMenuItemsMap) {
+    public void setRestaurantMenuItemsMap(HashMap<String,Integer> restaurantMenuItemsMap) {
         this.restaurantMenuItemsMap = restaurantMenuItemsMap;
     }
 
@@ -162,7 +162,7 @@ public class Delivery implements Serializable {
         }
     }
 
-    public Delivery(String ID, String requesterID, HashMap<String, Float> menuItemPriceMap, int status, long orderTimeInMillis, float totalCost,String currency, String address, double lat,double lng, String geohash,Map<String,Integer> restaurantMenuItemsMap) {
+    public Delivery(String ID, String requesterID, HashMap<String, Float> menuItemPriceMap, int status, long orderTimeInMillis, float totalCost,String currency, String address, double lat,double lng, String geohash,HashMap<String,Integer> restaurantMenuItemsMap) {
         this.ID = ID;
         this.requesterID = requesterID;
         this.menuItemPriceMap = menuItemPriceMap;

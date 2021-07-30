@@ -70,7 +70,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener,
 //        LocationListenerUtil.LocationChangeObserver ,
-        LocationService.LocationChangeObserver{
+        LocationService.LocationChangeObserver,
+        Toolbar.OnMenuItemClickListener {
 
     private static final int
             REQUEST_CHECK_SETTINGS = 100,
@@ -127,6 +128,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
 
         if (userType == User.TYPE_CUSTOMER) {
+
+            homeToolbar.inflateMenu(R.menu.customer_home_menu);
+            homeToolbar.setOnMenuItemClickListener(this);
+            replaceFragment(HomeFragment.newInstance(addressMap));
+            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
 
             userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
@@ -190,8 +196,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //                }
 //            });
 
-            replaceFragment(HomeFragment.newInstance(addressMap));
-            homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
+
 
         } else if (userType == User.TYPE_DELIVERY) {
 
@@ -204,9 +209,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
                     if(value!=null){
 
-                        if(value.contains("currentDeliveryId")){
+                        if(value.contains("currentDeliveryID")){
 
-                            String currentDeliveryId = value.getString("currentDeliveryId");
+                            String currentDeliveryId = value.getString("currentDeliveryID");
 
                             if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
                                 currentDriverDeliveryRef = FirebaseFirestore.getInstance()
@@ -461,17 +466,27 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Menu_items_action) {
 
                 String region = null;
+//
+//                if(addressMap.containsKey("adminArea")){
+//                    region = (String) addressMap.get("adminArea");
+//                }else if(addressMap.containsKey("village")){
+//                    region = (String) addressMap.get("village");
+//                } else if (addressMap.containsKey("region")) {
+//                    region = (String) addressMap.get("region");
+//                } else if (addressMap.containsKey("city")) {
+//                    region = (String) addressMap.get("city");
+//                } else if (addressMap.containsKey("county")) {
+//                    region = (String) addressMap.get("county");
+//                }
 
-                if(addressMap.containsKey("adminArea")){
+                if (addressMap.containsKey("adminArea")) {
                     region = (String) addressMap.get("adminArea");
-                }else if(addressMap.containsKey("village")){
-                    region = (String) addressMap.get("village");
                 } else if (addressMap.containsKey("region")) {
-                    region = (String) addressMap.get("region");
+                    region = (String)addressMap.get("region");
+                } else if (addressMap.containsKey("county")) {
+                    region = (String)addressMap.get("county");
                 } else if (addressMap.containsKey("city")) {
                     region = (String) addressMap.get("city");
-                } else if (addressMap.containsKey("county")) {
-                    region = (String) addressMap.get("county");
                 }
 
                 replaceFragment(MenuItemsFragment.newInstance(region));
@@ -517,6 +532,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             closeDrawer();
             startActivity(new Intent(this, FavoriteActivity.class));
+
+            return true;
+        } else if (itemId == R.id.show_notifications_action) {
+
+            closeDrawer();
+            startActivity(new Intent(this, NotificationsActivity.class));
 
             return true;
         } else if (itemId == R.id.show_settings_action) {
@@ -917,4 +938,16 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         stopService(service);
     }
 
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+
+        if(item.getItemId() == R.id.search_action){
+
+            
+
+            return true;
+        }
+
+        return false;
+    }
 }

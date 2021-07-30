@@ -23,11 +23,16 @@ public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAd
 
   private final ArrayList<DeliveryCourse> deliveryCourses;
   private int orangeColor,blackColor;
+  private static DeliverCourseListener deliverCourseListener;
 
-  public DeliveryCourseAdapter(ArrayList<DeliveryCourse> deliveryCourses) {
+  public DeliveryCourseAdapter(ArrayList<DeliveryCourse> deliveryCourses,DeliverCourseListener deliverCourseListener) {
     this.deliveryCourses = deliveryCourses;
+    DeliveryCourseAdapter.deliverCourseListener = deliverCourseListener;
   }
 
+  public interface DeliverCourseListener{
+    void onDeliveryCourseClicked(int position);
+  }
 
   @NonNull
   @Override
@@ -50,7 +55,7 @@ public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAd
     return deliveryCourses.size();
   }
 
-  public class DeliverCourseVH extends RecyclerView.ViewHolder {
+  public class DeliverCourseVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     private final View courseLocationIndicatorView;
     private final TextView courseLocationNameTv,courseLocationItemCountTv,
@@ -66,6 +71,7 @@ public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAd
       courseLocationCoordinatesTv = itemView.findViewById(R.id.courseLocationCoordinatesTv);
       courseLocationRouteLineView = itemView.findViewById(R.id.courseLocationRouteLineView);
 
+      itemView.setOnClickListener(this);
     }
 
     private void bind(DeliveryCourse deliveryCourse) {
@@ -116,5 +122,11 @@ public class DeliveryCourseAdapter extends RecyclerView.Adapter<DeliveryCourseAd
 
     }
 
+    @Override
+    public void onClick(View v) {
+
+      deliverCourseListener.onDeliveryCourseClicked(getAdapterPosition());
+
+    }
   }
 }

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,17 +15,21 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.developers.wajbaty.Activities.MessagingActivity;
 import com.developers.wajbaty.Adapters.DeliveryCourseAdapter;
+import com.developers.wajbaty.Customer.Fragments.DeliveryConfirmationFragment;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.DeliveryCourse;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.DirectionsUtil;
 import com.developers.wajbaty.Utils.MarkerAnimator;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,10 +40,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -54,7 +62,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CustomerDeliveryMapActivity extends AppCompatActivity  implements OnMapReadyCallback,
-        View.OnClickListener{
+        View.OnClickListener,
+        DeliveryCourseAdapter.DeliverCourseListener,
+        DirectionsUtil.DirectionsListeners,
+        GoogleMap.OnMapClickListener,
+        DeliveryConfirmationFragment.DeliveryConfirmationListener{
 
     private Delivery delivery;
 
@@ -114,7 +126,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.getUiSettings().setCompassEnabled(false);
 
-        listenToDeliveryLocation();
+        listenToDeliveryChanges();
     }
 
 
@@ -134,7 +146,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
         allDeliveryCourses = new ArrayList<>();
         deliveryCourses = new ArrayList<>();
-        adapter = new DeliveryCourseAdapter(deliveryCourses);
+        adapter = new DeliveryCourseAdapter(deliveryCourses,this);
 
     }
 
@@ -155,10 +167,11 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         driverDeliveryCourseRv.setAdapter(adapter);
     }
 
-    private void listenToDeliveryLocation(){
+    private void listenToDeliveryChanges(){
 
         snapshotListener =  deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             boolean isInitial = true;
+            boolean initialApproval = true;
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
@@ -185,29 +198,106 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
                             fetchCourse();
                             isInitial = false;
-                        }else if(currentDeliveryLocation!=null){
+                        }else {
+                            if(currentDeliveryLocation!=null){
+                                if(lat!= currentDeliveryLocation.getLatitude() || lng!= currentDeliveryLocation.getLongitude()){
 
-                            if(lat!= currentDeliveryLocation.getLatitude() || lng!= currentDeliveryLocation.getLongitude()){
+                                    currentDeliveryLocation = new Location("currentDeliveryLocation");
+                                    currentDeliveryLocation.setLatitude(lat);
+                                    currentDeliveryLocation.setLongitude(lng);
 
-                                currentDeliveryLocation = new Location("currentDeliveryLocation");
-                                currentDeliveryLocation.setLatitude(lat);
-                                currentDeliveryLocation.setLongitude(lng);
+                                    if(driverMarker!=null){
+                                        Log.d("ttt","delivery updated location: "+
+                                                lat+","+lng);
 
-                                if(driverMarker!=null){
-                                    Log.d("ttt","delivery updated location: "+
-                                            lat+","+lng);
+                                        LatLng newPosition = new LatLng(lat,lng);
 
-                                    LatLng newPosition = new LatLng(lat,lng);
+                                        MarkerAnimator.animateMarkerToICS(driverMarker,
+                                                newPosition,
+                                                new MarkerAnimator.LatLngInterpolator.Linear());
 
-                                    MarkerAnimator.animateMarkerToICS(driverMarker,
-                                            newPosition,
-                                            new MarkerAnimator.LatLngInterpolator.Linear());
-
-                                    map.animateCamera(CameraUpdateFactory.newLatLng(newPosition));
+                                        map.animateCamera(CameraUpdateFactory.newLatLng(newPosition));
 
 //                                    animateMarker(driverMarker,new LatLng(lat,lng),false);
+                                    }
                                 }
                             }
+
+                                long status  = value.getLong("status");
+
+                                if(status == Delivery.STATUS_WAITING_USER_APPROVAL){
+
+                                    if(initialApproval){
+                                        DeliveryConfirmationFragment.newInstance(
+                                                CustomerDeliveryMapActivity.this,"")
+                                                .show(getSupportFragmentManager(),"deliveryConfirmation");
+                                    }
+
+                                }else if(status == Delivery.STATUS_USER_DENIED_APPROVAL){
+                                    initialApproval = false;
+                                }
+
+                            if(value.contains("restaurantMenuItemsMap")){
+
+                                HashMap<String,HashMap<String,Object>> map =
+                                        (HashMap<String, HashMap<String, Object>>) value.get("restaurantMenuItemsMap");
+
+                                if(map!=null){
+
+                                    for(int j = 0;j<allDeliveryCourses.size();j++){
+
+                                        DeliveryCourse deliveryCourse = allDeliveryCourses.get(j);
+
+                                        if(deliveryCourse.isActive()){
+
+                                            if(!deliveryCourse.isWasPassed() &&
+                                                    (Boolean) map.get(deliveryCourse.getLocationID()).get("orderPickedUp")){
+
+                                                deliveryCourse.setActive(false);
+                                                deliveryCourse.setWasPassed(true);
+
+                                                if(j + 1 < allDeliveryCourses.size()){
+
+                                                    DeliveryCourse newActiveDeliveryCourse = allDeliveryCourses.get(j+1);
+                                                    newActiveDeliveryCourse.setActive(true);
+                                                    newActiveDeliveryCourse.setWasPassed(false);
+                                                }
+
+                                                for(int i=0;i<deliveryCourses.size();i++){
+
+                                                    DeliveryCourse currentDeliveryCourse = deliveryCourses.get(i);
+
+                                                    if(currentDeliveryCourse.getLocationID().equals(deliveryCourse.getLocationID())){
+
+                                                        currentDeliveryCourse.setActive(false);
+                                                        currentDeliveryCourse.setWasPassed(true);
+                                                        adapter.notifyItemChanged(i);
+
+                                                        if(i + 1 < deliveryCourses.size()){
+
+                                                            DeliveryCourse newActiveDeliveryCourse  = allDeliveryCourses.get(i+1);
+                                                            newActiveDeliveryCourse.setActive(true);
+                                                            newActiveDeliveryCourse.setWasPassed(false);
+
+                                                            adapter.notifyItemChanged(i+1);
+                                                        }
+
+                                                        break;
+                                                    }
+                                                }
+
+                                            }
+                                            break;
+                                        }
+
+                                    }
+//                                    delivery.getRestaurantMenuItemsMap().
+
+                                }
+
+
+                            }
+
 
                         }
 
@@ -253,7 +343,8 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
 
         allDeliveryCourses.add(new DeliveryCourse(
-                "Driver Location",
+                delivery.getDriverID(),
+                "Driver Start point",
                 currentDeliveryLocation,
                 0,
                 true,
@@ -264,10 +355,13 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         final CollectionReference restaurantRef =
                 FirebaseFirestore.getInstance().collection("PartneredRestaurant");
 
+        final LatLng[] wayPoints = new LatLng[delivery.getRestaurantMenuItemsMap().size()];
+
+
         final boolean[] isFirst = {true};
-
+        int index = 0;
         for(String restaurant:delivery.getRestaurantMenuItemsMap().keySet()){
-
+            final int finalIndex = index;
             restaurantTasks.add(restaurantRef.document(restaurant).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
@@ -278,6 +372,9 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                                 double lat = documentSnapshot.getDouble("lat"),
                                         lng = documentSnapshot.getDouble("lng");
 
+                                wayPoints[finalIndex] = new LatLng(lat,lng);
+
+
                                 Log.d("ttt","course lat: "+lat+" , lng: "+lng);
 
                                 final String name = documentSnapshot.getString("name");
@@ -285,11 +382,18 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                                 restaurantLocation.setLatitude(lat);
                                 restaurantLocation.setLongitude(lng);
 
+                                HashMap<String,Object> restaurantMap = delivery.getRestaurantMenuItemsMap().get(restaurant);
+
+                                if(restaurantMap == null)
+                                    return;
+
+
                                 allDeliveryCourses.add(new DeliveryCourse(
+                                        restaurant,
                                         name,
                                         restaurantLocation,
-                                        delivery.getRestaurantMenuItemsMap().get(restaurant),
-                                        false,
+                                        ((Long) restaurantMap.get("itemCount")).intValue(),
+                                        (Boolean) restaurantMap.get("orderPickedUp"),
                                         isFirst[0]));
 
                                 addMarker(name,restaurantLocation);
@@ -302,6 +406,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                         }
                     }));
 
+            index++;
         }
 
         Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
@@ -314,6 +419,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
                 allDeliveryCourses.add(
                         new DeliveryCourse(
+                                delivery.getID(),
                                 "Delivery Location",
                                 deliveryLocation,
                                 0,
@@ -331,6 +437,63 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                 deliveryCourses.addAll(allDeliveryCourses);
 
                 adapter.notifyDataSetChanged();
+
+
+                final LatLng startLatLng = new LatLng(deliveryLocation.getLatitude(),deliveryLocation.getLongitude());
+                final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
+
+//                HashMap<String,String> directionsMap = new HashMap<>();
+//                directionsMap.put("DirectionsJsonObject","asdas");
+//
+//                deliveryRef.collection("Directions")
+//                        .document("Directions")
+//                        .set(directionsMap)
+//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                            @Override
+//                            public void onSuccess(Void aVoid) {
+//
+//                                Log.d("DirectionsApi","uploaded directions object to firestore");
+//                            }
+//                        }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//
+//                        Log.d("DirectionsApi","failed uploading " +
+//                                "json object to firestore: "+e.getMessage());
+//
+//                    }
+//                });
+//                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
+//                                    .getDirections(DriverDeliveryMapActivity.this
+//                                    ,startLatLng,wayPoints,destinationLatLng);
+//                deliveryRef.collection("Directions")
+//                        .document("Directions")
+//                        .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+//
+//                        if(documentSnapshot.exists()){
+//                            Log.d("DirectionsApi","gotten result from firestore");
+//                            new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
+//                                    .getDirections(CustomerDeliveryMapActivity.this,documentSnapshot.getString("DirectionsJsonObject"));
+//
+//                        }else{
+//                            Log.d("DirectionsApi","gotten result from string");
+//                            new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
+//                                    .getDirections(CustomerDeliveryMapActivity.this
+//                                            ,startLatLng,wayPoints,destinationLatLng);
+//                        }
+//                    }
+//                }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.d("DirectionsApi","gotten result from string");
+//                        new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
+//                                .getDirections(CustomerDeliveryMapActivity.this
+//                                        ,startLatLng,wayPoints,destinationLatLng);
+//                    }
+//                });
+//
 
             }
         });
@@ -530,4 +693,105 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    @Override
+    public void onDeliveryCourseClicked(int position) {
+
+        if(deliveryCourses.size() > position){
+
+            if(markerMap.containsKey(deliveryCourses.get(position).getLocationName())){
+
+                Marker marker = markerMap.get(deliveryCourses.get(position).getLocationName());
+                if(marker!=null){
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
+                    if(marker.isVisible()){
+                        marker.showInfoWindow();
+                    }
+                }
+            }
+
+        }
+
+    }
+
+
+    @Override
+    public void onMapClick(@NonNull LatLng latLng) {
+
+        if(driverDeliveryCourseRv.getVisibility() == View.VISIBLE){
+            driverDeliveryCourseRv.setVisibility(View.GONE);
+
+            if(driverDeliveryCourseArrowIv.getRotation() == 90) {
+                driverDeliveryCourseArrowIv.setRotation(-90);
+            }
+
+        }
+
+    }
+
+    @Override
+    public void onPolyLineFetched(PolylineOptions polylineOptions) {
+
+
+        if(polylineOptions != null && map != null){
+            PolylineOptions finalLineOptions = polylineOptions;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.addPolyline(finalLineOptions);
+                }
+            });
+        }
+
+
+    }
+
+    @Override
+    public void onDeliveryConfirmed() {
+
+        deliveryRef.update("status",Delivery.STATUS_DELIVERED)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+                FirebaseFirestore.getInstance().collection("Users")
+                        .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .update("currentDeliveryID",null)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                finish();
+
+                            }
+                        });
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+
+    }
+
+    @Override
+    public void onDeliveryDenied() {
+
+        deliveryRef.update("status",Delivery.STATUS_USER_DENIED_APPROVAL).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+                Toast.makeText(CustomerDeliveryMapActivity.this,
+                        "Please wait while your order is deliveried!", Toast.LENGTH_SHORT).show();
+
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+
+    }
 }

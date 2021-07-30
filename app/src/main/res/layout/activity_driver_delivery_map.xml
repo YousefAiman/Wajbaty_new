@@ -14,7 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-
     <ImageButton
         android:id="@+id/driverDeliveryBackIB"
         android:layout_width="0dp"
@@ -75,6 +74,7 @@
         app:layout_constraintTop_toBottomOf="@+id/driverDeliveryMessageIB">
 
         <LinearLayout
+            android:id="@+id/driverDeliveryLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -120,14 +120,17 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="25dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/filled_button_background"
+        android:background="@drawable/filled_button_inactive_background"
         android:elevation="3dp"
+        android:clickable="false"
         android:fontFamily="@font/amlarai_bold"
         android:paddingVertical="10dp"
-        android:text="Confirm Order Pickup"
         android:textAllCaps="false"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:paddingHorizontal="5dp"
         android:textColor="@color/white"
-        android:textSize="22sp"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 

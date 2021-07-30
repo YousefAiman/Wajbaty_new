@@ -391,6 +391,7 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
                 }else if(menuItems.isEmpty() && restaurantMenuRv.getVisibility() == View.VISIBLE){
 
                     restaurantMenuRv.setVisibility(View.INVISIBLE);
+                    noMenuItemTv.setVisibility(View.VISIBLE);
 
                 }
 

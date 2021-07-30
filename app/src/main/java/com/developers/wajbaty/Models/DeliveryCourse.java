@@ -6,6 +6,7 @@ import java.io.Serializable;
 
 public class DeliveryCourse implements Serializable {
 
+    private String locationID;
     private String locationName;
     private Location location;
     private int itemCount;
@@ -15,7 +16,8 @@ public class DeliveryCourse implements Serializable {
     public DeliveryCourse() {
     }
 
-    public DeliveryCourse(String locationName, Location location, int itemCount, boolean wasPassed, boolean isActive) {
+    public DeliveryCourse(String locationID,String locationName, Location location, int itemCount, boolean wasPassed, boolean isActive) {
+        this.setLocationID(locationID);
         this.locationName = locationName;
         this.location = location;
         this.itemCount = itemCount;
@@ -61,5 +63,13 @@ public class DeliveryCourse implements Serializable {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public String getLocationID() {
+        return locationID;
+    }
+
+    public void setLocationID(String locationID) {
+        this.locationID = locationID;
     }
 }

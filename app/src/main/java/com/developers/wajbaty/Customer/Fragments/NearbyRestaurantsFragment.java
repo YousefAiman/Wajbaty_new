@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -68,7 +69,8 @@ public class NearbyRestaurantsFragment extends Fragment implements
         NearbyRestaurantsAdapter.NearbyRestaurantsListener,
         LocationRequester.LocationRequestAction,
         GeocoderUtil.GeocoderResultListener,
-        View.OnClickListener {
+        View.OnClickListener ,
+        SearchView.OnQueryTextListener{
 
     //constants
     private static final double radius = 10 * 1000;
@@ -79,14 +81,18 @@ public class NearbyRestaurantsFragment extends Fragment implements
     private GoogleMap mMap;
 
     //views
-    private RecyclerView nearbyRestaurantsRv;
+    private RecyclerView nearbyRestaurantsRv,nearbyRestaurantsSearchRv;
     private ImageView nearbyRestaurantsDirectionsIv;
+    private SearchView nearbyRestaurantsSv;
 
     //restaurants adapter
     private NearbyRestaurantsAdapter nearbyAdapter;
     private ArrayList<PartneredRestaurant.NearbyPartneredRestaurant> nearbyRestaurants;
     private Query nearbyQuery;
     private LinearLayoutManager layoutManager;
+
+    //restaurant search adapter
+
 
     //current location
     private Location currentLocation;
@@ -176,6 +182,12 @@ public class NearbyRestaurantsFragment extends Fragment implements
 
         nearbyRestaurantsRv = view.findViewById(R.id.nearbyRestaurantsRv);
         nearbyRestaurantsDirectionsIv = view.findViewById(R.id.nearbyRestaurantsDirectionsIv);
+        nearbyRestaurantsSv = view.findViewById(R.id.nearbyRestaurantsSv);
+
+        nearbyRestaurantsSv.setOnQueryTextListener(this);
+        nearbyRestaurantsSv.setOnSearchClickListener(this);
+        nearbyRestaurantsSv.setOnClickListener(this);
+
         nearbyRestaurantsRv.setLayoutManager(layoutManager);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -268,6 +280,11 @@ public class NearbyRestaurantsFragment extends Fragment implements
                     .putExtra("ID", nearbyRestaurants.get(position).getID()));
 
         }
+
+    }
+
+    @Override
+    public void getRestaurantDirections(int position) {
 
     }
 
@@ -573,8 +590,38 @@ public class NearbyRestaurantsFragment extends Fragment implements
 
             }
 
+        }else if(v.getId() == nearbyRestaurantsSv.getId()){
+
+
+
         }
     }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+
+        query = query.toLowerCase();
+
+        for(PartneredRestaurant.NearbyPartneredRestaurant restaurant:nearbyRestaurants){
+            if(restaurant.getName().equals(query) ||
+                    restaurant.getName().contains(query) ||
+                    query.contains(restaurant.getName())){
+
+
+
+            }
+
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
+    }
+
+
 
     private class ScrollListener extends RecyclerView.OnScrollListener {
         @Override

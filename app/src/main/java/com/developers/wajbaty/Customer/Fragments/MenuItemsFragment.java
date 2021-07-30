@@ -1,5 +1,6 @@
 package com.developers.wajbaty.Customer.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.developers.wajbaty.Activities.MenuItemActivity;
 import com.developers.wajbaty.Adapters.MenuItemsAdapter;
 import com.developers.wajbaty.Models.MenuItem;
 import com.developers.wajbaty.Models.MenuItemModel;
@@ -95,7 +97,16 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         final FirebaseFirestore firestore =FirebaseFirestore.getInstance();
 
-        mainQuery = firestore.collection("MenuItems").whereEqualTo("region",region);
+        filter = "rating";
+
+        mainQuery = firestore.collection("MenuItems").limit(MENU_ITEM_LIMIT);
+
+        if(region!=null && !region.isEmpty()){
+            mainQuery = mainQuery.whereEqualTo("region",region);
+        }
+
+        Log.d("ttt","region: "+region);
+
 
         likedMenuItems = new ArrayList<>();
         menuItems = new ArrayList<>();
@@ -137,15 +148,17 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
 
         isLoadingItems = true;
         Query currentQuery = mainQuery;
-        if (lastDocSnapshot != null) {
-            currentQuery = currentQuery.startAfter(lastDocSnapshot);
-        }
+
         if(category!=null && !category.isEmpty()){
             currentQuery = currentQuery.whereEqualTo("category",category);
         }
 
         if(filter!=null && !filter.isEmpty()){
             currentQuery = currentQuery.orderBy(filter, Query.Direction.DESCENDING);
+        }
+
+        if (lastDocSnapshot != null) {
+            currentQuery = currentQuery.startAfter(lastDocSnapshot);
         }
 
         currentQuery.get().addOnSuccessListener(snapshots -> {
@@ -157,12 +170,22 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
                     final List<Task<QuerySnapshot>> tasks = new ArrayList<>();
 
                     for (DocumentSnapshot snapshot: snapshots) {
+
+                        Log.d("ttt","looking if: "+snapshot.getId() +" is liked");
+
                         tasks.add(userFavRef.whereArrayContains("FavoriteMenuItems",snapshot.getId())
                                 .limit(1).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                             @Override
                             public void onSuccess(QuerySnapshot snapshots) {
+                                Log.d("ttt","checking liked for: "+snapshot.getId()+" success");
                                 if (!snapshots.isEmpty()) {
-                                    likedMenuItems.add(snapshot.getId());
+                                    Log.d("ttt","is liked");
+                                    if(!likedMenuItems.contains(snapshot.getId())){
+                                        likedMenuItems.add(snapshot.getId());
+                                    }
+                                }else{
+                                    Log.d("ttt","is not liked");
+                                    likedMenuItems.remove(snapshot.getId());
                                 }
                             }
                         }));
@@ -171,7 +194,7 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
                     Tasks.whenAllSuccess(tasks).addOnSuccessListener(new OnSuccessListener<List<Object>>() {
                         @Override
                         public void onSuccess(List<Object> objects) {
-
+                            Log.d("ttt","Tasks.whenAllSuccess");
                             if(isInitial){
                                 menuItems.addAll(snapshots.toObjects(MenuItem.class));
                             }else{
@@ -179,57 +202,81 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
                             }
 
                         }
+                    }).addOnCompleteListener(new OnCompleteListener<List<Object>>() {
+                        @Override
+                        public void onComplete(@NonNull Task<List<Object>> task) {
+
+                            if (isInitial) {
+
+                                if (!menuItems.isEmpty()) {
+
+                                    Log.d("ttt","!menuItems.isEmpty()");
+
+                                    adapter.notifyDataSetChanged();
+
+                                    if (menuItems.size() == MENU_ITEM_LIMIT && scrollListener == null) {
+                                        menuItemsRv.addOnScrollListener(scrollListener = new ScrollListener());
+                                    }
+
+                                }else{
+                                    checkNoItemsFound();
+                                    Log.d("ttt","menuItems.isEmpty()");
+                                }
+                            } else {
+
+
+                                if (!menuItems.isEmpty()) {
+                                    Log.d("ttt","!menuItems.isEmpty()");
+                                    int size = task.getResult().size();
+
+                                    adapter.notifyItemRangeInserted(
+                                            menuItems.size() - size,size);
+
+                                    if (task.getResult().size() < MENU_ITEM_LIMIT && scrollListener != null) {
+                                        menuItemsRv.removeOnScrollListener(scrollListener);
+                                        scrollListener = null;
+                                    }
+                                }else{
+                                    Log.d("ttt","menuItems.isEmpty()");
+                                }
+                            }
+
+
+
+                            isLoadingItems = false;
+                            menuItemsProgressBar.setVisibility(View.GONE);
+                        }
                     });
 
+            }else if(isInitial){
+
+                checkNoItemsFound();
             }
 
-        }).addOnCompleteListener(task -> {
-
-            if (task.isSuccessful() && task.getResult() != null) {
-
-                if (isInitial) {
-
-                    if (!menuItems.isEmpty()) {
-
-                        adapter.notifyDataSetChanged();
-
-                        if (menuItems.size() == MENU_ITEM_LIMIT && scrollListener == null) {
-                            menuItemsRv.addOnScrollListener(scrollListener = new ScrollListener());
-                        }
-
-                    }
-                } else {
-
-                    if (!task.getResult().isEmpty()) {
-
-                        int size = task.getResult().size();
-
-                        adapter.notifyItemRangeInserted(
-                                menuItems.size() - size,size);
-
-                        if (task.getResult().size() < MENU_ITEM_LIMIT && scrollListener != null) {
-                            menuItemsRv.removeOnScrollListener(scrollListener);
-                            scrollListener = null;
-                        }
-                    }
-                }
-            }
-
-            if(menuItems.isEmpty() && noMenuItemTv.getVisibility() == View.GONE){
-                noMenuItemTv.setVisibility(View.VISIBLE);
-            }else if(!menuItems.isEmpty() && noMenuItemTv.getVisibility() == View.VISIBLE){
-                noMenuItemTv.setVisibility(View.GONE);
-            }
-
-            isLoadingItems = false;
-            menuItemsProgressBar.setVisibility(View.GONE);
-
-        }).addOnFailureListener(new OnFailureListener() {
+        })
+//                .addOnCompleteListener(task -> {
+//
+//            Log.d("ttt","isInitial: "+isInitial);
+//
+//
+//        })
+                .addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 isLoadingItems = false;
+                menuItemsProgressBar.setVisibility(View.GONE);
             }
         });
+
+    }
+
+
+    void checkNoItemsFound(){
+        if(menuItems.isEmpty() && noMenuItemTv.getVisibility() == View.GONE){
+            noMenuItemTv.setVisibility(View.VISIBLE);
+        }else if(!menuItems.isEmpty() && noMenuItemTv.getVisibility() == View.VISIBLE){
+            noMenuItemTv.setVisibility(View.GONE);
+        }
 
     }
 
@@ -237,7 +284,7 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
     public void onFilterSelected(String category, String filterBy) {
 
         this.category = category;
-        this.filter = category;
+        this.filter = filterBy;
 
         menuItems.clear();
         adapter.notifyDataSetChanged();
@@ -249,6 +296,9 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
     @Override
     public void showMenuItem(int position) {
 
+        final Intent menuItemIntent = new Intent(requireContext(), MenuItemActivity.class);
+        menuItemIntent.putExtra("MenuItem",menuItems.get(position));
+        startActivity(menuItemIntent);
 
 
     }

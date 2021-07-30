@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.developers.wajbaty.Activities.HomeActivity;
 import com.developers.wajbaty.Adapters.DriverDeliveriesAdapter;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
 import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
@@ -48,7 +46,6 @@ import com.firebase.geofire.GeoQueryBounds;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.common.util.concurrent.Monitor;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
@@ -137,7 +134,6 @@ public class DriverDeliveriesFragment extends Fragment implements
 
         if (getArguments() != null) {
             addressMap = (HashMap<String, Object>) getArguments().getSerializable(ADDRESS_MAP);
-
         }
 
         deliveries = new ArrayList<>();
@@ -206,13 +202,11 @@ public class DriverDeliveriesFragment extends Fragment implements
 
         driverDeliveriesRv.setAdapter(deliveriesAdapter);
 
-        checkAndFetchCurrentDelivery();
-
-        listenToNewDeliveryRequests();
+        listenToDriverChanges();
 
     }
 
-    private void checkAndFetchCurrentDelivery(){
+    private void listenToDriverChanges(){
 
 //        final List<Integer> activeStatuses = new ArrayList<>();
 //        activeStatuses.add(Delivery.STATUS_ACCEPTED);
@@ -222,28 +216,48 @@ public class DriverDeliveriesFragment extends Fragment implements
                     boolean isInitial = true;
                     private long currentStatus;
                     @Override
-                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                    public void onEvent(@Nullable DocumentSnapshot value,
+                                        @Nullable FirebaseFirestoreException error) {
 
                         if(value!=null){
 
-                            if(value.contains("currentDeliveryId")){
+                            if(value.contains("currentDeliveryID")){
 
-                                String currentDeliveryId = value.getString("currentDeliveryId");
+                                String currentDeliveryId = value.getString("currentDeliveryID");
 
                                 if(isInitial){
+
                                     if(currentDeliveryId!=null){
                                         currentDeliveryID = currentDeliveryId;
-                                        listenToCurrentDelivery(currentDeliveryId,isInitial);
+                                        listenToCurrentDelivery(currentDeliveryId, true);
+                                    }else{
+                                        getPendingDeliveries(true);
+                                        listenToNewDeliveryRequests();
                                     }
 
+                                    if(value.contains("status")){
+                                        currentStatus = value.getLong("status");
+                                        if(currentStatus == DeliveryDriver.STATUS_AVAILABLE){
+                                            driverDeliveriesWorkingSwitch.setChecked(true);
+                                        }else if(currentStatus == DeliveryDriver.STATUS_UNAVAILABLE){
+                                            driverDeliveriesNotWorkingTv.setVisibility(View.VISIBLE);
+                                        }
+                                    }
 
-                                    getPendingDeliveries(true);
                                 }else{
 
                                     if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
-                                        if(currentDeliveryID == null){
+
+                                        if(currentDeliveryID == null || !currentDeliveryID.equals(currentDeliveryId)){
+                                            if(currentDeliveryID!=null && currentDeliverySnapshotListener!=null){
+                                                currentDeliverySnapshotListener.remove();
+                                            }
+
                                             currentDeliveryID = currentDeliveryId;
-                                            listenToCurrentDelivery(currentDeliveryID,isInitial);
+                                            listenToCurrentDelivery(currentDeliveryID, false);
+
+
+                                            stopListeningToNewDeliveries();
                                         }
                                     }else if(currentDeliveryID != null){
 
@@ -252,7 +266,13 @@ public class DriverDeliveriesFragment extends Fragment implements
 
                                         currentDeliveryID = null;
                                         currentDeliveryLayout.setVisibility(View.GONE);
-                                        currentDeliverySnapshotListener.remove();
+
+                                        if(currentDeliverySnapshotListener!=null){
+                                            currentDeliverySnapshotListener.remove();
+                                        }
+
+                                        getPendingDeliveries(true);
+                                        listenToNewDeliveryRequests();
                                     }
                                 }
                             }else{
@@ -262,27 +282,22 @@ public class DriverDeliveriesFragment extends Fragment implements
 
                                 currentDeliveryID = null;
                                 currentDeliveryLayout.setVisibility(View.GONE);
-                                currentDeliverySnapshotListener.remove();
+                                if(currentDeliverySnapshotListener!=null){
+
+                                    currentDeliverySnapshotListener.remove();
+                                }
+
+
                             }
 
                             if(isInitial){
 
-                                if(value.contains("status")){
-                                    currentStatus = value.getLong("status");
-                                    if(currentStatus == DeliveryDriver.STATUS_AVAILABLE){
-                                        driverDeliveriesWorkingSwitch.setChecked(true);
-//                                        startLocationService();
-                                    }else if(currentStatus == DeliveryDriver.STATUS_UNAVAILABLE){
-                                        driverDeliveriesNotWorkingTv.setVisibility(View.VISIBLE);
-                                    }
-                                }
-
-
                                 Log.d("ttt","getPendingDeliveries 2");
-                                getPendingDeliveries(true);
+//                                getPendingDeliveries(true);
 
                             }
-                            if(value.contains("status")){
+
+                            if(!isInitial && value.contains("status")){
                                 long status = value.getLong("status");
 
                                 if(status == DeliveryDriver.STATUS_AVAILABLE && currentStatus != DeliveryDriver.STATUS_AVAILABLE){
@@ -298,8 +313,6 @@ public class DriverDeliveriesFragment extends Fragment implements
                                 }
                                 currentStatus = status;
                             }
-
-
 
 //
 //                            if(isInitial){
@@ -380,7 +393,9 @@ public class DriverDeliveriesFragment extends Fragment implements
                                 currentDeliveryID = value.getId();
                                 Delivery delivery = value.toObject(Delivery.class);
 
-                                showCurrentDelivery(delivery);
+                                if (delivery != null) {
+                                    showCurrentDelivery(delivery);
+                                }
 
                                 if(isInitial){
 
@@ -392,7 +407,7 @@ public class DriverDeliveriesFragment extends Fragment implements
 
 
                                     Log.d("ttt","getPendingDeliveries 4");
-                                    getPendingDeliveries(true);
+//                                    getPendingDeliveries(true);
                                 }
 
                             }else{
@@ -406,7 +421,10 @@ public class DriverDeliveriesFragment extends Fragment implements
 
                                         currentDeliveryID = null;
                                         currentDeliveryLayout.setVisibility(View.GONE);
-                                        currentDeliverySnapshotListener.remove();
+                                        if(currentDeliverySnapshotListener!=null){
+
+                                            currentDeliverySnapshotListener.remove();
+                                        }
 
 //                                        currentDeliverySnapshotListener.remove();
 //                                        currentDeliverySnapshotListener = null;
@@ -417,7 +435,7 @@ public class DriverDeliveriesFragment extends Fragment implements
                             }
                         }else if(isInitial){
                             Log.d("ttt","getPendingDeliveries 5");
-                            getPendingDeliveries(true);
+//                            getPendingDeliveries(true);
                         }
 
 

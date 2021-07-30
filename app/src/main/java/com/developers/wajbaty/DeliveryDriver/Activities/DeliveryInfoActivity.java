@@ -42,6 +42,8 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -221,7 +223,9 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
         deliveryInfoAddressTv.setText("Address: "+delivery.getAddress());
         deliveryInfoCoordinatesTv.setText("Coordinates: ["+
-                delivery.getLat()+","+delivery.getLng()+"]");
+                 BigDecimal.valueOf(delivery.getLat())
+                .setScale(2, RoundingMode.DOWN).floatValue() +","+
+                BigDecimal.valueOf(delivery.getLng()).setScale(2,RoundingMode.DOWN)+"]");
 
         deliveryInfoOrderTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         deliveryInfoTotalPriceTv.setText(delivery.getTotalCost() + delivery.getCurrency());
@@ -304,9 +308,11 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                                                 @Override
                                                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
+                                                    final long count = (long) delivery.getRestaurantMenuItemsMap().get(restaurant).get("itemCount");
+
                                                     orderedCartItem.add(
                                                             new CartItemRestaurantHeader("From "+documentSnapshot.getString("name")+
-                                                                    delivery.getRestaurantMenuItemsMap().get(restaurant)));
+                                                                    " - "+ count + (count == 1?" item":" items")));
 
                                                     for(String menuItemRestaurant:menuItemRestaurtantMap.keySet()){
 
@@ -419,7 +425,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
 
                                          firestore.collection("Users").document(currentUid)
-                                                 .update("currentDeliveryId",delivery.getID(),
+                                                 .update("currentDeliveryID",delivery.getID(),
                                                          "status", DeliveryDriver.STATUS_DELIVERING)
                                                  .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                      @Override
@@ -443,6 +449,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                                                                          startActivity(intent);
 
+                                                                         finish();
+
                                                                      }
                                                                  }).addOnFailureListener(new OnFailureListener() {
                                                              @Override
@@ -453,7 +461,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                                                                  deliveryInfoStartDeliveryBtn.setClickable(true);
 
                                                                  firestore.collection("Users").document(currentUid)
-                                                                         .update("currentDeliveryId",null);
+                                                                         .update("currentDeliveryID",null);
 
                                                              }
                                                          });

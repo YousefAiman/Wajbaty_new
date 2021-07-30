@@ -13,32 +13,61 @@
         android:layout_height="match_parent"
         android:name="com.google.android.gms.maps.SupportMapFragment"/>
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/nearbyRestaurantsRv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingHorizontal="15dp"
         android:clipToPadding="false"
-        android:visibility="gone"
+        android:visibility="visible"
+        tools:listitem="@layout/item_nearby_map_restaurant"
         android:overScrollMode="never"
-        app:layout_constraintHeight_percent="0.38"
-        android:layout_marginBottom="40dp"
+        app:layout_constraintHeight_percent="0.35"
+        android:layout_marginBottom="15dp"
         app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/nearbyRestaurantsSearchRv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/search_results_list_background"
+        android:layout_marginTop="25dp"
+        android:paddingTop="30dp"
+        tools:listitem="@layout/item_restaurant_search_result"
+        tools:itemCount="3"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="@+id/nearbyRestaurantsSv"
+        app:layout_constraintStart_toStartOf="@+id/nearbyRestaurantsSv"
+        app:layout_constraintTop_toTopOf="@+id/nearbyRestaurantsSv" />
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/nearbyRestaurantsSv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@drawable/search_background"
+        app:defaultQueryHint="Search for a restaurant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
 
     <ImageView
         android:id="@+id/nearbyRestaurantsDirectionsIv"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintWidth_percent="0.15"
-        app:layout_constraintDimensionRatio="1"
-        android:background="@drawable/white_circle"
-        android:layout_marginBottom="20dp"
-        android:visibility="gone"
-        android:padding="5dp"
         android:layout_marginEnd="20dp"
+        android:background="@drawable/white_circle"
+        android:padding="5dp"
         android:src="@drawable/directions_icon"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:visibility="gone"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/nearbyRestaurantsRv"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.15" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -26,9 +26,11 @@ import android.widget.Toast;
 
 import com.developers.wajbaty.Adapters.MessageTextMapAdapter;
 import com.developers.wajbaty.Models.MessageMap;
+import com.developers.wajbaty.Models.Notification;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.BadgeUtil;
 import com.developers.wajbaty.Utils.CloudMessagingNotificationsSender;
+import com.developers.wajbaty.Utils.FirestoreNotificationSender;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -137,6 +139,7 @@ public class MessagingActivity extends AppCompatActivity
             final Bundle messagingBundle = intent.getBundleExtra("messagingBundle");
 
             messagingUserId = messagingBundle.getString("messagingUserId");
+            intendedDeliveryID = messagingBundle.getString("destinationUID");
 
             if (Build.VERSION.SDK_INT < 26) {
                 BadgeUtil.decrementBadgeNum(this);
@@ -149,8 +152,8 @@ public class MessagingActivity extends AppCompatActivity
 
         }
 
-        messagingUserId = "56kj04FZNwYwj533gLqBDKDr36T2";
-        intendedDeliveryID = "1e33d5b8-3f0d-40c6-8f9c-127d7b8e8562";
+//        messagingUserId = "56kj04FZNwYwj533gLqBDKDr36T2";
+//        intendedDeliveryID = "1e33d5b8-3f0d-40c6-8f9c-127d7b8e8562";
 
 
         sharedPreferences.edit()
@@ -389,7 +392,7 @@ public class MessagingActivity extends AppCompatActivity
                     "New message from: "+currentUserName,
                     message,
                     currentImageURL,
-                    messagingUserId,
+                    intendedDeliveryID,
                     CloudMessagingNotificationsSender.Data.TYPE_MESSAGE
             );
 
@@ -543,6 +546,7 @@ public class MessagingActivity extends AppCompatActivity
                                             addListenerForNewMessages();
                                             addDeleteFieldListener();
                                             checkUserActivityAndSendNotifications(messageMap.getContent());
+
 
                                             sendMessageBtn.setOnClickListener(new MessageSenderClickListener());
                                             sendMessageBtn.setClickable(true);
@@ -823,8 +827,10 @@ public class MessagingActivity extends AppCompatActivity
     }
 
     void sendBothNotifs(String message) {
-//        FirestoreNotificationSender.sendFirestoreNotification(intendedPromoId,
-//                messagingUserId, "message");
+
+        FirestoreNotificationSender.sendNotification(intendedDeliveryID, messagingUserId,
+                Notification.TYPE_MESSAGE, message);
+
         sendCloudNotification(message);
     }
 

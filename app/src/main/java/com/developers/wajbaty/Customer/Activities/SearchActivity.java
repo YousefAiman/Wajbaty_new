@@ -1,4 +1,4 @@
-package com.developers.wajbaty.Activities;
+package com.developers.wajbaty.Customer.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,12 +6,17 @@ import android.os.Bundle;
 
 import com.developers.wajbaty.R;
 
-public class CustomerHomeActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_customer_home);
+        setContentView(R.layout.activity_search);
+
+
+
+
+
 
 
 

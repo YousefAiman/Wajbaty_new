@@ -83,12 +83,16 @@ public class DeliveryModel extends Observable {
                         Log.d("ttt","");
                         for(Task<?> cartTask:cartTasks){
                             if(!cartTask.isSuccessful()){
-                                deliveryRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        notifyError(DELIVERY_REQUEST_FAILED,"uploading all cart items to delivery failed");
-                                    }
-                                });
+
+
+                                deleteDelivery(DELIVERY_REQUEST_FAILED,"uploading all cart items to delivery failed");
+
+//                                deliveryRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                    @Override
+//                                    public void onComplete(@NonNull Task<Void> task) {
+//                                        notifyError(DELIVERY_REQUEST_FAILED,"uploading all cart items to delivery failed");
+//                                    }
+//                                });
                                 return;
                             }
                         }
@@ -97,6 +101,7 @@ public class DeliveryModel extends Observable {
 
                     }
                 });
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -104,6 +109,44 @@ public class DeliveryModel extends Observable {
 
                 notifyError(DELIVERY_REQUEST_FAILED,e.getMessage());
 
+            }
+        });
+
+    }
+
+    private void deleteDelivery(int errorCode,String errorMessage){
+
+
+        deliveryRef.collection("CartItems")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot snapshots) {
+
+                if(snapshots!=null && !snapshots.isEmpty()){
+//                                    List<Task<Void>> deletedTasks = new ArrayList<>();
+//
+//                                    deletedTasks
+                    for(DocumentSnapshot snapshot:snapshots){
+                        snapshot.getReference().delete();
+                    }
+                }
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+
+
+
+        deliveryRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(errorCode !=0  && errorMessage!=null){
+                    notifyError(errorCode,errorMessage);
+                }
             }
         });
 
@@ -188,12 +231,7 @@ public class DeliveryModel extends Observable {
 
                         if(noResult){
 
-                            deliveryRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    notifyError(DELIVERY_DRIVER_NOT_FOUND,"No drivers found in your range");
-                                }
-                            });
+                            deleteDelivery(DELIVERY_DRIVER_NOT_FOUND,"No drivers found in your range");
 
                         }else{
                             notifyObservers(DELIVERY_DRIVERS_NOTIFIED);
@@ -436,28 +474,7 @@ public class DeliveryModel extends Observable {
                     @Override
                     public void onSuccess(Void aVoid) {
 
-                        deliveryRef.collection("CartItems")
-                                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                            @Override
-                            public void onSuccess(QuerySnapshot snapshots) {
-
-                                if(snapshots!=null && !snapshots.isEmpty()){
-//                                    List<Task<Void>> deletedTasks = new ArrayList<>();
-//
-//                                    deletedTasks
-                                    for(DocumentSnapshot snapshot:snapshots){
-                                        snapshot.getReference().delete();
-                                    }
-                                }
-
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-
-                            }
-                        });
-                        deliveryRef.delete();
+                        deleteDelivery(DELIVERY_REQUEST_FAILED,"uploading all cart items to delivery failed");
                     }
                 });
 

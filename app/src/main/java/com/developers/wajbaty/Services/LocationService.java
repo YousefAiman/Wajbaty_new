@@ -117,7 +117,7 @@ public class LocationService extends Service {
 
         LocationRequest locationRequest = LocationRequest.create().
                 setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10000).setFastestInterval(5000).setSmallestDisplacement(5);
+                .setInterval(5000).setFastestInterval(2000).setSmallestDisplacement(3);
 
         client = LocationServices.getFusedLocationProviderClient(this);
 
@@ -133,18 +133,16 @@ public class LocationService extends Service {
                 public void onLocationResult(@NonNull LocationResult locationResult) {
 
                     final Location location = locationResult.getLastLocation();
-                    if(location!=null){
 
-                        if(observers!=null){
-                            for(LocationChangeObserver observer:observers){
-                                observer.notifyObservers(location);
-                            }
+                    if(observers!=null){
+                        for(LocationChangeObserver observer:observers){
+                            observer.notifyObservers(location);
                         }
-                        Log.d("ttt","location service latlng: "+location.getLatitude()+
-                                ","+location.getLongitude());
+                    }
+                    Log.d("ttt","location service latlng: "+location.getLatitude()+
+                            ","+location.getLongitude());
 
 //                        currentLatLng = new LatLng(location.getLatitude(),location.getLongitude());
-                    }
 
 
                 }

@@ -50,6 +50,19 @@
             app:layout_constraintBottom_toBottomOf="@+id/nearbyRestaurantImageIV"
             app:layout_constraintStart_toStartOf="parent"/>
 
+        <ImageView
+            android:id="@+id/nearbyRestaurantDirectionsIv"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/white_circle"
+            android:padding="5dp"
+            android:src="@drawable/directions_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/nearbyRestaurantDistanceTv"
+            app:layout_constraintDimensionRatio="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.2" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

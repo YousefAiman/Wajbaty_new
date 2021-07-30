@@ -46,6 +46,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -194,9 +195,11 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
             final HashMap<String, Float> menuItemPriceMap = new HashMap<>();
 
-            final Map<String,Integer> restaurantMenuItemsMap = new HashMap<>();
+            final HashMap<String,Integer> restaurantMenuItemsMap = new HashMap<>();
 
             final float[] totalCost = {0};
+
+//            final CollectionReference restaurant
 
             Tasks.whenAllComplete(tasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
                 @Override
@@ -216,11 +219,26 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                                 if(restaurantMenuItemsMap.containsKey(restaurantID)){
 
+
                                     restaurantMenuItemsMap.put(restaurantID,
                                             restaurantMenuItemsMap.get(restaurantID)+1);
 
+
+//                                    HashMap<String,Object> restaurantMap = restaurantMenuItemsMap.get(restaurantID);
+//
+//                                    if(restaurantMap!=null){
+//                                        restaurantMap.put("itemCount",((Integer)restaurantMap.get("itemCount")) + 1);
+//                                    }
+
                                 }else{
+//                                    HashMap<String,Object> restaurantMap = new HashMap<>();
+//                                    restaurantMap.put("itemCount",1);
+//                                    restaurantMap.put("orderPickedUp",false);
+//
+//                                    restaurantMenuItemsMap.put(restaurantID,restaurantMap);
+
                                     restaurantMenuItemsMap.put(restaurantID,1);
+
                                 }
 
                             }

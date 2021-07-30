@@ -44,8 +44,8 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
 
     public interface NearbyRestaurantsListener {
         void selectRestaurant(int position);
-
         void reSelectRestaurant(int position);
+        void getRestaurantDirections(int position);
     }
 
     private void updatedCurrentLocation(Location currentLocation) {
@@ -106,7 +106,7 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
 
     public class NearbyRestaurantItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final ImageView nearbyRestaurantImageIV;
+        private final ImageView nearbyRestaurantImageIV,nearbyRestaurantDirectionsIv;
         private final TextView nearbyRestaurantNameTv, nearbyRestaurantDistanceTv;
         private final CardView nearbyRestaurantCardView;
 
@@ -114,11 +114,13 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
             super(itemView);
 
             nearbyRestaurantImageIV = itemView.findViewById(R.id.nearbyRestaurantImageIV);
+            nearbyRestaurantDirectionsIv = itemView.findViewById(R.id.nearbyRestaurantDirectionsIv);
             nearbyRestaurantNameTv = itemView.findViewById(R.id.nearbyRestaurantNameTv);
             nearbyRestaurantDistanceTv = itemView.findViewById(R.id.nearbyRestaurantDistanceTv);
             nearbyRestaurantCardView = itemView.findViewById(R.id.nearbyRestaurantCardView);
 
             itemView.setOnClickListener(this);
+            nearbyRestaurantDirectionsIv.setOnClickListener(this);
         }
 
         private void bind(PartneredRestaurant.NearbyPartneredRestaurant nearbyRestaurant) {
@@ -161,14 +163,19 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
         @Override
         public void onClick(View v) {
 
-            if (lastSelected != getAdapterPosition()) {
+            if(v.getId() == nearbyRestaurantDirectionsIv.getId()){
+
+                nearbyRestaurantsListener.getRestaurantDirections(getAdapterPosition());
+
+            }else{
+                if (lastSelected != getAdapterPosition()) {
 //        if(lastSelected != -1){
 //          nearbyRestaurants.get(lastSelected).setSelected(false);
 //        }
 
 //                int currentPosition = getAdapterPosition();
 //                selection(currentPosition, lastSelected,nearbyRestaurantNameTv);
-                lastSelected = getAdapterPosition();
+                    lastSelected = getAdapterPosition();
 
 //                if(lastSelected != -1){
 //
@@ -200,14 +207,15 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
 //                newView.requestLayout();
 //
 //
-                nearbyRestaurantsListener.selectRestaurant(lastSelected);
+                    nearbyRestaurantsListener.selectRestaurant(lastSelected);
 
 //        nearbyRestaurants.get(lastSelected).setSelected(true);
 //        setMarginTop(nearbyRestaurantCardView,0);
 //        notifyItemChanged(lastSelected);
 
-            } else {
-                nearbyRestaurantsListener.reSelectRestaurant(getAdapterPosition());
+                } else {
+                    nearbyRestaurantsListener.reSelectRestaurant(getAdapterPosition());
+                }
             }
         }
     }

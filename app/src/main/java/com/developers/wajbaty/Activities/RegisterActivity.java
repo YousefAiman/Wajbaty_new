@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,6 +67,8 @@ public class RegisterActivity extends AppCompatActivity {
     RadioButton customerRadioButton, restaurantRadioButton, deliveryRadioButton;
     User user;
     String defaultCode = "";
+
+    private Map<String,Object> addressMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -245,6 +249,8 @@ public class RegisterActivity extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         phoneNumberUtil = PhoneNumberUtil.getInstance();
 
+        addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+
     }
 
     private void initViews() {
@@ -352,6 +358,17 @@ public class RegisterActivity extends AppCompatActivity {
 
             List<String> supportedCountryCodes = new ArrayList<>(phoneNumberUtil.getSupportedRegions());
 
+
+            defaultCode = defaultCode.toUpperCase();
+
+            String defaultCode;
+
+
+            if (addressMap != null && addressMap.containsKey("countryCode")) {
+                defaultCode = (String) addressMap.get("countryCode");
+            } else {
+                defaultCode = Locale.getDefault().getCountry();
+            }
 
             defaultCode = defaultCode.toUpperCase();
 

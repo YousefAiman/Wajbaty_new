@@ -1,4 +1,7 @@
 <resources>
+
+    <string name="directions_api_key" translatable="false">AIzaSyD3w_suj_6rdj8Uo0xnXnlbIs7aCTS0-KA</string>
+
     <string name="title_activity_maps">Map</string>
     <string name="app_name">Wajbitna</string>
     <string name="create_an_account">Create an account</string>
