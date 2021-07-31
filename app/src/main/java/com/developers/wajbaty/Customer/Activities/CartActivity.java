@@ -71,10 +71,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
     //views
     private Toolbar cartToolbar;
     private RecyclerView cartRv;
-    private TextView cartTotalPriceTv,noCartItemTv;
+    private TextView cartTotalPriceTv, noCartItemTv;
     private Button cartOrderDeliveryBtn;
     private ProgressBar cartProgressBar;
-
 
 
     @Override
@@ -92,26 +91,26 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
     }
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         firestore = FirebaseFirestore.getInstance();
 
         cartItems = new ArrayList<>();
-        cartAdapter = new CartAdapter(cartItems,this);
+        cartAdapter = new CartAdapter(cartItems, this);
 
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         mainQuery = firestore.collection("Users")
                 .document(currentUid).collection("Cart")
                 .orderBy("timeAdded", Query.Direction.DESCENDING)
-        .limit(Math.min(CART_ITEM_LIMIT, 10));
+                .limit(Math.min(CART_ITEM_LIMIT, 10));
 
         cartRef = firestore.collection("Users")
                 .document(currentUid).collection("Cart");
 
     }
 
-    private void getViews(){
+    private void getViews() {
 
         cartToolbar = findViewById(R.id.cartToolbar);
         cartRv = findViewById(R.id.cartRv);
@@ -120,42 +119,42 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
         cartTotalPriceTv = findViewById(R.id.cartTotalPriceTv);
         cartOrderDeliveryBtn = findViewById(R.id.cartOrderDeliveryBtn);
 
-        cartToolbar.setNavigationOnClickListener(v-> finish());
+        cartToolbar.setNavigationOnClickListener(v -> finish());
         cartOrderDeliveryBtn.setOnClickListener(this);
         cartRv.setAdapter(cartAdapter);
 
     }
 
-    private void fetchCartInfo(){
+    private void fetchCartInfo() {
 
         firestore.collection("Users")
                 .document(currentUid).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot snapshot) {
+                    @Override
+                    public void onSuccess(DocumentSnapshot snapshot) {
 
-                if(snapshot.exists() && snapshot.contains("CartTotal")){
-                    totalCost = snapshot.getLong("CartTotal");
-                }else{
-                    totalCost = 0;
-                }
+                        if (snapshot.exists() && snapshot.contains("CartTotal")) {
+                            totalCost = snapshot.getLong("CartTotal");
+                        } else {
+                            totalCost = 0;
+                        }
 
-                cartTotalPriceTv.setText("Total Price: "+totalCost+"ILS");
+                        cartTotalPriceTv.setText("Total Price: " + totalCost + "ILS");
 
-                if(snapshot.contains("currentDeliveryID") && snapshot.get("currentDeliveryID")!=null){
+                        if (snapshot.contains("currentDeliveryID") && snapshot.get("currentDeliveryID") != null) {
 
-                    cartOrderDeliveryBtn.setClickable(false);
-                    cartOrderDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
+                            cartOrderDeliveryBtn.setClickable(false);
+                            cartOrderDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
 
-                }
+                        }
 
-            }
-        });
+                    }
+                });
 
     }
 
 
-    private void getCartItems(boolean isInitial){
+    private void getCartItems(boolean isInitial) {
 
         showProgressBar();
 
@@ -172,10 +171,10 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
             if (!snapshots.isEmpty()) {
 
-                Log.d(TAG,"gotten cart items size: "+snapshots.size());
+                Log.d(TAG, "gotten cart items size: " + snapshots.size());
 
-                for(DocumentSnapshot snap:snapshots){
-                    Log.d(TAG,"cart item id: "+snap.getId());
+                for (DocumentSnapshot snap : snapshots) {
+                    Log.d(TAG, "cart item id: " + snap.getId());
                     addedCartItemsIds.add(snap.getId());
                 }
 
@@ -189,9 +188,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 //                } else {
 //                    cartItems.addAll(cartItems.size() - 1, snapshots.toObjects(CartItem.class));
 //                }
-            }else if(cartItems.isEmpty() && cartRv.getVisibility() == View.VISIBLE){
+            } else if (cartItems.isEmpty() && cartRv.getVisibility() == View.VISIBLE) {
 
-                Log.d(TAG,"empty cart items");
+                Log.d(TAG, "empty cart items");
 
                 cartRv.setVisibility(View.INVISIBLE);
 
@@ -206,43 +205,43 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
 
-                        Log.d(TAG,"gotten menu items: "+snapshots.size());
+                        Log.d(TAG, "gotten menu items: " + snapshots.size());
 
                         final List<DocumentSnapshot> documentSnapshots = snapshots.getDocuments();
 
-                        for(int i=0;i<snapshots.size();i++){
-                            final DocumentSnapshot snapshot  = documentSnapshots.get(i);
+                        for (int i = 0; i < snapshots.size(); i++) {
+                            final DocumentSnapshot snapshot = documentSnapshots.get(i);
 
-                            if(snapshot.contains("imageUrls")){
+                            if (snapshot.contains("imageUrls")) {
 
-                                    List<String> imageUrls =
-                                            (List<String>)snapshot.get("imageUrls");
+                                List<String> imageUrls =
+                                        (List<String>) snapshot.get("imageUrls");
 
-                                    if(imageUrls!=null && !imageUrls.isEmpty()){
-                                        addedCartItems.get(i).setImageUrl(imageUrls.get(0));
-                                    }
+                                if (imageUrls != null && !imageUrls.isEmpty()) {
+                                    addedCartItems.get(i).setImageUrl(imageUrls.get(0));
+                                }
 
                             }
 
                             addedCartItems.get(i).setName(snapshot.getString("name"));
                             addedCartItems.get(i).setCurrency(snapshot.getString("currency"));
-                            if(snapshot.contains("discounted") && snapshot.getBoolean("discounted")
-                                    && snapshot.contains("discountMap")){
+                            if (snapshot.contains("discounted") && snapshot.getBoolean("discounted")
+                                    && snapshot.contains("discountMap")) {
 
-                                final Map<String,Object> discountMap = (Map<String, Object>) snapshot.get("discountMap");
+                                final Map<String, Object> discountMap = (Map<String, Object>) snapshot.get("discountMap");
 
-                                if(discountMap!=null && discountMap.containsKey("endsAt") && ((long)discountMap.get("endsAt")) > System.currentTimeMillis()){
+                                if (discountMap != null && discountMap.containsKey("endsAt") && ((long) discountMap.get("endsAt")) > System.currentTimeMillis()) {
                                     addedCartItems.get(i).setPrice(((Double) discountMap.get("discountedPrice")).floatValue());
-                                }else{
+                                } else {
 
-                                    snapshot.getReference().update("discounted",false,
-                                          "discountMap",FieldValue.delete());
+                                    snapshot.getReference().update("discounted", false,
+                                            "discountMap", FieldValue.delete());
 
                                     addedCartItems.get(i).setPrice(((Double) Objects.requireNonNull(snapshot.get("price"))).floatValue());
 
                                 }
 
-                            }else{
+                            } else {
                                 addedCartItems.get(i).setPrice(((Double) Objects.requireNonNull(snapshot.get("price"))).floatValue());
 
                             }
@@ -262,12 +261,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 //                }
 
 
-                Log.d(TAG,"gotten menu items complete: "+task.getResult().size());
+                        Log.d(TAG, "gotten menu items complete: " + task.getResult().size());
 
 
-                        if(task.isSuccessful() && !task.getResult().isEmpty()){
+                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
 
-                            Log.d(TAG,"gotten menu items not empty: "+task.getResult().size());
+                            Log.d(TAG, "gotten menu items not empty: " + task.getResult().size());
 
                             if (isInitial) {
 
@@ -288,12 +287,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
                                 if (!task.getResult().isEmpty()) {
 
-                                    cartItems.addAll(cartItems.size() - 1,addedCartItems);
+                                    cartItems.addAll(cartItems.size() - 1, addedCartItems);
 
                                     int size = task.getResult().size();
 
                                     cartAdapter.notifyItemRangeInserted(
-                                            cartItems.size() - size,size);
+                                            cartItems.size() - size, size);
 
                                     if (task.getResult().size() < CART_ITEM_LIMIT && scrollListener != null) {
                                         cartRv.removeOnScrollListener(scrollListener);
@@ -302,10 +301,10 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                                 }
                             }
 
-                            if(!addedCartItems.isEmpty()){
+                            if (!addedCartItems.isEmpty()) {
 
                                 final List<String> itemIds = new ArrayList<>();
-                                for(CartItem cartItem:addedCartItems){
+                                for (CartItem cartItem : addedCartItems) {
                                     itemIds.add(cartItem.getItemId());
                                 }
 
@@ -315,9 +314,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                         }
 
 
-                        if(cartItems.isEmpty() && noCartItemTv.getVisibility() == View.GONE){
+                        if (cartItems.isEmpty() && noCartItemTv.getVisibility() == View.GONE) {
                             noCartItemTv.setVisibility(View.VISIBLE);
-                        }else if(!cartItems.isEmpty() && noCartItemTv.getVisibility() == View.VISIBLE){
+                        } else if (!cartItems.isEmpty() && noCartItemTv.getVisibility() == View.VISIBLE) {
                             noCartItemTv.setVisibility(View.GONE);
                         }
 
@@ -328,9 +327,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                     }
                 });
 
-            }else{
+            } else {
 
-                Log.d(TAG,"added cart items is empty");
+                Log.d(TAG, "added cart items is empty");
                 cartRv.setVisibility(View.INVISIBLE);
                 noCartItemTv.setVisibility(View.VISIBLE);
                 isLoadingItems = false;
@@ -342,65 +341,64 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                Log.d(TAG,"added cart items failed: "+e.getMessage());
+                Log.d(TAG, "added cart items failed: " + e.getMessage());
                 hideProgressbar();
             }
         });
 
 
-
     }
 
-    private void addCartRemoveListener(List<String> itemIds){
+    private void addCartRemoveListener(List<String> itemIds) {
 
-        if(removeListeners == null)
+        if (removeListeners == null)
             removeListeners = new ArrayList<>();
 
         removeListeners.add(
-        firestore.collection("MenuItems")
-                .whereIn("id", itemIds)
-                .whereEqualTo("isBeingRemoved",true)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                firestore.collection("MenuItems")
+                        .whereIn("id", itemIds)
+                        .whereEqualTo("isBeingRemoved", true)
+                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                            @Override
+                            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                        if(value == null)
-                            return;
+                                if (value == null)
+                                    return;
 
-                        for(DocumentChange dc:value.getDocumentChanges()){
+                                for (DocumentChange dc : value.getDocumentChanges()) {
 
-                            final String documentId = dc.getDocument().getId();
+                                    final String documentId = dc.getDocument().getId();
 
-                            if(dc.getType() == DocumentChange.Type.ADDED){
+                                    if (dc.getType() == DocumentChange.Type.ADDED) {
 
 //                               final AtomicInteger position = new AtomicInteger(-1);
-                                final Thread thread = new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
+                                        final Thread thread = new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
 
-                                        for(int i=0;i<cartItems.size();i++){
+                                                for (int i = 0; i < cartItems.size(); i++) {
 
-                                            if(cartItems.get(i).getItemId().equals(documentId)){
+                                                    if (cartItems.get(i).getItemId().equals(documentId)) {
 //                                                position.set(i);
-                                                cartItems.remove(i);
-                                                final int finalI = i;
-                                                cartRv.post(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        cartAdapter.notifyItemRemoved(finalI);
+                                                        cartItems.remove(i);
+                                                        final int finalI = i;
+                                                        cartRv.post(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                cartAdapter.notifyItemRemoved(finalI);
+                                                            }
+                                                        });
+
+                                                        break;
                                                     }
-                                                });
 
-                                                break;
+                                                }
+
+
                                             }
+                                        });
 
-                                        }
-
-
-                                    }
-                                });
-
-                                thread.start();
+                                        thread.start();
 //
 //                                try {
 //
@@ -410,26 +408,25 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 //
 //                                } catch (InterruptedException e) { e.printStackTrace(); }
 //
+                                    }
+
+                                }
+
                             }
-
-                        }
-
-                    }
-                }));
+                        }));
 
     }
 
 
-
-    private void hideProgressbar(){
-        if(cartProgressBar.getVisibility() == View.VISIBLE){
+    private void hideProgressbar() {
+        if (cartProgressBar.getVisibility() == View.VISIBLE) {
             cartProgressBar.setVisibility(View.GONE);
         }
     }
 
-    private void showProgressBar(){
+    private void showProgressBar() {
 
-        if(cartProgressBar.getVisibility() == View.GONE){
+        if (cartProgressBar.getVisibility() == View.GONE) {
             cartProgressBar.setVisibility(View.VISIBLE);
         }
 
@@ -447,7 +444,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                if(documentSnapshot.exists()){
+                if (documentSnapshot.exists()) {
 
                     final float price = documentSnapshot.getLong("count") * cartItem.getPrice();
 
@@ -465,9 +462,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                                             final float currentPrice = cartItem.getCount() * cartItem.getPrice();
 
                                             totalCost -= currentPrice;
-                                            cartTotalPriceTv.setText("Total price: "+totalCost+"ILS");
+                                            cartTotalPriceTv.setText("Total price: " + totalCost + "ILS");
 
-                                            if(position < cartItems.size()){
+                                            if (position < cartItems.size()) {
                                                 cartItems.remove(position);
                                                 cartAdapter.notifyItemRemoved(position);
                                             }
@@ -481,7 +478,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                                     Toast.makeText(CartActivity.this,
                                             "An error occurred while trying to remove from cart!" +
                                                     "Please try again", Toast.LENGTH_SHORT).show();
-                                    Log.d(TAG,"failed to remove item from cart: "+e.getMessage());
+                                    Log.d(TAG, "failed to remove item from cart: " + e.getMessage());
 
                                     cartRef.document(cartItem.getItemId()).set(cartItem);
                                     hideProgressbar();
@@ -492,12 +489,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                         }
                     });
 
-                }else{
+                } else {
 
                     totalCost -= cartItems.get(position).getPrice();
-                    cartTotalPriceTv.setText("Total price: "+totalCost+"ILS");
+                    cartTotalPriceTv.setText("Total price: " + totalCost + "ILS");
 
-                    if(position < cartItems.size()){
+                    if (position < cartItems.size()) {
                         cartItems.remove(position);
                         cartAdapter.notifyItemRemoved(position);
                     }
@@ -516,7 +513,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
     public void showCartItemInfo(int position) {
 
         final Intent menuItemIntent = new Intent(this, MenuItemActivity.class);
-        menuItemIntent.putExtra("MenuItemID",cartItems.get(position).getItemId());
+        menuItemIntent.putExtra("MenuItemID", cartItems.get(position).getItemId());
         startActivity(menuItemIntent);
 
     }
@@ -524,8 +521,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
     @Override
     public void increasedCartItemCount(int position) {
 
-        totalCost+= cartItems.get(position).getPrice();
-        cartTotalPriceTv.setText("Total price: "+totalCost+"ILS");
+        totalCost += cartItems.get(position).getPrice();
+        cartTotalPriceTv.setText("Total price: " + totalCost + "ILS");
 
     }
 
@@ -533,36 +530,36 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
     public void decreasedCartItemCount(int position) {
 
         totalCost -= cartItems.get(position).getPrice();
-        cartTotalPriceTv.setText("Total price: "+totalCost+"ILS");
+        cartTotalPriceTv.setText("Total price: " + totalCost + "ILS");
 
     }
 
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == cartOrderDeliveryBtn.getId()){
+        if (v.getId() == cartOrderDeliveryBtn.getId()) {
 
-            Intent intent = new Intent(this,DeliveryLocationMapActivity.class)
-                    .putExtra("addressMap",getIntent().getSerializableExtra("addressMap"));
+            Intent intent = new Intent(this, DeliveryLocationMapActivity.class)
+                    .putExtra("addressMap", getIntent().getSerializableExtra("addressMap"));
 
             Query query = firestore.collection("Users")
                     .document(currentUid).collection("Cart")
                     .orderBy("timeAdded", Query.Direction.DESCENDING);
 
-            if(lastDocSnap!=null){
+            if (lastDocSnap != null) {
                 query.startAfter(lastDocSnap);
             }
 
-               query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                 @Override
                 public void onSuccess(QuerySnapshot snapshots) {
 
-                    if(snapshots!=null && !snapshots.isEmpty()){
+                    if (snapshots != null && !snapshots.isEmpty()) {
 
-                        if(cartItems.isEmpty()){
+                        if (cartItems.isEmpty()) {
                             cartItems.addAll(snapshots.toObjects(CartItem.class));
-                        }else{
-                            cartItems.addAll(cartItems.size() - 1,snapshots.toObjects(CartItem.class));
+                        } else {
+                            cartItems.addAll(cartItems.size() - 1, snapshots.toObjects(CartItem.class));
                         }
 
                     }
@@ -571,8 +568,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-                    intent.putExtra("cartItems",cartItems);
-                    Log.d("ttt","cart items task completed");
+                    intent.putExtra("cartItems", cartItems);
+                    Log.d("ttt", "cart items task completed");
                     startActivity(intent);
                     finish();
                 }
@@ -581,7 +578,6 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
         }
     }
-
 
 
     private class ScrollListener extends RecyclerView.OnScrollListener {
@@ -601,12 +597,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
     @Override
     protected void onDestroy() {
 
-        if(scrollListener!=null && cartRv!=null){
+        if (scrollListener != null && cartRv != null) {
             cartRv.removeOnScrollListener(scrollListener);
         }
 
-        if(removeListeners!=null){
-            for(ListenerRegistration listenerRegistration:removeListeners){
+        if (removeListeners != null) {
+            for (ListenerRegistration listenerRegistration : removeListeners) {
                 listenerRegistration.remove();
             }
         }
@@ -614,8 +610,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
         final List<Task<?>> tasks = new ArrayList<>();
 
-        for(CartItem cartItem:cartItems){
-            tasks.add(cartRef.document(cartItem.getItemId()).update("count",cartItem.getCount()));
+        for (CartItem cartItem : cartItems) {
+            tasks.add(cartRef.document(cartItem.getItemId()).update("count", cartItem.getCount()));
         }
 
         Tasks.whenAllSuccess(tasks).addOnSuccessListener(new OnSuccessListener<List<Object>>() {

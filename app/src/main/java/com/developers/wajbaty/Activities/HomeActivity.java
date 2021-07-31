@@ -458,8 +458,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         final int itemId = item.getItemId();
 
         if (itemId == R.id.show_myProfile_action) {
-            startActivity(new Intent(this, CustomerProfileActivity.class));
             closeDrawer();
+            startActivity(new Intent(this, CustomerProfileActivity.class));
+            return true;
         } else if (itemId == R.id.show_Messages_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Messages_action) {
@@ -566,7 +567,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
             return true;
         } else if (itemId == R.id.show_about_us_action) {
-
+            closeDrawer();
+            startActivity(new Intent(this, AboutUsActivity.class));
             return true;
         } else if (itemId == R.id.show_privacy_policy_action) {
 

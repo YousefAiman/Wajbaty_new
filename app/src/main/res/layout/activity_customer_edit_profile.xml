@@ -5,9 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_margin="10dp"
     android:layout_marginBottom="20dp"
     tools:context=".Customer.Activities.CustomerEditProfileActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/editProfileToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/orange"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/back_arrow_white"
+        app:title="Update Profile"
+        app:titleTextAppearance="@style/ToolbarTitleAppearance"
+        app:titleTextColor="@color/white" />
 
     <TextView
         android:layout_width="match_parent"

@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
 import android.widget.Toast;
@@ -28,16 +29,16 @@ public class CustomerEditProfileActivity extends AppCompatActivity {
     FirebaseFirestore firebaseFirestore;
     DocumentReference documentReference;
     String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    Toolbar editProfileToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_edit_profile);
 
-        usernameEd = findViewById(R.id.et_username_upd);
-        phoneEd = findViewById(R.id.et_phone_upd);
-        emailEd = findViewById(R.id.et_email_upd);
-        saveBtn = findViewById(R.id.save_profile_btn);
+        initViews();
+
+        editProfileToolbar.setNavigationOnClickListener(v -> finish());
 
         firebaseFirestore = FirebaseFirestore.getInstance();
 
@@ -46,6 +47,14 @@ public class CustomerEditProfileActivity extends AppCompatActivity {
         saveBtn.setOnClickListener(v -> {
             updateProfile();
         });
+    }
+
+    private void initViews() {
+        usernameEd = findViewById(R.id.et_username_upd);
+        phoneEd = findViewById(R.id.et_phone_upd);
+        emailEd = findViewById(R.id.et_email_upd);
+        saveBtn = findViewById(R.id.save_profile_btn);
+        editProfileToolbar = findViewById(R.id.editProfileToolbar);
     }
 
     @Override
