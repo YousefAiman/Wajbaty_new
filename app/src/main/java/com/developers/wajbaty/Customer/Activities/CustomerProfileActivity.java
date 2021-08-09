@@ -3,6 +3,7 @@ package com.developers.wajbaty.Customer.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,22 +24,30 @@ public class CustomerProfileActivity extends AppCompatActivity {
     FirebaseFirestore firebaseFirestore;
     DocumentReference documentReference;
     String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    Toolbar profileToolbar;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_profile);
 
-        usernameTv = findViewById(R.id.usernameTv);
-        phoneTv = findViewById(R.id.phoneTv);
-        emailTv = findViewById(R.id.emailTv);
-        editBtn = findViewById(R.id.edit_profile_btn);
+        initViews();
+        
+        profileToolbar.setNavigationOnClickListener(v -> finish());
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         documentReference = firebaseFirestore.collection("Users").document(currentUid);
 
         editBtn.setOnClickListener(v -> {
-            startActivity(new Intent(this, CustomerEditProfileActivity.class));
         });
+    }
+
+    private void initViews() {
+        usernameTv = findViewById(R.id.usernameTv);
+        phoneTv = findViewById(R.id.phoneTv);
+        emailTv = findViewById(R.id.emailTv);
+        editBtn = findViewById(R.id.edit_profile_btn);
+        profileToolbar = findViewById(R.id.profileToolbar);
     }
 
     @Override
