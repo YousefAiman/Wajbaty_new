@@ -12,26 +12,69 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+
+
+<!--        <FrameLayout android:id="@+id/customerCurrentDeliveryLayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="15dp"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:visibility="gone"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/adView"-->
+<!--            />-->
+
+        <LinearLayout
+            android:id="@+id/customerDeliveryLl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/adView"
+            android:orientation="vertical">
+
         <include
             android:id="@+id/customerCurrentDeliveryLayout"
             layout="@layout/customer_current_delivery_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="15dp"
             android:layout_marginTop="10dp"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="15dp" />
+            android:layout_marginBottom="5dp"
+            android:layout_marginHorizontal="15dp"
+            android:visibility="gone"/>
 
+        <include
+            android:id="@+id/customerPendingDeliveryLayout"
+            layout="@layout/customer_pending_delivery_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginHorizontal="15dp"
+            android:visibility="gone"/>
+
+        </LinearLayout>
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/homeOffersViewPager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="15dp"
+            android:clipToPadding="false"
             android:paddingHorizontal="20dp"
             app:layout_constraintDimensionRatio="2.1:1"
-            app:layout_constraintTop_toBottomOf="@+id/customerCurrentDeliveryLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/customerDeliveryLl" />
 
         <LinearLayout
             android:id="@+id/homeOffersDotLl"

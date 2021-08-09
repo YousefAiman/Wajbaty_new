@@ -90,7 +90,7 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
     //menu items
     private MenuItemsAdapter adapter;
-    private ArrayList<MenuItem> menuItems;
+    private ArrayList<MenuItem.MenuItemSummary> menuItems;
 
     private Query mainQuery;
     private DocumentSnapshot lastDocSnapshot;
@@ -101,8 +101,6 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
     private FirebaseFirestore firestore;
     private ActivityResultLauncher<Intent> intentLauncher;
     private String currentUid;
-
-    private MenuItemModel model;
 
     private MenuClickListener menuClickListener;
     private String currency;
@@ -139,6 +137,8 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
             if (getArguments().containsKey(LIKED_LIST)) {
                 likedMenuItems = getArguments().getStringArrayList(LIKED_LIST);
+            }else{
+                likedMenuItems = new ArrayList<>();
             }
 
             currency =  getArguments().getString(CURRENCY);
@@ -156,10 +156,8 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
         if(canEditMenu){
             adapter = new MenuItemsAdapter(menuItems,this,likedMenuItems,true);
-
         }else{
             adapter = new MenuItemsAdapter(menuItems,this,likedMenuItems);
-
         }
 
         selectableItems = new ArrayList<>();
@@ -184,8 +182,22 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
                             && result.getData().hasExtra("addedMenuItem")){
 
                         final MenuItem menuItem = (MenuItem) result.getData().getSerializableExtra("addedMenuItem");
-                        menuItems.add(0,menuItem);
-                        adapter.notifyItemInserted(0);
+                        if(menuItem.getCategory().equals(category)){
+
+                            final MenuItem.MenuItemSummary summary = new MenuItem.MenuItemSummary(
+                                    menuItem
+                            );
+
+                            menuItems.add(0,summary);
+                            adapter.notifyItemInserted(0);
+
+                            if(restaurantMenuRv.getVisibility() == View.INVISIBLE){
+                                restaurantMenuRv.setVisibility(View.VISIBLE);
+                                noMenuItemTv.setVisibility(View.GONE);
+                            }
+
+
+                        }
 
                     }
 
@@ -204,15 +216,17 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
         menuProgressBar = view.findViewById(R.id.menuProgressBar);
         noMenuItemTv = view.findViewById(R.id.noMenuItemTv);
         addToMenuFb = view.findViewById(R.id.addToMenuFb);
-        addToMenuFb.setOnClickListener(this);
+
 
 
         if(canEditMenu){
             addToMenuFb.setIconResource(R.drawable.add_icon_white);
             addToMenuFb.setText("Add To Menu");
+            addToMenuFb.setOnClickListener(this);
         }else{
-            addToMenuFb.setIconResource(R.drawable.scooter_marker_icon);
-            addToMenuFb.setText("Order From Restaurant");
+            addToMenuFb.setVisibility(View.GONE);
+//            addToMenuFb.setIconResource(R.drawable.scooter_marker_icon);
+//            addToMenuFb.setText("Order From Restaurant");
         }
 
         restaurantMenuRv.setAdapter(adapter);
@@ -384,9 +398,9 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
                     if (isInitial) {
                         restaurantMenuRv.setVisibility(View.VISIBLE);
-                        menuItems.addAll(snapshots.toObjects(MenuItem.class));
+                        menuItems.addAll(snapshots.toObjects(MenuItem.MenuItemSummary.class));
                     } else {
-                        menuItems.addAll(menuItems.size() - 1, snapshots.toObjects(MenuItem.class));
+                        menuItems.addAll(menuItems.size() - 1, snapshots.toObjects(MenuItem.MenuItemSummary.class));
                     }
                 }else if(menuItems.isEmpty() && restaurantMenuRv.getVisibility() == View.VISIBLE){
 
@@ -470,7 +484,7 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
     @Override
     public void onMenuItemDiscounted(int position,Map<String,Object> discountMap) {
 
-        final MenuItem menuItem = menuItems.get(position);
+        final MenuItem.MenuItemSummary menuItem = menuItems.get(position);
         menuItem.setDiscounted(true);
         menuItem.setDiscountMap(discountMap);
 
@@ -565,7 +579,7 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
     public void showMenuItem(int position) {
 
         final Intent menuItemIntent = new Intent(requireContext(),MenuItemActivity.class);
-        menuItemIntent.putExtra("MenuItem",menuItems.get(position));
+        menuItemIntent.putExtra("MenuItemID",menuItems.get(position).getID());
         startActivity(menuItemIntent);
 
     }
@@ -573,11 +587,10 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
     @Override
     public void favMenuItem(int position) {
 
-        final MenuItem menuItem = menuItems.get(position);
-         model = new MenuItemModel(menuItem);
-
-
-        model.addObserver(new Observer() {
+        final MenuItem.MenuItemSummary menuItem = menuItems.get(position);
+        final MenuItemModel[] model = {new MenuItemModel(menuItem)};
+        model[0].setFavored(likedMenuItems.contains(menuItem.getID()));
+        model[0].addObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
 
@@ -633,14 +646,12 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
                 }
 
-                model.deleteObserver(this);
-                model = null;
+                model[0].deleteObserver(this);
+                model[0] = null;
             }
         });
 
-        model.favOrUnFavItem(
-                menuItems.get(position).getRestaurantId(),currentUid
-        );
+        model[0].favOrUnFavItem(menuItems.get(position).getRestaurantId(),currentUid);
 
     }
 
@@ -717,11 +728,11 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
     @Override
     public void onDestroy() {
-        if(model!=null){
-            model.deleteObservers();
+
+        if(scrollListener!=null && restaurantMenuRv!=null){
+            restaurantMenuRv.removeOnScrollListener(scrollListener);
         }
         super.onDestroy();
-
     }
 
 
@@ -751,11 +762,11 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
 
                 showProgressBar();
 
-                final MenuItem menuItem = menuItems.get(position);
+                final MenuItem.MenuItemSummary menuItem = menuItems.get(position);
 
-                if(model == null || !model.getMenuItem().getID().equals(menuItem.getID())){
-                    model = new MenuItemModel(menuItem);
-                }
+//                if(model == null || !model.getMenuItem().getID().equals(menuItem.getID())){
+                MenuItemModel model = new MenuItemModel(menuItem);
+//                }
 
                 model.addObserver((o, arg) -> {
 
@@ -771,7 +782,6 @@ public class RestaurantMenuFragment extends Fragment implements View.OnClickList
                                 final int index = menuItems.indexOf(menuItem);
                                 menuItems.remove(index);
                                 adapter.notifyItemRemoved(index);
-                                model = null;
 
                                 break;
 

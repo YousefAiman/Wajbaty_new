@@ -31,6 +31,7 @@ import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.BadgeUtil;
 import com.developers.wajbaty.Utils.CloudMessagingNotificationsSender;
 import com.developers.wajbaty.Utils.FirestoreNotificationSender;
+import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -161,22 +162,22 @@ public class MessagingActivity extends AppCompatActivity
                 .putString("currentMessagingUserId", messagingUserId)
                 .putString("currentMessagingDeliveryID", intendedDeliveryID).apply();
 
-//        if (GlobalVariables.getMessagesNotificationMap() != null) {
-//
-//            final String notificationIdentifier = messagingUserId + "message" + intendedPromoId;
-//
-//            if (GlobalVariables.getMessagesNotificationMap().containsKey(notificationIdentifier)) {
-//                Log.d("ttt", "removing: " + notificationIdentifier);
-//
-//                if (notificationManager == null)
-//                    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//                notificationManager.cancel(GlobalVariables.getMessagesNotificationMap()
-//                        .get(notificationIdentifier));
-//
-//                GlobalVariables.getMessagesNotificationMap().remove(notificationIdentifier);
-//            }
-//        }
+        if (GlobalVariables.getMessagesNotificationMap() != null) {
+
+            final String notificationIdentifier = messagingUserId + CloudMessagingNotificationsSender.Data.TYPE_MESSAGE + intendedDeliveryID;
+
+            if (GlobalVariables.getMessagesNotificationMap().containsKey(notificationIdentifier)) {
+                Log.d("ttt", "removing: " + notificationIdentifier);
+
+                if (notificationManager == null)
+                    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                notificationManager.cancel(GlobalVariables.getMessagesNotificationMap()
+                        .get(notificationIdentifier));
+
+                GlobalVariables.getMessagesNotificationMap().remove(notificationIdentifier);
+            }
+        }
 
         llm = new LinearLayoutManager(this,
                 RecyclerView.VERTICAL, false) {
@@ -283,6 +284,8 @@ public class MessagingActivity extends AppCompatActivity
         }else{
             id = messagingUserId +"-"+ currentUserId +"-"+ intendedDeliveryID;
         }
+
+        Log.d("ttt","messaing doc id: "+id);
 
         messagingChildRef =
                 FirebaseDatabase.getInstance().getReference().child("PrivateMessages").child(id);
@@ -454,16 +457,23 @@ public class MessagingActivity extends AppCompatActivity
         if (currentUserRef != null)
             currentUserRef.update("ActivelyMessaging", null);
 
-        if (messagingChildRef != null) {
 
-//            notifRef
-//                    .whereEqualTo("receiverId", currentUserId)
-//                    .whereEqualTo("promoId", intendedPromoId)
-//                    .whereEqualTo("type", "message").get().addOnSuccessListener(snaps -> {
-//                if (!snaps.isEmpty()) {
-//                    snaps.getDocuments().get(0).getReference().delete();
-//                }
-//            });
+
+        if (messagingChildRef != null) {
+            Log.d("ttt","messagingChildRef != null");
+            if(currentUserRef!=null){
+                Log.d("ttt","currentUserRef!=null");
+
+                final String notificationPath = messagingUserId + "_" +
+                        CloudMessagingNotificationsSender.Data.TYPE_MESSAGE + "_" + intendedDeliveryID;
+
+                Log.d("ttt","notificationPath: "+notificationPath);
+
+                currentUserRef.collection("Notifications")
+                        .document(notificationPath).update("seen",true);
+
+            }
+
 
             Log.d("saveMessages", "update last seen: " +
                     lastKey);
@@ -520,6 +530,7 @@ public class MessagingActivity extends AppCompatActivity
                     firestoreMessagingMap.put("isDeletedFor:" + messagingUserId, false);
                     firestoreMessagingMap.put("intendedDeliveryID", intendedDeliveryID);
                     firestoreMessagingMap.put("messagesCount",1);
+                    firestoreMessagingMap.put("destinationID", intendedDeliveryID);
                     firestoreMessagingMap.put(currentUserId + ":LastSeenMessage", 0);
                     firestoreMessagingMap.put(messagingUserId + ":LastSeenMessage", 0);
 

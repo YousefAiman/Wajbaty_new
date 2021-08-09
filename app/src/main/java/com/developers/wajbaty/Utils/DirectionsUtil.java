@@ -76,8 +76,6 @@ public class DirectionsUtil {
 
                             getPolyLinesForRoute(context,parse(response));
 
-
-
                             final HashMap<String,String> directionsMap = new HashMap<>();
                             directionsMap.put("DirectionsJsonObject",response.toString());
 
@@ -141,7 +139,7 @@ public class DirectionsUtil {
 
                 jLegs = ((JSONObject)jRoutes.get(i)).getJSONArray("legs");
 
-                List<HashMap<String, String>> path = new ArrayList<HashMap<String, String>>();
+                List<HashMap<String, String>> path = new ArrayList<>();
 
                 int jLegsLength = jLegs.length();
                 // Traversing all legs

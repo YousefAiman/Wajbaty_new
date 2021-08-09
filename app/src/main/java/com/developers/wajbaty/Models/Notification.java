@@ -14,7 +14,10 @@ public class Notification implements Serializable {
     private long timeCreatedInMillis;
     private boolean seen;
 
-    public Notification(String ID,String senderID, String destinationID, String content,int type, long timeCreatedInMillis,boolean seen) {
+    public Notification() {
+    }
+
+    public Notification(String ID, String senderID, String destinationID, String content, int type, long timeCreatedInMillis, boolean seen) {
         this.ID = ID;
         this.senderID = senderID;
         this.destinationID = destinationID;

@@ -8,6 +8,7 @@ public class CartItem implements Serializable {
     private String itemId;
     private int count;
     private long timeAdded;
+    private String restaurantID;
 
     @Exclude private String name;
     @Exclude private String imageUrl;
@@ -17,10 +18,11 @@ public class CartItem implements Serializable {
     public CartItem() {
     }
 
-    public CartItem(String itemId, int count, long timeAdded) {
+    public CartItem(String itemId, int count, long timeAdded,String restaurantID) {
         this.itemId = itemId;
         this.count = count;
         this.timeAdded = timeAdded;
+        this.restaurantID = restaurantID;
     }
 
     public String getItemId() {
@@ -83,5 +85,13 @@ public class CartItem implements Serializable {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getRestaurantID() {
+        return restaurantID;
+    }
+
+    public void setRestaurantID(String restaurantID) {
+        this.restaurantID = restaurantID;
     }
 }

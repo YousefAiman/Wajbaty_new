@@ -419,7 +419,8 @@ public class WorkingScheduleAdapter extends RecyclerView.Adapter<WorkingSchedule
                   scheduleMap.get(dayName).put(String.valueOf(type), chosenTime);
 
                 }
-              },preSelectedHours != -1?preSelectedHours:8,preSelectedMinutes != -1?preSelectedMinutes:8,false);
+              },
+                      preSelectedHours != -1?preSelectedHours:8,preSelectedMinutes != -1?preSelectedMinutes:8,false);
 
     timePickerDialog.show();
 

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -24,6 +25,7 @@ import com.developers.wajbaty.Models.ReviewSummary;
 import com.developers.wajbaty.Models.UserReview;
 import com.developers.wajbaty.Models.UserReviewModel;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -59,9 +61,9 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
 
     //views
     private RecyclerView reviewsRv,ratingsRv;
-    private TextView ratingTv,ratingsCountTv,reviewSummaryTv;
+    private TextView ratingTv,ratingsCountTv,reviewSummaryTv,reviewsEmptyTv;
     private RatingBar averageRatingBar;
-
+    private View reviewsSeperator;
 
     //reviews
     private ArrayList<UserReview> reviews;
@@ -111,6 +113,7 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
 //            reviewSummary = new ReviewSummary(0,emptyRatingMap,0);
 //
 //        }
+
         if(reviewSummary!=null){
             reviewSummaryAdapter = new ReviewSummaryAdapter(reviewSummary.getRatingsMap(),
                     reviewSummary.getTotalReviews());
@@ -143,6 +146,8 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
         reviewSummaryTv = view.findViewById(R.id.reviewSummaryTv);
         ratingsCountTv = view.findViewById(R.id.ratingsCountTv);
         averageRatingBar = view.findViewById(R.id.averageRatingBar);
+        reviewsEmptyTv = view.findViewById(R.id.reviewsEmptyTv);
+        reviewsSeperator = view.findViewById(R.id.reviewsSeperator);
 
 //        reviewsRv.setAdapter(adapter);
         if(ratingsRv.getAdapter() == null && reviewSummaryAdapter != null){
@@ -159,7 +164,10 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
             ratingsCountTv.setVisibility(View.GONE);
             averageRatingBar.setVisibility(View.GONE);
             ratingsRv.setVisibility(View.GONE);
+            reviewsSeperator.setVisibility(View.GONE);
+            reviewsEmptyTv.setVisibility(View.VISIBLE);
 
+            reviewsEmptyTv.setVisibility(View.VISIBLE);
         }else{
             fillReviewSummary();
         }
@@ -170,7 +178,6 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
 
         reviewModel.getUserLikedReviews(userId,reviewParentRef.getId());
 
@@ -220,23 +227,42 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
 
     private void showProgressDialog(){
 
-        if(progressDialog == null){
-            progressDialog = new ProgressDialogFragment();
-        }
 
-        if(isAdded()){
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialogFragment();
             progressDialog.show(getChildFragmentManager(),"progress");
+        }else{
+
+            Fragment oldFragment = getChildFragmentManager().findFragmentByTag("progress");
+
+            if (oldFragment != null && progressDialog.isAdded()) {
+                return;
+            }
+
+            if(isAdded()){
+                progressDialog.show(getChildFragmentManager(),"progress");
+            }
+
         }
 
     }
 
     private void hideProgressDialog(){
 
-        if(progressDialog!=null && progressDialog.isVisible()){
+        if (progressDialog != null) {
+
+            FragmentManager manager = getChildFragmentManager();
+
+            Fragment fragment = manager.findFragmentByTag("progress");
+
+            if (fragment != null) {
+                manager.beginTransaction().remove(fragment).commit();
+            }
+
             progressDialog.dismiss();
         }
-
     }
+
 
     private void fillReviewSummary(){
 
@@ -246,7 +272,10 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
             ratingsCountTv.setVisibility(View.VISIBLE);
             averageRatingBar.setVisibility(View.VISIBLE);
             ratingsRv.setVisibility(View.VISIBLE);
+            reviewsSeperator.setVisibility(View.VISIBLE);
+            reviewsEmptyTv.setVisibility(View.GONE);
         }
+
 
         ratingTv.setText(String.valueOf(reviewSummary.getAverageRating()));
         ratingsCountTv.setText(reviewSummary.getTotalReviews() +
@@ -300,7 +329,7 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
                         if(snapshot.exists()){
                             reviews.add(snapshot.toObject(UserReview.class));
                             adapter.setUserHasReviewed(true);
-                        }else{
+                        }else if(GlobalVariables.getCurrentRestaurantId() == null){
                             reviews.add(new UserReview(userId, (byte) 0,0,null));
                             adapter.setUserHasReviewed(false);
                         }
@@ -485,11 +514,9 @@ public class FirebaseReviewsFragment extends Fragment implements ReviewsAdapter.
                 Log.d("ttt","task succesfull size: "+size);
 
                 if (isInitial) {
-
-                    if (reviews.size() > 1) {
 //                        restaurantMenuRv.setVisibility(View.VISIBLE);
                         adapter.notifyDataSetChanged();
-
+                    if (reviews.size() > 1) {
                         if (reviews.size() - 1 == REVIEWS_PAGE_LIMIT && scrollListener == null) {
                             reviewsRv.addOnScrollListener(scrollListener = new ReviewsScrollListener());
                         }

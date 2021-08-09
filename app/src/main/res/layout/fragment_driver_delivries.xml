@@ -47,11 +47,31 @@
         android:layout_centerInParent="true"
         />
 
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:visibility="gone"
+        app:adSize="BANNER"
+        android:layout_centerHorizontal="true"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_below="@id/driverDeliveriesWorkingSwitch"
+
+        />
+
+
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/driverDeliveriesNSV"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/driverDeliveriesWorkingSwitch"
+        android:layout_below="@id/adView"
         android:fillViewport="true">
 
         <RelativeLayout

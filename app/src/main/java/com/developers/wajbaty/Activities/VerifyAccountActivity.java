@@ -136,7 +136,6 @@ public class VerifyAccountActivity extends AppCompatActivity {
             public void onVerificationFailed(@NonNull FirebaseException e) {
                 Toast.makeText(VerifyAccountActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
         };
     }
 
@@ -155,7 +154,6 @@ public class VerifyAccountActivity extends AppCompatActivity {
     private void verifyCodeNumber(String verificationId, String code) {
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
         signInWithPhoneAuthCredential(credential);
-
     }
 
     private void register(String phoneNumber) {

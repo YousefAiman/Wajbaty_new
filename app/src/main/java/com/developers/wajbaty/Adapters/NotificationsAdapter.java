@@ -64,7 +64,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         return notifications.size();
     }
 
-    public class NotificationsVH extends RecyclerView.ViewHolder{
+    public class NotificationsVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final ImageView notificationUserImageIv;
         private final TextView notificationUserNameTv,notificationContentTv,notificationTimeTv;
@@ -75,6 +75,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             notificationUserNameTv = itemView.findViewById(R.id.notificationUserNameTv);
             notificationContentTv = itemView.findViewById(R.id.notificationContentTv);
             notificationTimeTv = itemView.findViewById(R.id.notificationTimeTv);
+
+            itemView.setOnClickListener(this);
         }
 
         private void bind(Notification notification){
@@ -103,6 +105,13 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             notificationContentTv.setText(content);
 
             notificationTimeTv.setText(TimeFormatter.formatTime(notification.getTimeCreatedInMillis()));
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            notificationListener.onNotificationClicked(getAdapterPosition());
+
         }
     }
 

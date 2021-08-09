@@ -26,7 +26,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
   private static final int OUTLINED_HEART = 1,FILLED_HEART = 2;
 
-  private final ArrayList<MenuItem> menuItems;
+  private final ArrayList<MenuItem.MenuItemSummary> menuItems;
   private static CustomerMenuItemClickListener customerClickListener;
   private static AdminMenuItemClickListener adminClickListener;
   private List<String> likedMenuItems;
@@ -44,7 +44,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
   }
 
 
-  public MenuItemsAdapter(ArrayList<MenuItem> menuItems,
+  public MenuItemsAdapter(ArrayList<MenuItem.MenuItemSummary> menuItems,
                           CustomerMenuItemClickListener CustomerMenuItemClickListener,
                           List<String> likedMenuItems) {
     this.menuItems = menuItems;
@@ -52,7 +52,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     MenuItemsAdapter.customerClickListener = CustomerMenuItemClickListener;
   }
 
-  public MenuItemsAdapter(ArrayList<MenuItem> menuItems,
+  public MenuItemsAdapter(ArrayList<MenuItem.MenuItemSummary> menuItems,
                           AdminMenuItemClickListener adminMenuItemClickListener,
                           List<String> likedMenuItems,
                           boolean areEditable) {
@@ -87,7 +87,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
   @Override
   public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-    final MenuItem menuItem = menuItems.get(position);
+    final MenuItem.MenuItemSummary menuItem = menuItems.get(position);
 
     switch (holder.getItemViewType()){
 
@@ -124,7 +124,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
       return TYPE_EDITABLE;
     }
 
-    final MenuItem menuItem = menuItems.get(position);
+    final MenuItem.MenuItemSummary menuItem = menuItems.get(position);
 
     return menuItem.isDiscounted()?TYPE_DISCOUNTED:TYPE_NORMAL;
 
@@ -147,7 +147,9 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
       menuFavIv.setTag(OUTLINED_HEART);
     }
 
-    private void bind(MenuItem menuItem,boolean hasLiked){
+    private void bind(MenuItem.MenuItemSummary menuItem,boolean hasLiked){
+
+      Log.d("ttt",menuItem.getName()+" is liked: "+hasLiked);
 
       Picasso.get().load(menuItem.getImageUrls().get(0)).fit().centerCrop().into(menuItemImageIv);
       menuItemNameTv.setText(menuItem.getName());
@@ -202,7 +204,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
       menuFavIv.setTag(OUTLINED_HEART);
     }
 
-    private void bind(MenuItem menuItem,boolean hasLiked){
+    private void bind(MenuItem.MenuItemSummary menuItem,boolean hasLiked){
 
       Picasso.get().load(menuItem.getImageUrls().get(0)).fit().centerCrop().into(menuItemImageIv);
       menuItemNameTv.setText(menuItem.getName());
@@ -260,7 +262,7 @@ public class MenuItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
       menuOptionsIv.setOnClickListener(this);
     }
 
-    private void bind(MenuItem menuItem){
+    private void bind(MenuItem.MenuItemSummary menuItem){
 
       Picasso.get().load(menuItem.getImageUrls().get(0)).fit().centerCrop().into(menuItemImageIv);
       menuItemNameTv.setText(menuItem.getName());

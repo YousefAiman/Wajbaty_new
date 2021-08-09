@@ -25,6 +25,7 @@ public class MenuItem implements Serializable {
     private int favoriteCount;
     private String region;
 
+
     public MenuItem() {
     }
 
@@ -39,6 +40,7 @@ public class MenuItem implements Serializable {
         this.restaurantId = restaurantId;
         this.region = region;
     }
+
 
     public ReviewSummary getReviewSummary() {
         return reviewSummary;
@@ -161,15 +163,30 @@ public class MenuItem implements Serializable {
         }
     }
 
-    public static class MenuItemSummary{
+    public static class MenuItemSummary implements Serializable{
 
         private String ID;
         private String name;
         private float price;
         private String currency;
+        private String restaurantId;
         private List<String> imageUrls;
+        private boolean isDiscounted;
+        private Map<String,Object> discountMap;
+
 
         public MenuItemSummary() {
+        }
+
+        public MenuItemSummary(MenuItem menuItem) {
+            this.ID = menuItem.getID();
+            this.name = menuItem.getName();
+            this.price = menuItem.getPrice();
+            this.currency = menuItem.getCurrency();
+            this.restaurantId = menuItem.getRestaurantId();
+            this.imageUrls = menuItem.getImageUrls();
+            this.isDiscounted = menuItem.isDiscounted();
+            this.discountMap = menuItem.getDiscountMap();
         }
 
         public String getID() {
@@ -210,6 +227,30 @@ public class MenuItem implements Serializable {
 
         public void setImageUrls(List<String> imageUrls) {
             this.imageUrls = imageUrls;
+        }
+
+        public boolean isDiscounted() {
+            return isDiscounted;
+        }
+
+        public void setDiscounted(boolean discounted) {
+            isDiscounted = discounted;
+        }
+
+        public Map<String, Object> getDiscountMap() {
+            return discountMap;
+        }
+
+        public void setDiscountMap(Map<String, Object> discountMap) {
+            this.discountMap = discountMap;
+        }
+
+        public String getRestaurantId() {
+            return restaurantId;
+        }
+
+        public void setRestaurantId(String restaurantId) {
+            this.restaurantId = restaurantId;
         }
     }
 

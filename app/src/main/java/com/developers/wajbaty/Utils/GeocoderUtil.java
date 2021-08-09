@@ -92,6 +92,7 @@ public class GeocoderUtil {
                     map.put("address",formatAddressGeocoder(a));
                     map.put("fullAddress",a.getAddressLine(0));
 
+                    map.put("placeName",a.getPremises() + " " + a.getPostalCode());
 
                     geocoderResultListener.addressFetched(map);
 
@@ -149,6 +150,7 @@ public class GeocoderUtil {
                     map.put("countryCode",countryCode);
                     map.put("address", new Gson().fromJson(address.toString(), HashMap.class));
 
+
                     String formattedAddress;
 
                     if(result.has("formatted")){
@@ -193,6 +195,10 @@ public class GeocoderUtil {
                         map.put("city",city);
                     }
 
+                    if(address.has("_type")){
+                        final String type = address.getString("_type");
+                        map.put("placeName",address.getString(type));
+                    }
 
                     geocoderResultListener.addressFetched(map);
 

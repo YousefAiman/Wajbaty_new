@@ -127,6 +127,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
         map = googleMap;
         map.setOnMapClickListener(this);
 
+
         markCurrentPosition();
 
     }
@@ -162,9 +163,12 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
         }else if(v.getId() == deliveryLocationConfirmBtn.getId()){
 
+           if(chosenAddress == null || currentMapMarker == null)
+               return;
+
             progressDialogFragment = new ProgressDialogFragment();
-            progressDialogFragment.setTitle("Finding Delivery Driver");
-            progressDialogFragment.setMessage("Search Could take a while! please wait");
+            progressDialogFragment.setTitle("Creating your delivery");
+            progressDialogFragment.setMessage("Please wait");
             progressDialogFragment.show(getSupportFragmentManager(),"progress");
 
             final String ID = UUID.randomUUID().toString();
@@ -277,7 +281,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                     Tasks.whenAllComplete(restaurantOrderedTasks).addOnSuccessListener(new OnSuccessListener<List<Task<?>>>() {
                         @Override
                         public void onSuccess(List<Task<?>> tasks) {
-                            model = new DeliveryModel(currentDelivery);
+                            model = new DeliveryModel(currentDelivery,DeliveryLocationMapActivity.this);
                             model.addObserver(DeliveryLocationMapActivity.this);
                             model.requestDelivery(addressMap,cartItemList);
                         }
@@ -425,7 +429,13 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
         deliveryLocationCoordinatesTv.setVisibility(View.VISIBLE);
         deliveryLocationAddressTv.setVisibility(View.VISIBLE);
 
-//        deliveryLocationPlaceNameTv.setText(addressMap.get());
+        String placeName;
+        if(addressMap.containsKey("addressMap")){
+            placeName = (String) addressMap.get("addressMap");
+        }else{
+            placeName = "Unknown location";
+        }
+        deliveryLocationPlaceNameTv.setText(placeName);
 
     }
 
@@ -482,7 +492,9 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                 case DeliveryModel.DELIVERY_DRIVERS_NOTIFIED:
 
-                    deliveryAcceptanceListener = model.listenForDriverDeliveryAcceptance();
+                    dismissProgressDialog();
+                    finish();
+//                    deliveryAcceptanceListener = model.listenForDriverDeliveryAcceptance();
 
                     break;
 
@@ -492,6 +504,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                     break;
 
                     case DeliveryModel.DRIVER_DELIVERY_REQUEST_ACCEPTED:
+
 
 //                        dismissProgressDialog();
 //
@@ -518,7 +531,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
 
 
-
         }else if(arg instanceof Map){
 
             final Map<Integer,Object> resultMap = (Map<Integer,Object>)arg;
@@ -529,11 +541,10 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                 case DeliveryModel.DELIVERY_DRIVER_NOT_FOUND:
 
-
-                    Toast.makeText(this,
-                            "No Drivers Found currently!", Toast.LENGTH_SHORT).show();
-
-                    dismissProgressDialog();
+                    finish();
+//                    Toast.makeText(this,
+//                            "No Drivers Found currently!", Toast.LENGTH_SHORT).show();
+//                    dismissProgressDialog();
 
                     break;
 

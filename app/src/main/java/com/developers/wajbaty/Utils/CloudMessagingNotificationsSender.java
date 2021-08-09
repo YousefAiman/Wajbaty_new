@@ -62,7 +62,6 @@ public class CloudMessagingNotificationsSender {
 //                            GlobalVariables.getPreviousSentNotifications().add(data.getUser()
 //                                    + data.getType() + data.getPromoId());
 //                        }
-
                         Log.d("ttt", "notification send: " + response.message());
                     }
 
@@ -96,6 +95,14 @@ public class CloudMessagingNotificationsSender {
             this.data = data;
             this.to = to;
         }
+
+        public Data getData() {
+            return data;
+        }
+
+        public String getTo() {
+            return to;
+        }
     }
 
 
@@ -105,7 +112,7 @@ public class CloudMessagingNotificationsSender {
 
     public static class Data {
 
-        public static final int TYPE_DELIVERY_REQUEST = 1,TYPE_MESSAGE = 2;
+        public static final int TYPE_DELIVERY_REQUEST = 1,TYPE_MESSAGE = 2,TYPE_DRIVER_PROPOSAL = 3;
 
         private String senderID;
         private String title;

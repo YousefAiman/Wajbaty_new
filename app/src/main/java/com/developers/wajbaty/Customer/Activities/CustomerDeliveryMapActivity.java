@@ -1,14 +1,19 @@
 package com.developers.wajbaty.Customer.Activities;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -25,6 +30,7 @@ import android.widget.Toast;
 import com.developers.wajbaty.Activities.MessagingActivity;
 import com.developers.wajbaty.Adapters.DeliveryCourseAdapter;
 import com.developers.wajbaty.Customer.Fragments.DeliveryConfirmationFragment;
+import com.developers.wajbaty.Customer.Fragments.DeliveryDriverRatingFragment;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.DeliveryCourse;
@@ -168,6 +174,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         driverDeliveryItemsBtn = findViewById(R.id.driverDeliveryItemsBtn);
         driverDeliveryConfirmBtn = findViewById(R.id.driverDeliveryConfirmBtn);
 
+        driverDeliveryConfirmBtn.setVisibility(View.GONE);
 //        driverDeliveryCurrentLocationIB.setVisibility(View.GONE);
         disableConfirmButton();
 
@@ -293,8 +300,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         driverDeliveryCourseArrowIv.setOnClickListener(this);
         driverDeliveryCurrentLocationIB.setOnClickListener(this);
 
-
-        driverDeliveryConfirmBtn.setOnClickListener(this);
+//        driverDeliveryConfirmBtn.setOnClickListener(this);
 
     }
 
@@ -422,30 +428,6 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                                                     final LatLng startLatLng = new LatLng(deliveryLocation.getLatitude(),deliveryLocation.getLongitude());
                                                     final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
 
-//                HashMap<String,String> directionsMap = new HashMap<>();
-//                directionsMap.put("DirectionsJsonObject","asdas");
-//
-//                deliveryRef.collection("Directions")
-//                        .document("Directions")
-//                        .set(directionsMap)
-//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void aVoid) {
-//
-//                                Log.d("DirectionsApi","uploaded directions object to firestore");
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//
-//                        Log.d("DirectionsApi","failed uploading " +
-//                                "json object to firestore: "+e.getMessage());
-//
-//                    }
-//                });
-//                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
-//                                    .getDirections(DriverDeliveryMapActivity.this
-//                                    ,startLatLng,wayPoints,destinationLatLng);
 //                deliveryRef.collection("Directions")
 //                        .document("Directions")
 //                        .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -473,7 +455,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 //                                        ,startLatLng,wayPoints,destinationLatLng);
 //                    }
 //                });
-//
+
 
                                                 }
                                             });
@@ -494,6 +476,10 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                                             for(int j = 0;j<allDeliveryCourses.size();j++) {
 
                                                 DeliveryCourse deliveryCourse = allDeliveryCourses.get(j);
+
+                                                if(deliveryCourse==null || deliveryCourse.getLocationID() == null)
+                                                    return;
+
                                                 if(deliveryCourse.getLocationID().equals(restaurantSnap.getId())){
 
                                                     deliveryCourse.setActive(false);
@@ -654,19 +640,27 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
         }else if(v.getId() == driverDeliveryCourseArrowIv.getId()){
 
-            if(driverDeliveryCourseArrowIv.getRotation() == 90){
+            if(driverDeliveryCourseRv.getVisibility() == View.GONE){
 
-                driverDeliveryCourseArrowIv.setRotation(-90);
+                driverDeliveryCourseRv.setVisibility(View.VISIBLE);
+                driverDeliveryCourseArrowIv.setRotation(90);
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
 
-                        for(int i=0;i<deliveryCourses.size();i++){
+            }else{
 
-                            if(!deliveryCourses.get(i).isWasPassed()){
+                if(driverDeliveryCourseArrowIv.getRotation() == 90){
 
-                                Log.d("ttt","found active at: "+i);
+                    driverDeliveryCourseArrowIv.setRotation(-90);
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            for(int i=0;i<deliveryCourses.size();i++){
+
+                                if(!deliveryCourses.get(i).isWasPassed()){
+
+                                    Log.d("ttt","found active at: "+i);
 
 //
 //                                if(i+1 >= deliveryCourses.size()){
@@ -677,44 +671,46 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 //                                }else
                                     if(i-1 >= 0){
 
-                                    DeliveryCourse previousActive = deliveryCourses.get(i - 1);
-                                    DeliveryCourse currentActive = deliveryCourses.get(i);
+                                        DeliveryCourse previousActive = deliveryCourses.get(i - 1);
+                                        DeliveryCourse currentActive = deliveryCourses.get(i);
 
-                                    deliveryCourses.clear();
-                                    deliveryCourses.add(previousActive);
-                                    deliveryCourses.add(currentActive);
+                                        deliveryCourses.clear();
+                                        deliveryCourses.add(previousActive);
+                                        deliveryCourses.add(currentActive);
 
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            adapter.notifyDataSetChanged();
-                                        }
-                                    });
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                        });
 //                            for(int j=i;j<deliveryCourses.size();j++){
 //                                deliveryCourses.remove(j);
 //                            }
 
 
+                                    }
+
+                                    break;
                                 }
 
-                                break;
                             }
 
                         }
-
-                    }
-                }).start();
+                    }).start();
 
 
 
-            }else{
+                }else{
 
-             driverDeliveryCourseArrowIv.setRotation(90);
-             deliveryCourses.clear();
-             deliveryCourses.addAll(allDeliveryCourses);
-             adapter.notifyDataSetChanged();
+                    driverDeliveryCourseArrowIv.setRotation(90);
+                    deliveryCourses.clear();
+                    deliveryCourses.addAll(allDeliveryCourses);
+                    adapter.notifyDataSetChanged();
 
+                }
             }
+
 
 
         }
@@ -822,11 +818,17 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
                 FirebaseFirestore.getInstance().collection("Users")
                         .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .update("currentDeliveryID",null)
+                        .update("currentDelivery",null)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-                                finish();
+
+                                DeliveryDriverRatingFragment fragment =
+                                        DeliveryDriverRatingFragment.newInstance(delivery.getDriverID(),
+                                                CustomerDeliveryMapActivity.this::finish);
+
+                                fragment.setCancelable(false);
+                                fragment.show(getSupportFragmentManager(),"driverRating");
 
                             }
                         });

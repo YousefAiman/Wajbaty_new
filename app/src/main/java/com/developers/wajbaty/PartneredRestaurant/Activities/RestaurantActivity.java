@@ -24,11 +24,13 @@ import com.developers.wajbaty.Adapters.WorkingScheduleAdapter;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.Models.PartneredRestaurantModel;
+import com.developers.wajbaty.PartneredRestaurant.Fragments.FirebaseReviewsFragment;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantInfoFragment;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantMenuFragment;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantReviewsFragment;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.FullScreenImagesUtil;
+import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -75,6 +77,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
     //firebaes
     private FirebaseFirestore firestore;
+    private DocumentReference restaurantRef;
     private PartneredRestaurant restaurant;
     private PartneredRestaurantModel partneredRestaurantModel;
     private String currentOpenTimeRange;
@@ -147,13 +150,16 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
         firestore.collection("Users")
                 .document(getCurrentUid())
-                .collection("LikedRestaurants")
-                .document(ID)
+                .collection("Favorites")
+                .document("FavoriteRestaurants")
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
-                if(alreadyFavored = snapshot.exists()){
-                    changeFavIcon(R.drawable.heart_filled_icon);
+                if(snapshot.exists() & snapshot.contains("FavoriteRestaurants")){
+                    alreadyFavored = ((List<String>)snapshot.get("FavoriteRestaurants")).contains(ID);
+                    if(alreadyFavored){
+                        changeFavIcon(R.drawable.heart_filled_icon);
+                    }
                 }
             }
         });
@@ -198,7 +204,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
 //            final boolean[] waitForSchedule = {false};
 
-            final DocumentReference restaurantRef = firestore.collection("PartneredRestaurant").document(ID);
+            restaurantRef = firestore.collection("PartneredRestaurant").document(ID);
 
             restaurantRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 private Map<String, Object> scheduleMap;
@@ -575,6 +581,10 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
         restaurantTabLayout = findViewById(R.id.restaurantTabLayout);
         restaurantViewPager = findViewById(R.id.restaurantViewPager);
 
+        if(GlobalVariables.getCurrentRestaurantId() == null){
+            restaurantToolbar.inflateMenu(R.menu.restaurant_customer_menu);
+        }
+
     }
 
     private void addListeners(){
@@ -628,9 +638,16 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
         Log.d("ttt","restaurant activity currency: "+
                 getIntent().getStringExtra("currency"));
+
+
+
         final Fragment[] fragments = new Fragment[]{new RestaurantInfoFragment(restaurant,status),
                 RestaurantMenuFragment.newInstance(restaurant,likedMenuItems,getIntent().getStringExtra("currency")),
-                new RestaurantReviewsFragment(restaurant)};
+//                new RestaurantReviewsFragment(restaurant)
+                new FirebaseReviewsFragment(restaurantRef,
+                        restaurantRef.collection("Reviews"),
+                        restaurant.getReviewSummary())
+        };
 
 //        final List<Fragment> fragments = new ArrayList<>();
 //        fragments.add(new RestaurantInfoFragment(restaurant,status));

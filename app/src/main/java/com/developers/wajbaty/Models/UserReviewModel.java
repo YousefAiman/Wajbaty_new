@@ -185,7 +185,6 @@ public class UserReviewModel extends Observable {
 
         final ReviewSummary reviewSummary = new ReviewSummary((HashMap<String,Object>) object);
 
-
         final DocumentReference ref = snapshot.getReference();
 
         final HashMap<String,Long> ratingsMap = reviewSummary.getRatingsMap();
@@ -365,9 +364,7 @@ public class UserReviewModel extends Observable {
                 @Override
                 public void onSuccess(DocumentSnapshot snapshot) {
                     if(snapshot.exists()){
-
                         Log.d("ttt","onSuccess liked");
-
                         likedReviews.addAll((ArrayList<String>) snapshot.get("LikedReviews"));
                     }
                 }
@@ -375,7 +372,7 @@ public class UserReviewModel extends Observable {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                    if(task.isSuccessful() && task.getResult().exists()){
+                    if(task.isSuccessful()){
 
                         setChanged();
                         notifyObservers(LIKED_REVIEWS_SUCCESS);

@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
-            android:text="login now"
+            android:text="Login now"
             android:textColor="@color/orange"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -70,20 +70,20 @@
             android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginHorizontal="16dp"
             android:background="@drawable/btn_design"
             android:orientation="horizontal"
+            android:layout_marginTop="30dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/loginNowTv">
 
             <Spinner
                 android:id="@+id/phoneSpinner"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="15dp"
-                android:layout_weight="1.5"
                 android:background="@drawable/spinner_custom_layout"
                 android:popupBackground="@drawable/filled_button_background"
                 android:dropDownWidth="wrap_content"
@@ -95,7 +95,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
                 android:hint="phone number"
-                android:textColorHint="@color/black"
+                android:background="@null"
                 android:inputType="phone"
                 android:padding="16dp" />
 
@@ -106,6 +106,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            android:visibility="gone"
             android:text="forgot password ?"
             app:layout_constraintStart_toStartOf="@+id/linearLayout"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
@@ -114,8 +115,8 @@
             android:id="@+id/signin_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginTop="50dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/filled_button_background"
             android:backgroundTint="@color/orange"
             android:padding="16dp"
@@ -132,6 +133,7 @@
             android:layout_height="0.8dp"
             android:background="#AFAFAF"
             app:layout_constraintBottom_toBottomOf="@+id/textView17"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signin_btn"
             app:layout_constraintTop_toTopOf="@+id/textView17"/>
@@ -142,6 +144,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="35dp"
             android:text="or"
+            android:visibility="gone"
             android:textColor="#5E5E5E"
             android:textSize="18sp"
             android:background="#fff"
@@ -166,6 +169,7 @@
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:src="@drawable/facebook_icon"
+                android:visibility="gone"
                 android:layout_marginEnd="30dp" />
 
             <ImageView
@@ -173,6 +177,7 @@
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:src="@drawable/google_icon"
+                android:visibility="gone"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"/>
 
@@ -181,6 +186,7 @@
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:layout_marginStart="30dp"
+                android:visibility="gone"
                 android:src="@drawable/twitter_icon" />
 
 
@@ -210,13 +216,10 @@
             android:layout_height="wrap_content"
             android:text="Don't have an account? register now"
             android:textSize="16sp"
+            android:layout_marginBottom="30dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/socialLinear"
-            app:layout_constraintVertical_bias="0.219"
-            android:layout_marginTop="80dp"/>
+            app:layout_constraintStart_toStartOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

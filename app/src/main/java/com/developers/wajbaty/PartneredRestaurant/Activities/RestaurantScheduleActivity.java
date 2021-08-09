@@ -235,8 +235,6 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
             restaurantModel.addRestaurantToFirebase(false,getIntent(),scheduleMap);
 
         }
-
-
     }
 
     private void showProgressDialog(){
@@ -253,13 +251,22 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
 
         progressDialogFragment.dismiss();
 
-        if(arg instanceof Boolean && (boolean) arg){
+        if(arg instanceof HashMap){
 
-            final Map<String,Object> addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+            final HashMap<String,Object> restaurantResult = (HashMap<String, Object>) arg;
 
-            startActivity(new Intent(RestaurantScheduleActivity.this, RestaurantActivity.class)
-                    .putExtra("currency", (String)  addressMap.get("currency"))
-                    .putExtra("ID",FirebaseAuth.getInstance().getCurrentUser().getUid()));
+            if((Boolean) restaurantResult.get("result") && restaurantResult.containsKey("id")){
+
+                final String restaurantId = (String) restaurantResult.get("id");
+
+                final Map<String,Object> addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+
+                startActivity(new Intent(RestaurantScheduleActivity.this, RestaurantActivity.class)
+                        .putExtra("currency", (String) addressMap.get("currency"))
+                        .putExtra("ID",restaurantId));
+
+//                finish();
+            }
 
         }else if(arg instanceof String){
 

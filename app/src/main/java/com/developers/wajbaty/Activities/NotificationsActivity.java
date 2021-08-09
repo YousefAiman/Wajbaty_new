@@ -4,10 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import com.developers.wajbaty.Adapters.NotificationsAdapter;
 import com.developers.wajbaty.Models.Notification;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
@@ -53,6 +55,9 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     private boolean isFetchingNotifications;
     private ScrollListener currentScrollListener;
 
+    //firetore
+    private CollectionReference notificationRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,17 +85,17 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         //firebase
         final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        final CollectionReference notificaitonRef = firestore.collection("Users")
+        notificationRef = firestore.collection("Users")
                 .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .collection("Notifications");
 
 
-        mainQuery = notificaitonRef.whereEqualTo("seen",false)
+        mainQuery = notificationRef.whereEqualTo("seen",false)
                 .whereLessThanOrEqualTo("timeCreatedInMillis",System.currentTimeMillis())
                 .orderBy("timeCreatedInMillis", Query.Direction.DESCENDING)
                 .limit(NOTIFICATION_LIMIT);
 
-        newNotificationsQuery = notificaitonRef.whereGreaterThan("timeCreatedInMillis",System.currentTimeMillis());
+        newNotificationsQuery = notificationRef.whereGreaterThan("timeCreatedInMillis",System.currentTimeMillis());
 
     }
 
@@ -103,6 +108,11 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
         notificationsToolbar.setNavigationOnClickListener(v->finish());
         notificationsRv.setAdapter(adapter);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback());
+        itemTouchHelper.attachToRecyclerView(notificationsRv);
+
+
     }
 
     private void setupNotificationListener(boolean initialSnapshot){
@@ -129,6 +139,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                             if(documentSnapshots.isEmpty()){
                                 isFetchingNotifications = false;
                                 notificationsEmptyTv.setVisibility(View.VISIBLE);
+                                notificationsProgressBar.setVisibility(View.GONE);
                                 return;
                             }
 
@@ -148,9 +159,6 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
                             lastDocSnapshot = documentSnapshots.get(documentSnapshots.size()-1);
 
-                            notificationsProgressBar.setVisibility(View.GONE);
-
-                            isFetchingNotifications = false;
                         }else{
 
                             final int previousSize = notifications.size();
@@ -169,17 +177,15 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                                 currentScrollListener = null;
                             }
 
-                            notificationsProgressBar.setVisibility(View.GONE);
-
-                            isFetchingNotifications = false;
                         }
+                        notificationsProgressBar.setVisibility(View.GONE);
 
                     }else{
 
                         notificationsProgressBar.setVisibility(View.GONE);
                         notificationsEmptyTv.setVisibility(View.VISIBLE);
-                        isFetchingNotifications = false;
                     }
+                    isFetchingNotifications = false;
 
                     isInitial = false;
                 }else{
@@ -298,8 +304,26 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     }
 //    private void indicateEmpty
 
+
     @Override
     public void onNotificationClicked(int position) {
+
+        if(position >= notifications.size())
+            return;
+
+        final Notification notification = notifications.get(position);
+
+        switch (notification.getType()){
+
+            case Notification.TYPE_MESSAGE:
+
+                startActivity(new Intent(this,MessagingActivity.class)
+                .putExtra("messagingUserId",notification.getSenderID())
+                .putExtra("intendedDeliveryID",notification.getDestinationID()));
+
+                break;
+
+        }
 
     }
 
@@ -331,5 +355,34 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             }
         }
 
+    }
+
+
+    private class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
+
+        SwipeToDeleteCallback() {
+            super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView,
+                              @NonNull RecyclerView.ViewHolder viewHolder,
+                              @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+//            if (GlobalVariables.isWifiIsOn()) {
+//
+                int position = viewHolder.getAdapterPosition();
+
+                if(position < notifications.size()){
+                    notificationRef.document(notifications.get(position).getID())
+                            .update("seen",false);
+                }
+
+//            }
+        }
     }
 }

@@ -4,16 +4,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +26,7 @@ import com.developers.wajbaty.Adapters.ImagePagerAdapter;
 import com.developers.wajbaty.Models.MenuItemModel;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.FirebaseReviewsFragment;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -50,6 +56,7 @@ public class MenuItemActivity extends AppCompatActivity implements
     private TextView priceToolbarTv,menuItemCategoryTv,menuIngredientsTitleTv,menuIngredientsTv;
     private FrameLayout menuItemRatingsFrameLayout;
     private ViewPager menuItemImagesPager;
+    private LinearLayout menuItemDotsLinear;
 
     //images pager
     private ImagePagerAdapter imagePagerAdapter;
@@ -73,15 +80,16 @@ public class MenuItemActivity extends AppCompatActivity implements
 
         if(intent != null){
 
-            if(intent.hasExtra("MenuItem")){
-                menuItem = (com.developers.wajbaty.Models.MenuItem)
-                        intent.getSerializableExtra("MenuItem");
-
-                initializeObjects();
-
-                populateViews();
-
-            }else if(intent.hasExtra("MenuItemID")){
+//            if(intent.hasExtra("MenuItem")){
+//                menuItem = (com.developers.wajbaty.Models.MenuItem)
+//                        intent.getSerializableExtra("MenuItem");
+//
+//                initializeObjects();
+//
+//                populateViews();
+//
+//            }else
+                if(intent.hasExtra("MenuItemID")){
 
                 firestore.collection("MenuItems").document(intent.getStringExtra("MenuItemID"))
                         .get().addOnSuccessListener(documentSnapshot -> {
@@ -103,6 +111,8 @@ public class MenuItemActivity extends AppCompatActivity implements
                 finish();
             }
 
+        }else{
+            finish();
         }
 
 
@@ -119,6 +129,13 @@ public class MenuItemActivity extends AppCompatActivity implements
         menuIngredientsTitleTv = findViewById(R.id.menuIngredientsTitleTv);
         menuIngredientsTv = findViewById(R.id.menuIngredientsTv);
         menuItemRatingsFrameLayout = findViewById(R.id.menuItemRatingsFrameLayout);
+        menuItemDotsLinear = findViewById(R.id.menuItemDotsLinear);
+
+
+        if(GlobalVariables.getCurrentRestaurantId()==null ||
+        !GlobalVariables.getCurrentRestaurantId().equals(menuItem.getRestaurantId())){
+            menuItemToolbar.inflateMenu(R.menu.menu_item_customer_menu);
+        }
 
         menuItemToolbar.setOnMenuItemClickListener(this);
         menuItemToolbar.setNavigationOnClickListener(v-> finish());
@@ -128,10 +145,10 @@ public class MenuItemActivity extends AppCompatActivity implements
 
     private void initializeObjects(){
 
-        menuItemModel = new MenuItemModel(menuItem);
+        menuItemModel = new MenuItemModel(new com.developers.wajbaty.Models.MenuItem.MenuItemSummary(menuItem));
         menuItemModel.addObserver(this);
 
-        imagePagerAdapter = new ImagePagerAdapter(menuItem.getImageUrls(),R.layout.menu_item_image_page);
+        imagePagerAdapter = new ImagePagerAdapter(menuItem.getImageUrls(),R.layout.menu_item_image_page,1f);
 
         menuItemRef = firestore.collection("MenuItems").document(menuItem.getID());
 
@@ -143,6 +160,8 @@ public class MenuItemActivity extends AppCompatActivity implements
     private void populateViews(){
 
         menuItemImagesPager.setAdapter(imagePagerAdapter);
+
+        setUpPager();
 
         if(menuItem.getIngredients() == null  || menuItem.getIngredients().isEmpty()){
             menuIngredientsTitleTv.setVisibility(View.GONE);
@@ -171,10 +190,14 @@ public class MenuItemActivity extends AppCompatActivity implements
         }
 
 
-        getSupportFragmentManager().beginTransaction().add(menuItemRatingsFrameLayout.getId(),
-                new FirebaseReviewsFragment(menuItemRef,menuItemRef.collection("Reviews"),
-                        menuItem.getReviewSummary())).commit();
+        FragmentManager manager = getSupportFragmentManager();
+        if(manager!=null){
 
+        manager.beginTransaction().add(menuItemRatingsFrameLayout.getId(),
+                    new FirebaseReviewsFragment(menuItemRef,menuItemRef.collection("Reviews"),
+                            menuItem.getReviewSummary())).commit();
+
+        }
     }
 
 
@@ -327,4 +350,66 @@ public class MenuItemActivity extends AppCompatActivity implements
     private void changeMenuIcon(int itemId, int icon){
         menuItemToolbar.getMenu().findItem(itemId).setIcon(icon);
     }
+
+    private void setUpPager(){
+
+        if (imagePagerAdapter.getCount() > 1) {
+
+
+            final Drawable nonactive_dot = ContextCompat.getDrawable(this, R.drawable.pager_indicator_inactive),
+                    full_dot = ContextCompat.getDrawable(this, R.drawable.pager_indicator_active);
+
+            final float density = getResources().getDisplayMetrics().density;
+
+            final ImageView[] dots = new ImageView[imagePagerAdapter.getCount()];
+
+            final LinearLayout.LayoutParams params =
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT);
+
+            for (int i = 0; i < imagePagerAdapter.getCount(); i++) {
+
+                dots[i] = new ImageView(this);
+
+                if (i == 0) {
+                    dots[0].setImageDrawable(ContextCompat.getDrawable(this,
+                            R.drawable.pager_indicator_active));
+                } else {
+                    dots[i].setImageDrawable(ContextCompat.getDrawable(this,
+                            R.drawable.pager_indicator_inactive));
+                }
+
+
+                params.setMargins((int) (4 * density), 0, (int) (4 * density), 0);
+
+                menuItemDotsLinear.addView(dots[i], params);
+
+            }
+
+            menuItemImagesPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                private int previousDot = 0;
+
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+
+                    dots[previousDot].setImageDrawable(nonactive_dot);
+
+                    previousDot = position;
+
+                    dots[position].setImageDrawable(full_dot);
+
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                }
+            });
+        }
+
+    }
+
 }

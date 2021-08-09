@@ -14,12 +14,11 @@
         android:checked="true"
         android:icon="@drawable/chef_hat_icon"/>
 
-    <item android:id="@+id/show_deliveries_action"
-        android:title="Deliveries"
+    <item android:id="@+id/show_orders_action"
+        android:title="Orders"
         android:enabled="true"
-        android:icon="@drawable/delivery_bike_icon"/>
+        android:icon="@drawable/ic_orders"/>
 
     </group>
-
 
 </menu>

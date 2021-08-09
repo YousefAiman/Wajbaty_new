@@ -46,14 +46,14 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
         MenuItemsAdapter.CustomerMenuItemClickListener ,
         View.OnClickListener {
 
-    private static final int MENU_ITEM_LIMIT = 1;
+    private static final int MENU_ITEM_LIMIT = 10;
     private static final String REGION = "region";
 
     private String region;
 
     //menu items
     private MenuItemsAdapter adapter;
-    private ArrayList<MenuItem> menuItems;
+    private ArrayList<MenuItem.MenuItemSummary> menuItems;
 
 
     //firebase
@@ -72,7 +72,6 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
 
     //liked
     private List<String> likedMenuItems;
-    private MenuItemModel model;
     private String currentUid;
 
     public MenuItemsFragment() {
@@ -113,8 +112,8 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
 
         adapter = new MenuItemsAdapter(menuItems,this,likedMenuItems);
 
-        userFavRef =  firestore.collection("Users").document(currentUid)
-                .collection("Favorites");
+        userFavRef = firestore.collection("Users")
+                .document(currentUid).collection("Favorites");
 
     }
 
@@ -196,9 +195,9 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
                         public void onSuccess(List<Object> objects) {
                             Log.d("ttt","Tasks.whenAllSuccess");
                             if(isInitial){
-                                menuItems.addAll(snapshots.toObjects(MenuItem.class));
+                                menuItems.addAll(snapshots.toObjects(MenuItem.MenuItemSummary.class));
                             }else{
-                                menuItems.addAll(menuItems.size() - 1, snapshots.toObjects(MenuItem.class));
+                                menuItems.addAll(menuItems.size() - 1, snapshots.toObjects(MenuItem.MenuItemSummary.class));
                             }
 
                         }
@@ -277,11 +276,12 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
         }else if(!menuItems.isEmpty() && noMenuItemTv.getVisibility() == View.VISIBLE){
             noMenuItemTv.setVisibility(View.GONE);
         }
-
     }
 
     @Override
     public void onFilterSelected(String category, String filterBy) {
+
+        noMenuItemTv.setVisibility(View.GONE);
 
         this.category = category;
         this.filter = filterBy;
@@ -297,19 +297,18 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
     public void showMenuItem(int position) {
 
         final Intent menuItemIntent = new Intent(requireContext(), MenuItemActivity.class);
-        menuItemIntent.putExtra("MenuItem",menuItems.get(position));
+        menuItemIntent.putExtra("MenuItemID",menuItems.get(position).getID());
         startActivity(menuItemIntent);
-
 
     }
 
     @Override
     public void favMenuItem(int position) {
 
-        final MenuItem menuItem = menuItems.get(position);
-         model = new MenuItemModel(menuItem);
-
-        model.addObserver(new Observer() {
+        final MenuItem.MenuItemSummary menuItem = menuItems.get(position);
+        final MenuItemModel[] model = {new MenuItemModel(menuItem)};
+        model[0].setFavored(likedMenuItems.contains(menuItem.getID()));
+        model[0].addObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
 
@@ -317,13 +316,13 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
 
                     switch ((int) arg){
 
-                        case MenuItemModel.UN_FAVORING_SUCCESS:
+                        case MenuItemModel.FAVORING_SUCCESS:
 
                             likedMenuItems.add(menuItem.getID());
                             adapter.notifyItemChanged(position);
 
                             break;
-                        case MenuItemModel.FAVORING_SUCCESS:
+                        case MenuItemModel.UN_FAVORING_SUCCESS:
 
                             likedMenuItems.remove(menuItem.getID());
                             adapter.notifyItemChanged(position);
@@ -364,12 +363,12 @@ public class MenuItemsFragment extends Fragment implements MenuItemsFilterFragme
 
                 }
 
-                model.deleteObserver(this);
-                model = null;
+                model[0].deleteObserver(this);
+                model[0] = null;
             }
         });
 
-        model.favOrUnFavItem(
+        model[0].favOrUnFavItem(
                 menuItems.get(position).getRestaurantId(),currentUid
         );
 

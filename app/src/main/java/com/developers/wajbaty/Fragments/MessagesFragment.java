@@ -21,6 +21,9 @@ import com.developers.wajbaty.Customer.Fragments.FavoriteMenuItemsFragment;
 import com.developers.wajbaty.Models.MessageMap;
 import com.developers.wajbaty.Models.UserMessage;
 import com.developers.wajbaty.R;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -52,7 +55,7 @@ import java.util.Objects;
 
 public class MessagesFragment extends Fragment implements MessagingUserAdapter.MessagingUserListener {
 
-    private final static int PAGINATION = 5;
+    private final static int PAGINATION = 8;
     private String currentUserUid;
 
     //views
@@ -138,14 +141,14 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
         noMessagesTv = view.findViewById(R.id.noMessagesTv);
         messagesProgressBar = view.findViewById(R.id.messagesProgressBar);
 
-//        final AdView adView = view.findViewById(R.id.adView);
-//        adView.loadAd(new AdRequest.Builder().build());
-//        adView.setAdListener(new AdListener() {
-//            @Override
-//            public void onAdLoaded() {
-//                adView.setVisibility(View.VISIBLE);
-//            }
-//        });
+        final AdView adView = view.findViewById(R.id.adView);
+        adView.loadAd(new AdRequest.Builder().build());
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                adView.setVisibility(View.VISIBLE);
+            }
+        });
 
         chatsRv.setLayoutManager(llm);
 
@@ -206,7 +209,7 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                                         }
 
                                         userMessages.add(new UserMessage(
-                                                documentSnapshot.getId(),
+                                                documentSnapshot.getString("destinationID"),
                                                 messageMap,
                                                 uid,
                                                 documentSnapshot.getLong(currentUserUid + ":LastSeenMessage"),
@@ -321,13 +324,48 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
                                     case ADDED:
 
+                                        Log.d("ttt","type added message");
+                                        List<String> users = (List<String>) snapshot.get("users");
+
+                                        String uid;
+
+                                        if(users.get(0).equals(currentUserUid)){
+                                            uid = users.get(1);
+                                        }else{
+                                            uid = users.get(0);
+                                        }
+
+//                                        boolean currentUidIsFirst = currentUserUid.toUpperCase()
+//                                                .compareTo(uid.toUpperCase()) < 0;
+//
+//                                        7J6eWOO6ggVROicvqbZNikahj9Q2-lve5PnFFkgWS68ck00wIbi0vbGi2-502f3763-2c0f-4989-998e-f423968024f8
+//
+//
+//                                        String id;
+//                                        if(currentUidIsFirst){
+//                                            id = currentUserUid +"-"+ uid +"-"+ snapshot.get("destinationID");
+//                                        }else{
+//                                            id = uid +"-"+ currentUserUid +"-"+ snapshot.get("destinationID");
+//                                        }
+//
+
+                                        String destionatinId = snapshot.getString("destinationID");
+
+                                        for(UserMessage userMessage:userMessages){
+                                            if(userMessage.getChattingDestinationId().equals(destionatinId)){
+                                                return;
+                                            }
+                                        }
+
+
                                         MessageMap messageMap = new MessageMap((HashMap<String, Object>)
                                                 snapshot.get("lastMessage"));
 
+
                                         userMessages.add(0,new UserMessage(
-                                                snapshot.getId(),
+                                                snapshot.getString("destinationID"),
                                                 messageMap,
-                                                messageMap.getSender(),
+                                                uid,
                                                 snapshot.getLong(currentUserUid + ":LastSeenMessage"),
                                                 snapshot.getLong("messagesCount")));
 
@@ -710,7 +748,7 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
             UserMessage userMessage = userMessages.get(i);
 
-            if(userMessage.getChattingDestinationId().equals(changedSnapshot.getId())){
+            if(userMessage.getChattingDestinationId().equals(changedSnapshot.getString("destinationID"))){
 
                 MessageMap oldMessageMap = userMessage.getChattingLatestMessageMap();
 
@@ -723,22 +761,21 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
                 }else{
 
+                    long lastSeen  = changedSnapshot.getLong(currentUserUid + ":LastSeenMessage");
+
                     if(changedSnapshot.getLong("lastMessageTimeInMillis") >
                             oldMessageMap.getTime()){
 
                         userMessage.setChattingLatestMessageMap(newMessageMap);
+                        userMessage.setLastMessageRead(lastSeen);
                         userMessage.setMessagesCount(userMessage.getMessagesCount()+1);
 
                         adapter.notifyItemChanged(i);
                     }else{
 
-                        long lastSeen  = changedSnapshot.getLong(currentUserUid + ":LastSeenMessage");
-
                         if(lastSeen > userMessage.getLastMessageRead()){
-
                             userMessage.setLastMessageRead(lastSeen);
                             adapter.notifyItemChanged(i);
-
                         }
 
                     }

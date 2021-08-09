@@ -14,6 +14,8 @@
         <item name="android:minHeight">24dip</item>
         <item name="android:maxHeight">24dip</item>
     </style>
+    
+
 
     <style name="progressBarOrange" parent="@style/Theme.Wajbaty">
         <item name="colorAccent">@color/orange</item>

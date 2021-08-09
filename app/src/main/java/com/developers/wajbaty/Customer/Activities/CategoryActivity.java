@@ -11,12 +11,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.developers.wajbaty.Adapters.CategoriesAdapter;
 import com.developers.wajbaty.Adapters.CategoryRestaurantsAdapter;
 import com.developers.wajbaty.Customer.Fragments.HomeFragment;
 import com.developers.wajbaty.Customer.Fragments.NearbyRestaurantsFragment;
 import com.developers.wajbaty.Models.PartneredRestaurant;
+import com.developers.wajbaty.Models.PartneredRestaurantModel;
+import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantActivity;
 import com.developers.wajbaty.R;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
@@ -35,8 +38,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
 public class CategoryActivity extends AppCompatActivity implements CategoryRestaurantsAdapter.CategoryRestaurantsListener{
 
@@ -46,7 +52,7 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
 
 
     private String category;
-    private Map<String,Object> locationMap;
+    private Map<String,Object> addressMap;
 
     //views
     private Toolbar categoryRestaurantsToolbar;
@@ -72,6 +78,7 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
     private List<String> likedRestaurants;
     private String currentUid;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,9 +99,9 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
     private void initializeObjects(){
 
         final Intent intent = getIntent();
-        if(intent!=null && intent.hasExtra("category") && intent.hasExtra("locationMap")){
+        if(intent!=null && intent.hasExtra("category") && intent.hasExtra("addressMap")){
             category = intent.getStringExtra("category");
-            locationMap = (Map<String, Object>) intent.getSerializableExtra("locationMap");
+            addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
         }
 
         likedRestaurants = new ArrayList<>();
@@ -111,10 +118,10 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
 
         restaurantQuery = firestore.collection("PartneredRestaurant")
                 .whereEqualTo("category",category)
-                .whereEqualTo("countryCode",locationMap.get("countryCode"))
+                .whereEqualTo("countryCode",addressMap.get("countryCode"))
                 .orderBy("geohash").limit(RESTAURANT_LIMIT);
 
-        final LatLng latLng = (LatLng) locationMap.get("latLng");
+        final LatLng latLng = (LatLng) addressMap.get("latLng");
 
         if(latLng!=null){
 
@@ -288,10 +295,66 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
     @Override
     public void addOrRemoveFromFav(int position) {
 
+
+        categoryRestaurantsProgressBar.setVisibility(View.GONE);
+
+        String id = restaurantSummaries.get(position).getID();
+
+        boolean isLiked = likedRestaurants.contains(id);
+
+        PartneredRestaurantModel partneredRestaurantModel = new PartneredRestaurantModel();
+        partneredRestaurantModel.addObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+
+                if(arg instanceof HashMap){
+
+                    final HashMap<Integer,Object> resultMap = (HashMap<Integer,Object>)arg;
+
+                    final int key = resultMap.keySet().iterator().next();
+                    final Object result = resultMap.get(key);
+
+                    if(key == PartneredRestaurantModel.TYPE_FAVORITE){
+
+                        categoryRestaurantsProgressBar.setVisibility(View.GONE);
+
+                        if(result instanceof Boolean && (boolean)result){
+
+                            if(isLiked){
+
+                                likedRestaurants.remove(id);
+
+                            }else{
+                                likedRestaurants.add(id);
+                            }
+
+                            adapter.notifyItemChanged(position);
+
+                        }else if(result instanceof String){
+
+                            Toast.makeText(CategoryActivity.this,
+                                    "Adding to favorite failed! Please try again",
+                                    Toast.LENGTH_LONG).show();
+
+                            Log.d("categoryAcitivty","failed to fav restautant: "+ result);
+                        }
+
+                    }
+
+                }
+
+            }
+        });
+
+        partneredRestaurantModel.favRestaurant(isLiked);
     }
 
     @Override
     public void showRestaurant(int position) {
+
+        startActivity(new Intent(this, RestaurantActivity.class)
+                .putExtra("ID",restaurantSummaries.get(position).getID())
+                .putExtra("currency", (String)  addressMap.get("currency")));
 
     }
 

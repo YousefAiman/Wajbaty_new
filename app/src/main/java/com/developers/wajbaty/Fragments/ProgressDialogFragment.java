@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,12 @@ public class ProgressDialogFragment extends DialogFragment {
 
     private String title;
     private String message;
+    private boolean canBeDismissed;
+    private ProgressDialogListener progressDialogListener;
+
+    public interface ProgressDialogListener{
+        void onProgressDismissed();
+    }
 
     public ProgressDialogFragment(){
         setCancelable(false);
@@ -58,7 +65,7 @@ public class ProgressDialogFragment extends DialogFragment {
             final TextView progressTitleTv = view.findViewById(R.id.progressTitleTv);
             progressTitleTv.setText(getTitle());
 
-        }else{
+        }else if(!canBeDismissed){
 
             view = inflater.inflate(R.layout.main_progress_dialog_with_title_and_message, container, false);
 
@@ -67,6 +74,27 @@ public class ProgressDialogFragment extends DialogFragment {
 
              final TextView progressMessageTv = view.findViewById(R.id.progressMessageTv);
             progressMessageTv.setText(getMessage());
+
+        }else {
+
+            view = inflater.inflate(R.layout.main_progress_dialog_with_title_and_message_and_cancel, container, false);
+
+            final TextView progressTitleTv = view.findViewById(R.id.progressTitleTv);
+            progressTitleTv.setText(getTitle());
+
+            final TextView progressMessageTv = view.findViewById(R.id.progressMessageTv);
+            progressMessageTv.setText(getMessage());
+
+            final ImageView progressCloseIv= view.findViewById(R.id.progressCloseIv);
+            progressCloseIv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(progressDialogListener!=null){
+                        dismiss();
+                        progressDialogListener.onProgressDismissed();
+                    }
+                }
+            });
 
         }
 
@@ -95,4 +123,23 @@ public class ProgressDialogFragment extends DialogFragment {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public void setProgressDialogListener(ProgressDialogListener progressDialogListener) {
+        this.progressDialogListener = progressDialogListener;
+    }
+
+
+
+
+    public ProgressDialogListener getProgressDialogListener() {
+        return progressDialogListener;
+    }
+    public boolean isCanBeDismissed() {
+        return canBeDismissed;
+    }
+
+    public void setCanBeDismissed(boolean canBeDismissed) {
+        this.canBeDismissed = canBeDismissed;
+    }
+
 }

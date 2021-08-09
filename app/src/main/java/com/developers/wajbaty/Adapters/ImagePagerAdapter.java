@@ -18,10 +18,12 @@ public class ImagePagerAdapter extends PagerAdapter {
 
     private final List<String> imageUrls;
     private final int pagerLayout;
+    private final float width;
 
-    public ImagePagerAdapter(List<String> imageUrls,int pagerLayout){
+    public ImagePagerAdapter(List<String> imageUrls,int pagerLayout,float width){
         this.imageUrls = imageUrls;
         this.pagerLayout = pagerLayout;
+        this.width = width;
     }
 
     @Override
@@ -32,6 +34,11 @@ public class ImagePagerAdapter extends PagerAdapter {
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
         return view == object;
+    }
+
+    @Override
+    public float getPageWidth(int position) {
+        return width;
     }
 
     @NonNull

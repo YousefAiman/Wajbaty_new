@@ -417,7 +417,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                                                         name,
                                                         restaurantLocation,
                                                         restaurantSnap.getLong("itemCount").intValue(),
-                                                        true,
+                                                        restaurantSnap.getBoolean("orderPickedUp"),
                                                         false);
                                             }
 
@@ -483,27 +483,6 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                             final LatLng startLatLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
                             final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
 
-//                HashMap<String,String> directionsMap = new HashMap<>();
-//                directionsMap.put("DirectionsJsonObject","asdas");
-//
-//                deliveryRef.collection("Directions")
-//                        .document("Directions")
-//                        .set(directionsMap)
-//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void aVoid) {
-//
-//                                Log.d("DirectionsApi","uploaded directions object to firestore");
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//
-//                        Log.d("DirectionsApi","failed uploading " +
-//                                "json object to firestore: "+e.getMessage());
-//
-//                    }
-//                });
 //                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
 //                                    .getDirections(DriverDeliveryMapActivity.this
 //                                    ,startLatLng,wayPoints,destinationLatLng);
@@ -696,7 +675,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
 
                                         currentDeliveryCourse = allDeliveryCourses.get(allDeliveryCourses.size()-1);
-
+                                        currentTargetDestinationLocation = currentDeliveryCourse.getLocation();
                                         driverDeliveryConfirmBtn.setText("Confirm order delivered");
                                         currentDeliveryCourse.setActive(true);
                                         currentDeliveryCourse.setWasPassed(false);
@@ -712,6 +691,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                                         if(index+1 < allDeliveryCourses.size()){
 
                                             currentDeliveryCourse = allDeliveryCourses.get(index+1);
+                                            currentTargetDestinationLocation = currentDeliveryCourse.getLocation();
                                             driverDeliveryConfirmBtn.setText("Confirm pickup from "+currentDeliveryCourse.getLocationName());
 
                                             currentDeliveryCourse.setActive(true);

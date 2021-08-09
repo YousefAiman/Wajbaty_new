@@ -3,7 +3,6 @@
 
     <group android:checkableBehavior="single">
 
-
         <item android:id="@+id/show_Menu_items_action"
             android:title="Meals"
             android:icon="@drawable/fork_and_spoon_icon"/>

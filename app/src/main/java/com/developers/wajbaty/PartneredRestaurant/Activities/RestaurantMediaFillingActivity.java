@@ -52,6 +52,7 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
     //mainImage
     private ImageView mainImageIv, mainImageCloseIv,mainAddIv;
     private Uri mainImageUri;
+    private String previousMainImageURL;
 
     //banner recycler
     private  RecyclerView bannerImagesRv;
@@ -69,18 +70,35 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
     private ProgressDialogFragment progressDialogFragment;
     private Bundle imagesBundle;
+    private Bundle infoBundle;
 
     private int chosenImageNumber;
-
+    private int chosenImageType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_restaurant_media_filling);
 
         getViews();
-        if(getIntent().hasExtra("imagesBundle")){
-            imagesBundle = getIntent().getBundleExtra("imagesBundle");
+
+        final Intent intent = getIntent();
+
+        if(intent!=null){
+
+            if(intent.hasExtra("imagesBundle")){
+                imagesBundle = getIntent().getBundleExtra("imagesBundle");
+            }
+
+            if(intent.hasExtra("restaurantName")){
+                infoBundle = new Bundle();
+                infoBundle.putString("restaurantName",intent.getStringExtra("restaurantName"));
+                if(intent.hasExtra("restaurantImageURL")){
+                    previousMainImageURL = intent.getStringExtra("restaurantImageURL");
+                    infoBundle.putString("restaurantImageURL",previousMainImageURL);
+                }
+            }
         }
+
 
         getMainImage();
         setupBannerImagesRv();
@@ -124,16 +142,22 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
     }
 
-
     private void getMainImage(){
 
-        if(imagesBundle!=null && imagesBundle.containsKey("mainImage")){
+        if(previousMainImageURL!=null){
 
-            Picasso.get().load(imagesBundle.getString("mainImage")).fit().centerCrop().into(mainImageIv);
+            mainAddIv.setVisibility(View.GONE);
+            mainImageCloseIv.setVisibility(View.VISIBLE);
 
+            mainImageIv.setOnClickListener(null);
+
+            Picasso.get().load(previousMainImageURL).fit().centerCrop().into(mainImageIv);
+
+        }else{
+            if(imagesBundle!=null && imagesBundle.containsKey("mainImage")){
+                Picasso.get().load(imagesBundle.getString("mainImage")).fit().centerCrop().into(mainImageIv);
+            }
         }
-
-
     }
 
     private void setupBannerImagesRv(){
@@ -326,6 +350,8 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
     void getImage(int type) {
 
+        chosenImageType = type;
+
         if(PermissionRequester.needsToRequestStoragePermissions(IMAGE_STORAGE_REQUEST,this)){
                 startActivityIfNeeded(Intent.createChooser(
                         new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"),
@@ -403,6 +429,8 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
                 case MAIN_IMAGE:
 
+                    mainImageIv.setOnClickListener(null);
+
                     mainAddIv.setVisibility(View.GONE);
                     mainImageCloseIv.setVisibility(View.VISIBLE);
 
@@ -427,7 +455,7 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
         if (requestCode == IMAGE_STORAGE_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getImage(BANNER_IMAGE);
+                getImage(chosenImageType);
             }
         }
 
@@ -455,22 +483,31 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
         }else if(v.getId() == mainImageCloseIv.getId()){
 
+
             mainAddIv.setVisibility(View.VISIBLE);
             mainImageCloseIv.setVisibility(View.GONE);
+
+            mainImageIv.setOnClickListener(this);
 
             mainImageUri = null;
             mainImageIv.setImageDrawable(null);
 
         }else if(v.getId() == imageInputNextBtn.getId()){
 
-            if(mainImageUri == null){
+            if(mainImageUri == null && previousMainImageURL == null){
                 Toast.makeText(this,
                             R.string.atleast_main_image, Toast.LENGTH_SHORT).show();
                 return;
             }
 
          final Bundle newImagesBundle = new Bundle();
-            newImagesBundle.putParcelable("mainImage",mainImageUri);
+
+            if(mainImageUri == null && previousMainImageURL!=null){
+                newImagesBundle.putString("mainImageURL",previousMainImageURL);
+            }else if(mainImageUri != null){
+                newImagesBundle.putParcelable("mainImage",mainImageUri);
+            }
+
 
             final List<Uri> newBannerImages = new ArrayList<>();
 
@@ -503,8 +540,13 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
             final Intent intent = new Intent(this,RestaurantInfoActivity.class);
             intent.putExtra("imagesBundle",newImagesBundle);
             intent.putExtra("addressMap",getIntent().getSerializableExtra("addressMap"));
+
+            if(infoBundle!=null && !infoBundle.isEmpty()){
+                intent.putExtra("infoBundle",infoBundle);
+            }
             startActivity(intent);
 
+//            finish();
 
         }
 

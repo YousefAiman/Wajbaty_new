@@ -75,6 +75,7 @@ public class UserReview implements Serializable {
         return reviewerImageUrl;
     }
 
+    @Exclude
     public void setReviewerImageUrl(String reviewerImageUrl) {
         this.reviewerImageUrl = reviewerImageUrl;
     }
@@ -84,6 +85,7 @@ public class UserReview implements Serializable {
         return reviewerUsername;
     }
 
+    @Exclude
     public void setReviewerUsername(String reviewerUsername) {
         this.reviewerUsername = reviewerUsername;
     }

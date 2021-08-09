@@ -4,11 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".Activities.RegisterActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/createTv"
@@ -28,10 +29,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="25dp"
             android:layout_marginEnd="16dp"
-            android:hint="username"
-            android:textColorHint="@color/black"
+            android:hint="Username"
             app:counterMaxLength="15"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -52,8 +52,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:hint="email"
-            android:textColorHint="@color/black"
+            android:hint="Email"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/til_username">
@@ -124,17 +123,17 @@
 
             <Spinner
                 android:id="@+id/phoneSpinner"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="15dp"
-                android:layout_weight="1.5"
+                android:entries="@array/coddes"
                 android:background="@drawable/spinner_custom_layout"
+                android:padding="5dp"
                 android:dropDownWidth="wrap_content"
                 app:layout_constraintBottom_toBottomOf="@+id/register_btn"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/et_conf_password"
-                tools:listitem="@layout/spinner_item_layout" />
+                app:layout_constraintTop_toBottomOf="@+id/et_conf_password"/>
 
             <EditText
                 android:id="@+id/et_phoneNumber_reg"
@@ -142,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
                 android:hint="phone number"
-                android:textColorHint="@color/black"
+                android:background="@null"
                 android:inputType="phone"
                 android:padding="16dp" />
 
@@ -174,7 +173,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:text="register as a"
+            android:text="Register as a"
             android:textColor="@color/black"
             app:layout_constraintBottom_toTopOf="@+id/radioGroup"
             app:layout_constraintEnd_toEndOf="parent"
@@ -216,9 +215,7 @@
                 android:id="@+id/deliveryRadioButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
                 android:checked="true"
-                android:paddingEnd="30dp"
                 android:text="delivery"
                 android:buttonTint="@color/orange"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
@@ -237,6 +234,7 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.487"
             app:layout_constraintStart_toStartOf="parent"
@@ -252,10 +250,8 @@
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/register_btn"
-            app:layout_constraintVertical_bias="0.219" />
+            app:layout_constraintTop_toBottomOf="@+id/register_btn" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

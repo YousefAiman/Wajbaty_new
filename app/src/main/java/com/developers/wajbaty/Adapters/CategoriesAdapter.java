@@ -68,7 +68,9 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Ca
 
     private void bind(RestaurantCategory category){
 
-      Picasso.get().load(category.getIconUrl()).fit().centerInside().into(categoryImageIv);
+      if(category.getIconUrl()!=null && !category.getIconUrl().isEmpty()){
+        Picasso.get().load(category.getIconUrl()).fit().centerInside().into(categoryImageIv);
+      }
       categoryNameTv.setText(language.equals("ar")?category.getName_ar():category.getName_en());
 
     }

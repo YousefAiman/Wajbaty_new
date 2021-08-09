@@ -48,7 +48,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
 
     private static final String MENU_ITEM = "menuItem";
 
-    private MenuItem menuItem;
+    private MenuItem.MenuItemSummary menuItem;
 
     //views
     private TextView discountDialogMealTv;
@@ -70,7 +70,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
     public DiscountDialogFragment() {
     }
 
-    public static DiscountDialogFragment newInstance(MenuItem menuItem) {
+    public static DiscountDialogFragment newInstance(MenuItem.MenuItemSummary menuItem) {
         DiscountDialogFragment fragment = new DiscountDialogFragment();
         Bundle args = new Bundle();
         args.putSerializable(MENU_ITEM, menuItem);
@@ -82,7 +82,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            menuItem = (MenuItem) getArguments().getSerializable(MENU_ITEM);
+            menuItem = (MenuItem.MenuItemSummary) getArguments().getSerializable(MENU_ITEM);
         }
     }
 

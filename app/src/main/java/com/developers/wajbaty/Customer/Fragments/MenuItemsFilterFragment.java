@@ -141,6 +141,7 @@ public class MenuItemsFilterFragment extends DialogFragment implements View.OnCl
                             if (category.equals(documentSnapshot.getId())) {
                                 categoryFound = true;
                                 selectableCategoriesAdapter.setSelectedItem(selectableCategoryItems.size()-1);
+                                filterCategoriesRv.scrollToPosition(selectableCategoryItems.size()-1);
                             }
                         }
 
@@ -168,6 +169,7 @@ public class MenuItemsFilterFragment extends DialogFragment implements View.OnCl
             for (int i = 0; i < selectableFilterItems.size(); i++) {
                     if (filter.equals(selectableFilterItems.get(i).getID())) {
                         selectableFilterAdapter.setSelectedItem(i);
+
                         break;
                     }
             }

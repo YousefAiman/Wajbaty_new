@@ -10,13 +10,14 @@
     android:id="@+id/restaurantNestedScrollView"
     tools:context=".PartneredRestaurant.Fragments.RestaurantInfoFragment">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingBottom="10dp">
 
         <com.developers.wajbaty.CustomViews.NestedScrollableHost
-            android:id="@+id/albumNestedHost"
+            android:id="@+id/bannerNestedHost"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="15dp"
@@ -24,7 +25,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
         <androidx.viewpager.widget.ViewPager
-            android:id="@+id/restaurantAlbumViewPager"
+            android:id="@+id/restaurantBannerViewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="15dp"
@@ -42,8 +43,31 @@
             android:layout_marginTop="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/albumNestedHost" />
+            app:layout_constraintTop_toBottomOf="@+id/bannerNestedHost" />
 
+        <com.developers.wajbaty.CustomViews.NestedScrollableHost
+            android:id="@+id/albumNestedHost"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginTop="15dp"
+            app:layout_constraintDimensionRatio="2:1"
+            app:layout_constraintTop_toBottomOf="@+id/dotsLinear">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/restaurantAlbumRv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingHorizontal="15dp"
+            android:visibility="visible"
+            android:layout_marginTop="15dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:orientation="horizontal"
+            app:layout_constraintDimensionRatio="2:1" />
+
+        </com.developers.wajbaty.CustomViews.NestedScrollableHost>
         <TextView
             android:id="@+id/textView11"
             android:layout_width="wrap_content"
@@ -55,7 +79,7 @@
             android:textColor="@color/orange"
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dotsLinear" />
+            app:layout_constraintTop_toBottomOf="@+id/albumNestedHost" />
 
         <TextView
             android:id="@+id/addressTv"

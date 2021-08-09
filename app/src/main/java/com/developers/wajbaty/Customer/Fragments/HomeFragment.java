@@ -1,5 +1,6 @@
 package com.developers.wajbaty.Customer.Fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -14,7 +15,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,6 +31,7 @@ import com.developers.wajbaty.Customer.Activities.CustomerDeliveryMapActivity;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
 import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
 import com.developers.wajbaty.Models.Delivery;
+import com.developers.wajbaty.Models.DeliveryModel;
 import com.developers.wajbaty.Models.MenuItem;
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.Models.RestaurantCategory;
@@ -40,6 +44,9 @@ import com.developers.wajbaty.Utils.TimeFormatter;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -99,6 +106,7 @@ public class HomeFragment extends Fragment implements
 
     //current Delivery
     private View customerCurrentDeliveryLayout;
+    private View customerPendingDeliveryLayout;
     private String currentDeliveryID;
 
 
@@ -136,6 +144,7 @@ public class HomeFragment extends Fragment implements
         language = Locale.getDefault().getLanguage().equals("ar")?"ar":"en";
 
         final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
 
         LatLng latLng = (LatLng) addressMap.get("latLng");
 
@@ -180,6 +189,7 @@ public class HomeFragment extends Fragment implements
         final View view =  inflater.inflate(R.layout.fragment_home, container, false);
 
         customerCurrentDeliveryLayout = view.findViewById(R.id.customerCurrentDeliveryLayout);
+        customerPendingDeliveryLayout = view.findViewById(R.id.customerPendingDeliveryLayout);
         homeOffersViewPager = view.findViewById(R.id.homeOffersViewPager);
         homeOffersDotLl = view.findViewById(R.id.homeOffersDotLl);
         homeRestaurantsViewPager = view.findViewById(R.id.homeRestaurantsViewPager);
@@ -187,22 +197,30 @@ public class HomeFragment extends Fragment implements
         homeCategoriesRv = view.findViewById(R.id.homeCategoriesRv);
         categoryTv = view.findViewById(R.id.categoryTv);
 
+        final AdView adView = view.findViewById(R.id.adView);
+        adView.loadAd(new AdRequest.Builder().build());
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                adView.setVisibility(View.VISIBLE);
+            }
+        });
 
-
+        homeRestaurantsViewPager.setPageMargin((int) (20 * getResources().getDisplayMetrics().density));
 
         homeOffersViewPager.setAdapter(discountPagerAdapter);
         homeRestaurantsViewPager.setAdapter(restaurantsPagerAdapter);
         homeCategoriesRv.setAdapter(categoriesAdapter);
 
-
         return view;
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        getCurrentDelivery();
+
 
         getOffers();
 
@@ -212,7 +230,14 @@ public class HomeFragment extends Fragment implements
 
     }
 
-    private void getCurrentDelivery(){
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        getCurrentDelivery(context);
+    }
+
+    private void getCurrentDelivery(Context context){
 
         final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
@@ -227,32 +252,61 @@ public class HomeFragment extends Fragment implements
 
                             if(currentDeliveryID == null){
 
-                                if(value.contains("currentDeliveryID")){
+                                if(value.contains("currentDelivery")){
 
-                                    currentDeliveryID = value.getString("currentDeliveryID");
+                                    final Map<String,Object> currentDeliveryMap = (Map<String, Object>) value.get("currentDelivery");
+
+                                    if(currentDeliveryMap == null)
+                                        return;
+
+                                    currentDeliveryID = (String) currentDeliveryMap.get("currentDeliveryID");
 
                                     if(currentDeliveryID!=null && !currentDeliveryID.isEmpty()){
+
+//                                        int status = ((Long) currentDeliveryMap.get("status")).intValue();
 
                                         firestore.collection("Deliveries").document(currentDeliveryID)
                                                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                             @Override
                                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                 if(documentSnapshot.exists()){
-                                                    showCurrentDelivery(documentSnapshot);
+                                                    showCurrentDelivery(documentSnapshot,context);
                                                 }
                                             }
                                         });
+
+//                                        if(status == Delivery.STATUS_PENDING){
+//
+//
+//                                        }else {
+//                                            firestore.collection("Deliveries").document(currentDeliveryID)
+//                                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//                                                @Override
+//                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+//                                                    if(documentSnapshot.exists()){
+//                                                        showCurrentDelivery(documentSnapshot);
+//                                                    }
+//                                                }
+//                                            });
+//                                        }
+
+
 
                                     }
 
                                 }
                             }else{
 
-                                if(value.contains("currentDeliveryID")){
+                                if(value.contains("currentDelivery")){
 
-                                   String newDeliveryID = value.getString("currentDeliveryID");
+                                    final Map<String,Object> currentDeliveryMap = (Map<String, Object>) value.get("currentDelivery");
 
-                                   if(newDeliveryID!=null && !newDeliveryID.isEmpty() && !newDeliveryID.equals(currentDeliveryID)){
+                                    if(currentDeliveryMap == null)
+                                        return;
+
+                                    String newDeliveryID = (String) currentDeliveryMap.get("currentDeliveryID");
+
+                                    if(newDeliveryID!=null && !newDeliveryID.isEmpty() && !newDeliveryID.equals(currentDeliveryID)){
 
                                        currentDeliveryID = newDeliveryID;
 
@@ -261,7 +315,7 @@ public class HomeFragment extends Fragment implements
                                            @Override
                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                if(documentSnapshot.exists()){
-                                                   showCurrentDelivery(documentSnapshot);
+                                                   showCurrentDelivery(documentSnapshot,context);
                                                }
                                            }
                                        });
@@ -269,11 +323,13 @@ public class HomeFragment extends Fragment implements
                                    }else{
                                        currentDeliveryID = null;
                                        customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                                        customerPendingDeliveryLayout.setVisibility(View.GONE);
                                    }
 
                                 }else{
                                     currentDeliveryID = null;
                                     customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                                    customerPendingDeliveryLayout.setVisibility(View.GONE);
 
                                 }
 
@@ -282,6 +338,7 @@ public class HomeFragment extends Fragment implements
                         }else{
                             currentDeliveryID = null;
                             customerCurrentDeliveryLayout.setVisibility(View.GONE);
+                            customerPendingDeliveryLayout.setVisibility(View.GONE);
                         }
 
                     }
@@ -290,70 +347,120 @@ public class HomeFragment extends Fragment implements
 
     }
 
-    private void showCurrentDelivery(DocumentSnapshot snapshot){
+
+    private void showCurrentDelivery(DocumentSnapshot snapshot,Context context){
 
         Delivery delivery = snapshot.toObject(Delivery.class);
 
         if(delivery == null)
                 return;
 
-        if(delivery.getDriverID() == null || delivery.getDriverID().isEmpty()){
-            return;
-        }
+        if(delivery.getStatus() == Delivery.STATUS_PENDING){
 
-        customerCurrentDeliveryLayout.setVisibility(View.VISIBLE);
+            new DeliveryModel(delivery,context).listenForDriverDeliveryAcceptance();
 
-        final ImageView customerDeliveryDriverImageIv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryDriverImageIv);
-        final TextView
-                customerDeliveryDriverNameTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryDriverNameTv),
-                customerDeliveryAddressTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryAddressTv),
-                customerDeliveryOrderTimeTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryOrderTimeTv),
-                customerDeliveryTotalPriceTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryTotalPriceTv),
-                customerRestaurantCountTv = customerCurrentDeliveryLayout.findViewById(R.id.customerRestaurantCountTv);
+            Log.d("ttt","showing pending delivery");
 
-        final Button customerShowItemsTv = customerCurrentDeliveryLayout.findViewById(R.id.customerShowItemsTv)
-                ,customerShowMapTv = customerCurrentDeliveryLayout.findViewById(R.id.customerShowMapTv);
+            customerPendingDeliveryLayout.setVisibility(View.VISIBLE);
 
-        FirebaseFirestore.getInstance().collection("Users")
-                .document(delivery.getDriverID()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
+            final TextView
+                    customerDeliveryAddressTv = customerPendingDeliveryLayout.findViewById(R.id.customerDeliveryAddressTv),
+                    customerDeliveryOrderTimeTv = customerPendingDeliveryLayout.findViewById(R.id.customerDeliveryOrderTimeTv),
+                    customerDeliveryTotalPriceTv = customerPendingDeliveryLayout.findViewById(R.id.customerDeliveryTotalPriceTv),
+                    customerRestaurantCountTv = customerPendingDeliveryLayout.findViewById(R.id.customerRestaurantCountTv);
 
-                if(documentSnapshot.exists()){
+            final Button customerShowItemsTv = customerPendingDeliveryLayout.findViewById(R.id.customerShowItemsTv)
+                    ,customerDeliveryCancelBtn = customerPendingDeliveryLayout.findViewById(R.id.customerDeliveryCancelBtn);
 
-                    Picasso.get().load(documentSnapshot.getString("imageURL")).fit().centerCrop().into(customerDeliveryDriverImageIv);
-                    customerDeliveryDriverNameTv.setText(documentSnapshot.getString("name"));
+            customerDeliveryAddressTv.setText("Delivery Address: "+delivery.getAddress());
+            customerDeliveryOrderTimeTv.setText("Order Time: "+TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
+            customerDeliveryTotalPriceTv.setText("Total cost: "+delivery.getTotalCost() + delivery.getCurrency());
+
+            customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantCount()+" Restaurants");
+
+            customerShowItemsTv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(requireContext(), DeliveryInfoActivity.class)
+                            .putExtra("isForShow",true)
+                            .putExtra("delivery",delivery));
+                }
+            });
+
+            customerDeliveryCancelBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    customerPendingDeliveryLayout.setVisibility(View.GONE);
+                    currentDeliveryID = null;
+                    new DeliveryModel(delivery,requireContext()).deleteDelivery(0,null);
+                }
+            });
+
+//            customerCurrentDeliveryLayout.setVisibility(View.VISIBLE);
+//            View view = getLayoutInflater().inflate(R.layout.customer_pending_delivery_layout,null);
+//            customerCurrentDeliveryLayout.addView(view);
+//            customerCurrentDeliveryLayout.setLayoutResource(R.layout.customer_pending_delivery_layout);
+//            View inflated = customerCurrentDeliveryLayout.inflate();
+
+        }else{
+
+            if(delivery.getDriverID() == null || delivery.getDriverID().isEmpty()){
+                return;
+            }
+            customerCurrentDeliveryLayout.setVisibility(View.VISIBLE);
+
+            final ImageView customerDeliveryDriverImageIv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryDriverImageIv);
+            final TextView
+                    customerDeliveryDriverNameTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryDriverNameTv),
+                    customerDeliveryAddressTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryAddressTv),
+                    customerDeliveryOrderTimeTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryOrderTimeTv),
+                    customerDeliveryTotalPriceTv = customerCurrentDeliveryLayout.findViewById(R.id.customerDeliveryTotalPriceTv),
+                    customerRestaurantCountTv = customerCurrentDeliveryLayout.findViewById(R.id.customerRestaurantCountTv);
+
+            final Button customerShowItemsTv = customerCurrentDeliveryLayout.findViewById(R.id.customerShowItemsTv)
+                    ,customerShowMapTv = customerCurrentDeliveryLayout.findViewById(R.id.customerShowMapTv);
+
+            FirebaseFirestore.getInstance().collection("Users")
+                    .document(delivery.getDriverID()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                    if(documentSnapshot.exists()){
+
+                        Picasso.get().load(documentSnapshot.getString("imageURL")).fit().centerCrop().into(customerDeliveryDriverImageIv);
+                        customerDeliveryDriverNameTv.setText(documentSnapshot.getString("name"));
+
+                    }
+                }
+            });
+
+            customerDeliveryAddressTv.setText("Delivery Address: "+delivery.getAddress());
+            customerDeliveryOrderTimeTv.setText("Order Time: "+TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
+            customerDeliveryTotalPriceTv.setText("Total cost: "+delivery.getTotalCost() + delivery.getCurrency());
+
+            customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantCount()+" Restaurants");
+
+            customerShowItemsTv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    startActivity(new Intent(requireContext(), DeliveryInfoActivity.class)
+                            .putExtra("isForShow",true)
+                            .putExtra("delivery",delivery));
 
                 }
-            }
-        });
+            });
 
-        customerDeliveryAddressTv.setText("Delivery Address: "+delivery.getAddress());
-        customerDeliveryOrderTimeTv.setText("Order Time: "+TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
-        customerDeliveryTotalPriceTv.setText("Total cost: "+delivery.getTotalCost() + delivery.getCurrency());
+            customerShowMapTv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-        customerRestaurantCountTv.setText("N# of Restaurants: "+delivery.getRestaurantCount()+" Restaurants");
+                    startActivity(new Intent(requireContext(), CustomerDeliveryMapActivity.class)
+                            .putExtra("delivery",delivery));
 
-        customerShowItemsTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                startActivity(new Intent(requireContext(), DeliveryInfoActivity.class)
-                        .putExtra("isForShow",true)
-                        .putExtra("delivery",delivery));
-
-            }
-        });
-
-        customerShowMapTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                startActivity(new Intent(requireContext(), CustomerDeliveryMapActivity.class)
-                        .putExtra("delivery",delivery));
-
-            }
-        });
+                }
+            });
+        }
 
     }
 
@@ -549,7 +656,7 @@ public class HomeFragment extends Fragment implements
 
         startActivity(new Intent(requireContext(), CategoryActivity.class)
         .putExtra("category",categories.get(position).getID())
-        .putExtra("locationMap", (Serializable) addressMap));
+        .putExtra("addressMap", (Serializable) addressMap));
 
     }
 

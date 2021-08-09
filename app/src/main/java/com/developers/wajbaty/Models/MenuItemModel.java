@@ -37,22 +37,26 @@ public class MenuItemModel extends Observable {
             FAVORING_SUCCESS = 11,FAVORING_FAILED = 12,UN_FAVORING_SUCCESS = 13,UN_FAVORING_FAILED = 14,
     REMOVE_SUCCESS = 15,REMOVE_FAILED = 16;
 
-    private MenuItem menuItem;
+    private MenuItem.MenuItemSummary menuItem;
 
     public boolean hasInCart,isFavored;
     private FirebaseFirestore firestore;
     private CollectionReference userRef;
 
+    public void setFavored(boolean favored) {
+        isFavored = favored;
+    }
+
     public MenuItemModel(){
 
     }
 
-    public MenuItemModel(MenuItem menuItem){
+    public MenuItemModel(MenuItem.MenuItemSummary menuItem){
         this.menuItem = menuItem;
         firestore = FirebaseFirestore.getInstance();
     }
 
-    public MenuItem getMenuItem() {
+    public MenuItem.MenuItemSummary getMenuItem() {
         return menuItem;
     }
 
@@ -261,7 +265,7 @@ public class MenuItemModel extends Observable {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                notifyError(ADD_TO_CART_FAILED,e.getMessage());
+                notifyError(NOT_IN_CART,e.getMessage());
 
             }
         });
@@ -288,7 +292,7 @@ public class MenuItemModel extends Observable {
                 getUserRef().document(userId).collection("Cart").document(menuItem.getID());
 
         if(!hasInCart){
-            cartItemRef.set(new CartItem(menuItem.getID(),1,System.currentTimeMillis()))
+            cartItemRef.set(new CartItem(menuItem.getID(),1,System.currentTimeMillis(),menuItem.getRestaurantId()))
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -425,14 +429,12 @@ public class MenuItemModel extends Observable {
     public void favOrUnFavItem(String restaurantId,String userId){
 
         getUserRef().document(userId).collection("Favorites")
-                .document(restaurantId)
-                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                .document(restaurantId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
 
                 if(snapshot.exists()){
                     updateFavForReference(snapshot.getReference());
-
                 }else{
 
                     final HashMap<String,Object> favMap = new HashMap<>();

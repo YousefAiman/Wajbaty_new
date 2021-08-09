@@ -95,10 +95,16 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
         getViews();
         initListeners();
         attachAdapters();
+        populateAddress();
+
+        populateInfo();
+
         fetchOptions();
 
 
     }
+
+
 
     private void initObjects(){
 
@@ -186,7 +192,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
     private void fetchOptions(){
 
-        populateAddress();
+
 
         final ArrayList<String> serviceOptions = new ArrayList<>();
 
@@ -277,16 +283,36 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
         final Intent intent = getIntent();
 
-        if(intent !=null && intent.hasExtra("addressMap")){
+        if(intent !=null){
 
-            final Map<String,String> addressMap =
-                    (Map<String, String>) intent.getSerializableExtra("addressMap");
-
-            if(addressMap!=null && addressMap.containsKey("fullAddress")){
-                locationEd.setText(addressMap.get("fullAddress"));
+            if(intent.hasExtra("addressMap")){
+                final Map<String,String> addressMap =
+                        (Map<String, String>) intent.getSerializableExtra("addressMap");
+                if(addressMap!=null && addressMap.containsKey("fullAddress")){
+                    locationEd.setText(addressMap.get("fullAddress"));
+                }
             }
         }
     }
+
+    private void populateInfo() {
+                final Intent intent = getIntent();
+
+        if(intent !=null){
+
+            if(intent.hasExtra("infoBundle")){
+
+                final Bundle infoBundle = intent.getBundleExtra("infoBundle");
+
+                if(infoBundle.containsKey("restaurantName")){
+                    nameEd.setText(infoBundle.getString("restaurantName"));
+                }
+
+            }
+        }
+
+    }
+
 
     private void createServiceOptionsViews(ArrayList<String> serviceOptions){
 
@@ -505,6 +531,8 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
             intent.putExtra("imagesBundle",getIntent().getBundleExtra("imagesBundle"));
             intent.putExtra("infoBundle",infoBundle);
             startActivity(intent);
+
+            finish();
 
         }else if(v.getId() == backIv.getId()){
 

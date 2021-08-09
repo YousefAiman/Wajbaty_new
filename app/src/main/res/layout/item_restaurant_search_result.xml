@@ -7,7 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/circleImageView"
+        android:id="@+id/restaurantSearchImageIv"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginVertical="12dp"
@@ -21,7 +21,7 @@
         app:layout_constraintWidth_percent="0.13" />
 
     <TextView
-        android:id="@+id/textView18"
+        android:id="@+id/restaurantSearchNameTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
@@ -35,11 +35,11 @@
         app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@+id/circleImageView"
-        app:layout_constraintTop_toTopOf="@+id/circleImageView" />
+        app:layout_constraintStart_toEndOf="@+id/restaurantSearchImageIv"
+        app:layout_constraintTop_toTopOf="@+id/restaurantSearchImageIv" />
 
     <TextView
-        android:id="@+id/textView20"
+        android:id="@+id/restaurantSearchDistanceTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
@@ -51,17 +51,18 @@
         android:textColor="@color/light_black"
         android:textSize="16sp"
         app:layout_constrainedWidth="true"
-        app:layout_constraintBottom_toBottomOf="@+id/circleImageView"
+        app:layout_constraintBottom_toBottomOf="@+id/restaurantSearchImageIv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@+id/circleImageView"
-        app:layout_constraintTop_toBottomOf="@+id/textView18" />
+        app:layout_constraintStart_toEndOf="@+id/restaurantSearchImageIv"
+        app:layout_constraintTop_toBottomOf="@+id/restaurantSearchNameTv" />
 
     <View
+        android:id="@+id/searchDividerView"
         android:layout_width="0dp"
         android:layout_height="0.5dp"
         android:background="@color/light_grey"
-        app:layout_constraintStart_toStartOf="@+id/textView18"
+        app:layout_constraintStart_toStartOf="@+id/restaurantSearchNameTv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 

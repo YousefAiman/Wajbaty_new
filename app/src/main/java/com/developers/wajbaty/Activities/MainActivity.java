@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
             TO_HOME_ACTIVITY = 3,TO_WELCOME_ACTIVITY = 4,TO_MESSAGING_ACTIVITY = 5;
 
     private int targetActivity;
-    private Long userType;
+    private int userType;
     private  FirebaseUser currentUser;
 
     int lastClicked;
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //        findViewById(R.id.normalUserBtn).setOnClickListener(this);
 //        findViewById(R.id.driverUserBtn).setOnClickListener(this);
 //        findViewById(R.id.restaurantAdminUserBtn).setOnClickListener(this);
-
+////
         directUserToAppropriateActivity();
     }
 
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                 targetActivity = TO_SLIDER_ACTIVITY;
                 requestLocation();
 
-            }else if(FirebaseAuth.getInstance().getCurrentUser() != null){
+            }else if(currentUser!= null){
 
                 if (getIntent().hasExtra("messagingBundle")) {
                     targetActivity = TO_MESSAGING_ACTIVITY;
@@ -132,9 +132,9 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
     @Override
     public void addressFetched(Map<String, Object> addressMap) {
 
-//        LatLng latLng = (LatLng) addressMap.get("latLng");
+        LatLng latLng = (LatLng) addressMap.get("latLng");
 //        Log.d("ttt","gotten latLng in main from geocoder: "+latLng.latitude + "-"+latLng.longitude);
-
+//
         switch (targetActivity){
 
             case TO_SLIDER_ACTIVITY:
@@ -168,11 +168,28 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //                        public void onSuccess(AuthResult authResult) {
 //
 //                            startMessagingService();
-//                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
-//                                    .putExtra("userType",User.TYPE_CUSTOMER)
-//                                    .putExtra("addressMap", (Serializable) addressMap));
 //
-//                            finish();
+//                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                @Override
+//                                public void onSuccess(String s) {
+//
+//                                    FirebaseFirestore.getInstance().collection("Users")
+//                                            .document(authResult.getUser().getUid())
+//                                            .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                        @Override
+//                                        public void onSuccess(Void aVoid) {
+//                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                    .putExtra("userType",User.TYPE_CUSTOMER)
+//                                                    .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                            finish();
+//                                        }
+//                                    });
+//
+//                                }
+//                            });
+//
+//;
 //
 //                        }
 //                    }).addOnFailureListener(new OnFailureListener() {
@@ -205,11 +222,12 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //                                                public void onSuccess(Void aVoid) {
 //
 //                                                    startMessagingService();
-//                                                    startActivity(new Intent(MainActivity.this, HomeActivity.class)
-//                                                            .putExtra("userType",User.TYPE_CUSTOMER)
-//                                                            .putExtra("addressMap", (Serializable) addressMap));
-//                                                    finish();
 //
+//                                                                    startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                                            .putExtra("userType",User.TYPE_CUSTOMER)
+//                                                                            .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                                                    finish();
 //
 //                                                }
 //                                            });
@@ -259,12 +277,25 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //                        @Override
 //                        public void onSuccess(AuthResult authResult) {
 //
-//                            startMessagingService();
-//                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
-//                                    .putExtra("userType",User.TYPE_DELIVERY)
-//                                    .putExtra("addressMap", (Serializable) addressMap));
+//                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                @Override
+//                                public void onSuccess(String s) {
 //
-//                            finish();
+//                                    FirebaseFirestore.getInstance().collection("Users")
+//                                            .document(authResult.getUser().getUid())
+//                                            .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                        @Override
+//                                        public void onSuccess(Void aVoid) {
+//                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                    .putExtra("userType",User.TYPE_DELIVERY)
+//                                                    .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                            finish();
+//                                        }
+//                                    });
+//
+//                                }
+//                            });
 //
 ////                  FirebaseFirestore.getInstance().collection("Users")
 ////                    .document(authResult.getUser().getUid())
@@ -348,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //                    });
 //        }else if(lastClicked == 3){
 //
-//            String email = "restaurantAdmin2@gmail.com";
+//            String email = "palmira@gmail.com";
 //
 //            FirebaseAuth.getInstance().signInWithEmailAndPassword(email,"123456").
 //                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
@@ -365,14 +396,26 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //
 //                                        startMessagingService();
 //
-//                                        GlobalVariables.setCurrentRestaurantId(
-//                                                ((List<String>)documentSnapshot.get("administratingRestaurants")).get(0));
-//                                        startActivity(new Intent(MainActivity.this, HomeActivity.class)
-//                                                .putExtra("userType",User.TYPE_ADMIN)
-//                                                .putExtra("addressMap", (Serializable) addressMap));
+//                                        GlobalVariables.setCurrentRestaurantId(documentSnapshot.getString("myRestaurantID"));
+//                                        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                            @Override
+//                                            public void onSuccess(String s) {
 //
-//                                        finish();
+//                                                FirebaseFirestore.getInstance().collection("Users")
+//                                                        .document(authResult.getUser().getUid())
+//                                                        .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void aVoid) {
+//                                                        startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                                .putExtra("userType",User.TYPE_ADMIN)
+//                                                                .putExtra("addressMap", (Serializable) addressMap));
 //
+//                                                        finish();
+//                                                    }
+//                                                });
+//
+//                                            }
+//                                        });
 //
 //                                    }
 //
@@ -399,7 +442,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 //                                                                    "restaurant admin",
 //                                                                    authResult.getUser().getEmail(),
 //                                                                    "",
-//                                                                    "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/d9e4179d-56d9-4408-a7f7-5389158c3517%2FRestaurant_Main_Image?alt=media&token=c102983d-79d8-4657-9f40-ec846e127e92",
+//                                                                    null,
 //                                                                    (String) addressMap.get("countryCode"),
 //                                                                    s,
 //                                                                    User.TYPE_ADMIN);
@@ -442,7 +485,8 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                 ContextCompat.checkSelfPermission(this, locationPermission)
                         == PackageManager.PERMISSION_GRANTED) {
 
-            LocationRequester locationRequester = new LocationRequester(MainActivity.this,MainActivity.this);
+            LocationRequester locationRequester = new LocationRequester(MainActivity.this,
+                    MainActivity.this);
             locationRequester.getCurrentLocation();
         }else{
 
@@ -493,6 +537,8 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 
     private void startTargetActivity(Map<String,Object> addressMap) {
 
+        Log.d("ttt","start taget acitivty");
+
         startService(new Intent(this, MyFirebaseMessaging.class));
 
         FirebaseFirestore.getInstance().collection("Users")
@@ -500,8 +546,9 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                 .get().addOnSuccessListener(snapshot -> {
 
             if(snapshot.exists()){
-                userType = snapshot.getLong("type");
+                userType = snapshot.getLong("type").intValue();
 
+                Log.d("ttt","userType: "+userType);
 
                 if(targetActivity == TO_HOME_ACTIVITY){
 

@@ -25,6 +25,7 @@ import com.developers.wajbaty.Models.CartItemRestaurantHeader;
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.DeliveryDriver;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.CloudMessagingNotificationsSender;
 import com.developers.wajbaty.Utils.TimeFormatter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,6 +37,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
@@ -80,6 +82,9 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
     private ProgressDialogFragment progressDialogFragment;
 
     private Location currentLocation;
+
+    private ListenerRegistration currentDeliveryListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,10 +231,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
         deliveryInfoAddressTv.setText("Address: "+delivery.getAddress());
 
         deliveryInfoCoordinatesTv.setText("Coordinates: ["+
-                 BigDecimal.valueOf(delivery.getLat())
-                .setScale(2, RoundingMode.DOWN) +","+
-                BigDecimal.valueOf(delivery.getLng())
-                        .setScale(2,RoundingMode.DOWN)+"]");
+                 BigDecimal.valueOf(delivery.getLat()).setScale(2, RoundingMode.DOWN) +","+
+                BigDecimal.valueOf(delivery.getLng()).setScale(2,RoundingMode.DOWN)+"]");
 
         deliveryInfoOrderTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         deliveryInfoTotalPriceTv.setText(delivery.getTotalCost() + delivery.getCurrency());
@@ -378,8 +381,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
      private void listenToDeliveryChanges(){
 
 
-        ListenerRegistration deliverySnapshotListener=
-                deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
              boolean isInitial = true;
              boolean driverWasAccepted = false;
              @Override
@@ -557,6 +559,20 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
             progressDialogFragment = new ProgressDialogFragment();
             progressDialogFragment.setTitle("Waiting for customer confirmation");
             progressDialogFragment.setMessage("Please Wait!");
+            progressDialogFragment.setCanBeDismissed(true);
+            progressDialogFragment.setProgressDialogListener(new ProgressDialogFragment.ProgressDialogListener() {
+                @Override
+                public void onProgressDismissed() {
+                    deliveryRef.update("proposingDriverMap", FieldValue.delete())
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            deliveryInfoStartDeliveryBtn.setClickable(true);
+                        }
+                    });
+                }
+            });
+
             progressDialogFragment.show(getSupportFragmentManager(),"progressFragment");
 
             HashMap<String,Object> proposingMap = new HashMap<>();
@@ -565,6 +581,124 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
             proposingMap.put("hasDecided",false);
 
             deliveryRef.update("proposingDriverMap",proposingMap)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+
+                            firestore.collection("Users").document(currentUid)
+                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot snapshot) {
+
+                                    if(snapshot.exists()){
+
+                                        CloudMessagingNotificationsSender.sendNotification(
+                                                delivery.getRequesterID(),
+                                                new CloudMessagingNotificationsSender.Data(
+                                                        currentUid,
+                                                        "Delivery Driver "+snapshot.getString("name"),
+                                                        "Driver wants to deliver your order",
+                                                        snapshot.contains("imageURL") && snapshot.getString("imageURL")!=null?snapshot.getString("imageURL"):null,
+                                                        delivery.getID(),
+                                                        CloudMessagingNotificationsSender.Data.TYPE_DRIVER_PROPOSAL)
+                                        );
+
+                                    }
+                                }
+                            });
+
+//                            currentDeliveryListener = deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//                                boolean isInitial = true;
+//                                @Override
+//                                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+//
+//                                    if(value!=null){
+//
+//                                        if(isInitial){
+//                                            isInitial = false;
+//                                            return;
+//                                        }
+//
+//
+//                                        if(value.contains("proposingDriverMap")){
+//
+//                                            HashMap<String,Boolean> proposingMap = (HashMap<String, Boolean>) value.get("proposingDriverMap");
+//
+//                                            if(proposingMap.containsKey(currentUid)){
+//
+//                                                if(proposingMap.get(currentUid)){
+//
+//                                                    firestore.collection("Users").document(currentUid)
+//                                                            .update("currentDeliveryId",delivery.getID())
+//                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                                @Override
+//                                                                public void onSuccess(Void aVoid) {
+//
+//                                                                    firestore.collection("Deliveries").document(delivery.getID())
+//                                                                            .update("status",Delivery.STATUS_ACCEPTED,
+//                                                                                    "driverID", currentUid)
+//                                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                                                @Override
+//                                                                                public void onSuccess(Void aVoid) {
+//
+//                                                                                    progressDialogFragment.dismiss();
+//
+//                                                                                    startActivity(new Intent(DeliveryInfoActivity.this,DriverDeliveryMapActivity.class)
+//                                                                                            .putExtra("delivery",delivery));
+//
+//                                                                                }
+//                                                                            }).addOnFailureListener(new OnFailureListener() {
+//                                                                        @Override
+//                                                                        public void onFailure(@NonNull Exception e) {
+//
+//                                                                            progressDialogFragment.dismiss();
+//
+//                                                                            deliveryInfoStartDeliveryBtn.setClickable(true);
+//
+//                                                                            firestore.collection("DeliveryDrivers").document(currentUid)
+//                                                                                    .update("currentDeliveryId",null);
+//
+//                                                                        }
+//                                                                    });
+//
+//                                                                }
+//                                                            }).addOnFailureListener(new OnFailureListener() {
+//                                                        @Override
+//                                                        public void onFailure(@NonNull Exception e) {
+//
+//                                                            deliveryInfoStartDeliveryBtn.setClickable(true);
+//
+//                                                        }
+//                                                    });
+//
+//                                                }else{
+//
+//                                                    Toast.makeText(DeliveryInfoActivity.this,
+//                                                            "User refused your delivery request", Toast.LENGTH_SHORT).show();
+//
+//                                                    progressDialogFragment.dismiss();
+//                                                }
+//
+//                                            }else{
+//
+//                                                Toast.makeText(DeliveryInfoActivity.this,
+//                                                        "An Error occurred while user was trying to confirm delivery!", Toast.LENGTH_SHORT).show();
+//
+//                                                progressDialogFragment.dismiss();
+//                                                if(currentDeliveryListener!=null){
+//                                                    currentDeliveryListener.remove();
+//                                                }
+//
+//                                            }
+//                                        }
+//
+//                                    }
+//
+//                                }
+//                            });
+
+                        }
+                    })
             .addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
@@ -573,95 +707,10 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                             "Failed while trying to start delivery! Please Try " +
                                     "Again", Toast.LENGTH_SHORT).show();
 
+                    deliveryInfoStartDeliveryBtn.setClickable(true);
                     Log.d("ttt","failed to propose to delivery");
                 }
             });
-//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                @Override
-//                public void onSuccess(Void aVoid) {
-//
-//                    deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//                        @Override
-//                        public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-//
-//                            if(value!=null){
-//
-//                                if(value.contains("proposingDriverMap")){
-//
-//                                    HashMap<String,Boolean> proposingMap = (HashMap<String, Boolean>) value.get("proposingDriverMap");
-//
-//                                    if(proposingMap.containsKey(currentUid)){
-//
-//                                        if(proposingMap.get(currentUid)){
-//
-//                                            firestore.collection("Users").document(currentUid)
-//                                                    .update("currentDeliveryId",delivery.getID())
-//                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                                        @Override
-//                                                        public void onSuccess(Void aVoid) {
-//
-//                                                            firestore.collection("Deliveries").document(delivery.getID())
-//                                                                    .update("status",Delivery.STATUS_ACCEPTED,
-//                                                                            "driverID", currentUid)
-//                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                                                        @Override
-//                                                                        public void onSuccess(Void aVoid) {
-//
-//                                                                            progressDialogFragment.dismiss();
-//
-//                                                                            startActivity(new Intent(DeliveryInfoActivity.this,DriverDeliveryMapActivity.class)
-//                                                                                    .putExtra("delivery",delivery));
-//
-//                                                                        }
-//                                                                    }).addOnFailureListener(new OnFailureListener() {
-//                                                                @Override
-//                                                                public void onFailure(@NonNull Exception e) {
-//
-//                                                                    progressDialogFragment.dismiss();
-//
-//                                                                    deliveryInfoStartDeliveryBtn.setClickable(true);
-//
-//                                                                    firestore.collection("DeliveryDrivers").document(currentUid)
-//                                                                            .update("currentDeliveryId",null);
-//
-//                                                                }
-//                                                            });
-//
-//                                                        }
-//                                                    }).addOnFailureListener(new OnFailureListener() {
-//                                                @Override
-//                                                public void onFailure(@NonNull Exception e) {
-//
-//                                                    deliveryInfoStartDeliveryBtn.setClickable(true);
-//
-//                                                }
-//                                            });
-//
-//                                        }else{
-//
-//                                            Toast.makeText(DeliveryInfoActivity.this,
-//                                                    "User refused your delivery request", Toast.LENGTH_SHORT).show();
-//
-//                                            progressDialogFragment.dismiss();
-//                                        }
-//
-//                                    }else{
-//
-//                                        Toast.makeText(DeliveryInfoActivity.this,
-//                                                "An Error occurred while user was trying to confirm delivery!", Toast.LENGTH_SHORT).show();
-//
-//                                        progressDialogFragment.dismiss();
-//
-//                                    }
-//                                }
-//
-//                            }
-//
-//                        }
-//                    });
-//
-//                }
-//            });
 
 
 

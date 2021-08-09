@@ -241,15 +241,6 @@ public class RegisterActivity extends AppCompatActivity {
 //                Log.d("ttt", fullMobile);
 //
 
-
-
-                Intent intent = new Intent(this, VerifyAccountActivity.class);
-                intent.putExtra("username", username);
-                intent.putExtra("email", email);
-                intent.putExtra("userType",userType);
-                intent.putExtra("phoneNumber", fullMobile);
-                startActivity(intent);
-                finish();
             }
 
 //            String fullMobile = phoneSpinner.getSelectedItem().toString() + phone;

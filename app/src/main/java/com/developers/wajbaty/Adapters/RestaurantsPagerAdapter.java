@@ -41,6 +41,12 @@ public class RestaurantsPagerAdapter extends PagerAdapter {
         return view == object;
     }
 
+    @Override
+    public float getPageWidth(int position) {
+        return 0.9f;
+    }
+
+
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {

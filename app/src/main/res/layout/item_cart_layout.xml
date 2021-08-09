@@ -31,7 +31,6 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_percent="0.35" />
 
-
             <TextView
                 android:id="@+id/cartItemNameTv"
                 android:layout_width="wrap_content"

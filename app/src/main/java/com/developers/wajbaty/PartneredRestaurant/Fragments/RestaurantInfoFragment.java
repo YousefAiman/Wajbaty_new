@@ -8,9 +8,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import android.text.Html;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -20,17 +22,19 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.developers.wajbaty.Adapters.AlbumAdapter;
 import com.developers.wajbaty.Adapters.ImagePagerAdapter;
 import com.developers.wajbaty.Adapters.WorkingScheduleAdapter;
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.R;
+import com.developers.wajbaty.Utils.FullScreenImagesUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
 
 
-public class RestaurantInfoFragment extends Fragment {
+public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.AlbumClickListener{
 
     private final PartneredRestaurant restaurant;
     private ImagePagerAdapter imagePagerAdapter;
@@ -40,6 +44,10 @@ public class RestaurantInfoFragment extends Fragment {
     private ViewPager viewPager;
     private LinearLayout dotsLinear,contactInfoLl,SocialMediaLl;
     private TextView addressTv,statusTv,serviceOptionsTv,scheduleTv,aboutTv,additionalServicesTv;
+    private RecyclerView restaurantAlbumRv;
+
+    //album
+    private AlbumAdapter albumAdapter;
 
     private float density;
     private int lightBlack;
@@ -47,17 +55,19 @@ public class RestaurantInfoFragment extends Fragment {
     public RestaurantInfoFragment(PartneredRestaurant restaurant,int status) {
         this.restaurant = restaurant;
         this.status = status;
-
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(restaurant.getAlbumImages()!=null && !restaurant.getAlbumImages().isEmpty()){
-            imagePagerAdapter = new ImagePagerAdapter(restaurant.getAlbumImages(),R.layout.card_item_image_page);
+        if(restaurant.getBannerImages()!=null && !restaurant.getBannerImages().isEmpty()){
+            imagePagerAdapter = new ImagePagerAdapter(restaurant.getBannerImages(),R.layout.card_item_image_page,0.8f);
         }
 
+        if(restaurant.getAlbumImages()!=null && !restaurant.getAlbumImages().isEmpty()){
+            albumAdapter = new AlbumAdapter(restaurant.getAlbumImages(),this);
+        }
 
         density = getResources().getDisplayMetrics().density;
 
@@ -76,7 +86,7 @@ public class RestaurantInfoFragment extends Fragment {
 
 //        ((NestedScrollView)view.findViewById(R.id.restaurantNestedScrollView)).setNestedScrollingEnabled(true);
 
-        viewPager = view.findViewById(R.id.restaurantAlbumViewPager);
+        viewPager = view.findViewById(R.id.restaurantBannerViewPager);
         dotsLinear = view.findViewById(R.id.dotsLinear);
         addressTv = view.findViewById(R.id.addressTv);
         statusTv = view.findViewById(R.id.statusTv);
@@ -86,6 +96,7 @@ public class RestaurantInfoFragment extends Fragment {
         contactInfoLl = view.findViewById(R.id.contactInfoLl);
         SocialMediaLl = view.findViewById(R.id.SocialMediaLl);
         additionalServicesTv = view.findViewById(R.id.additionalServicesTv);
+        restaurantAlbumRv = view.findViewById(R.id.restaurantAlbumRv);
 
         if(imagePagerAdapter!=null){
 
@@ -98,6 +109,13 @@ public class RestaurantInfoFragment extends Fragment {
             view.findViewById(R.id.albumNestedHost).setVisibility(View.GONE);
             viewPager.setVisibility(View.GONE);
             dotsLinear.setVisibility(View.GONE);
+        }
+
+        if(albumAdapter!=null){
+            restaurantAlbumRv.setAdapter(albumAdapter);
+        }else{
+            restaurantAlbumRv.setVisibility(View.GONE);
+            view.findViewById(R.id.albumNestedHost).setVisibility(View.GONE);
         }
 
 
@@ -133,8 +151,10 @@ public class RestaurantInfoFragment extends Fragment {
 
     private void createPagerDotsSlider(){
 
+        viewPager.setPageMargin((int) (20 * getResources().getDisplayMetrics().density));
 
-        if (restaurant.getAlbumImages().size() > 1) {
+        if (restaurant.getBannerImages().size() > 1) {
+
 
             viewPager.setOffscreenPageLimit(imagePagerAdapter.getCount() - 1);
 
@@ -401,6 +421,10 @@ public class RestaurantInfoFragment extends Fragment {
                 final TextView tv = new TextView(requireContext());
                 tv.setTextColor(lightBlack);
                 tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+                tv.setLinkTextColor(ResourcesCompat.getColor(getResources(),R.color.light_blue_600,null));
+                tv.setClickable(true);
+                tv.setFocusable(true);
+                tv.setAutoLinkMask(Linkify.ALL);
 
                 tv.setText(Html.fromHtml("<font color='#FF8000'> " + key + ": </font>" +
                         map.get(key)));
@@ -428,6 +452,14 @@ public class RestaurantInfoFragment extends Fragment {
 
             }
         }).start();
+
+    }
+
+    @Override
+    public void onImageClicked(int position) {
+
+        FullScreenImagesUtil.showImageFullScreen(requireContext(),
+                restaurant.getAlbumImages().get(position),null);
 
     }
 }

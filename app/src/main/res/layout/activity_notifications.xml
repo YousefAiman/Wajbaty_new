@@ -23,6 +23,8 @@
         android:id="@+id/notificationsRv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingTop="15dp"
+        android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"

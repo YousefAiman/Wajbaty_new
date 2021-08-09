@@ -20,6 +20,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.developers.wajbaty.Activities.MainActivity;
 import com.developers.wajbaty.BroadcastReceivers.NotificationClickReceiver;
 import com.developers.wajbaty.BroadcastReceivers.NotificationDeleteListener;
 import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
@@ -125,7 +126,6 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
                 .setContentText(data.getBody())
                 .setAutoCancel(true);
 
-
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
 
         if (data.getImageUrl()!=null) {
@@ -180,9 +180,6 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
             notificationNum++;
 
-            GlobalVariables.getMessagesNotificationMap().put(identifierTitle, notificationNum);
-            updateNotificationSent(data.getSenderID(), data.getDestinationID(), data.getType());
-
             manager.notify(notificationNum, builder.build());
 
 
@@ -221,6 +218,26 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
                         , builder.build());
             }
 
+        }else if(data.getType() == CloudMessagingNotificationsSender.Data.TYPE_DRIVER_PROPOSAL){
+
+            Intent deliveryIntent = new Intent(this, MainActivity.class);
+            deliveryIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            deliveryIntent.putExtra("notificationType",data.getType());
+            deliveryIntent.putExtra("deliveryID",data.getDestinationID());
+            deliveryIntent.putExtra("driverID",data.getSenderID());
+
+            pendingIntent = PendingIntent.getBroadcast(this,notificationNum,
+                    deliveryIntent,PendingIntent.FLAG_ONE_SHOT);
+
+            builder.setContentIntent(pendingIntent);
+
+            if (Build.VERSION.SDK_INT < 26) {
+                BadgeUtil.incrementBadgeNum(this);
+            }
+
+            notificationNum++;
+
+            manager.notify(notificationNum, builder.build());
         }
     }
 

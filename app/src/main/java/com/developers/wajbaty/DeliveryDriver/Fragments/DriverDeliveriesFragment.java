@@ -43,6 +43,9 @@ import com.developers.wajbaty.Utils.TimeFormatter;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -186,6 +189,15 @@ public class DriverDeliveriesFragment extends Fragment implements
         driverDeliveriesWorkingTv = view.findViewById(R.id.driverDeliveriesWorkingTv);
 
         driverDeliveriesWorkingSwitch.setOnCheckedChangeListener(this);
+
+        final AdView adView = view.findViewById(R.id.adView);
+        adView.loadAd(new AdRequest.Builder().build());
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                adView.setVisibility(View.VISIBLE);
+            }
+        });
 
         return view;
     }
@@ -1004,8 +1016,10 @@ public class DriverDeliveriesFragment extends Fragment implements
 
     private void unBindService(){
         if(serviceConnection!=null){
-            requireContext().unbindService(serviceConnection);
-            serviceConnection = null;
+            if(getContext()!=null){
+                getContext().unbindService(serviceConnection);
+                serviceConnection = null;
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/show_myProfile_action"
         android:title="My Profile"
@@ -15,6 +16,7 @@
 
     <item android:id="@+id/show_notifications_action"
         android:title="Notifications"
+        android:actionLayout="@layout/badge_counter_layout"
         android:icon="@drawable/bell_icon"/>
 
     <item android:id="@+id/show_settings_action"

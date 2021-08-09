@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CartActivity extends AppCompatActivity implements CartAdapter.CartClickListener,
         View.OnClickListener {
 
-    private static final int CART_ITEM_LIMIT = 2;
+    private static final int CART_ITEM_LIMIT = 10;
     private static final String TAG = "CartActivity";
 
     //cart
@@ -103,8 +103,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
         mainQuery = firestore.collection("Users")
                 .document(currentUid).collection("Cart")
-                .orderBy("timeAdded", Query.Direction.DESCENDING)
-        .limit(Math.min(CART_ITEM_LIMIT, 10));
+                .orderBy("timeAdded", Query.Direction.DESCENDING).limit(CART_ITEM_LIMIT);
 
         cartRef = firestore.collection("Users")
                 .document(currentUid).collection("Cart");
@@ -135,19 +134,35 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
             public void onSuccess(DocumentSnapshot snapshot) {
 
                 if(snapshot.exists() && snapshot.contains("CartTotal")){
-                    totalCost = snapshot.getLong("CartTotal");
+                     totalCost = snapshot.getLong("CartTotal");
                 }else{
                     totalCost = 0;
                 }
 
                 cartTotalPriceTv.setText("Total Price: "+totalCost+"ILS");
 
-                if(snapshot.contains("currentDeliveryID") && snapshot.get("currentDeliveryID")!=null){
-
+                if(snapshot.contains("currentDelivery") && snapshot.get("currentDelivery")!=null
+                && ((Map<String,Object>)snapshot.get("currentDelivery")).containsKey("status")){
                     cartOrderDeliveryBtn.setClickable(false);
                     cartOrderDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
-
                 }
+
+//                if(snapshot.contains("currentDeliveryID") && snapshot.get("currentDeliveryID")!=null){
+//                    cartOrderDeliveryBtn.setClickable(false);
+//                    cartOrderDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
+//                }else{
+//                    firestore.collection("Deliveries").
+//                            whereEqualTo("requesterID",currentUid).limit(1)
+//                            .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onSuccess(QuerySnapshot snapshots) {
+//                            if(!snapshots.isEmpty()){
+//                                cartOrderDeliveryBtn.setClickable(false);
+//                                cartOrderDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
+//                            }
+//                        }
+//                    });
+//                }
 
             }
         });
@@ -330,6 +345,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartC
 
             }else{
 
+                cartOrderDeliveryBtn.setClickable(false);
+                cartOrderDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
                 Log.d(TAG,"added cart items is empty");
                 cartRv.setVisibility(View.INVISIBLE);
                 noCartItemTv.setVisibility(View.VISIBLE);

@@ -16,12 +16,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.developers.wajbaty.Adapters.PlaceSearchAdapter;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
+import com.developers.wajbaty.Models.PlaceSearchResult;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.BitmapUtil;
 import com.developers.wajbaty.Utils.GeocoderUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
+import com.developers.wajbaty.Utils.PlacesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,12 +36,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RestaurantLocationActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMapClickListener, View.OnClickListener ,
         LocationRequester.LocationRequestAction,SearchView.OnQueryTextListener,
-        GeocoderUtil.GeocoderResultListener {
+        GeocoderUtil.GeocoderResultListener,
+        PlaceSearchAdapter.PlaceSearchListener,
+        PlacesUtil.PlaceResultListener{
 
     private static final int REQUEST_LOCATION_PERMISSION = 10;
 
@@ -48,10 +56,19 @@ public class RestaurantLocationActivity extends AppCompatActivity
     private Button confirmLocationBtn;
     private ImageView currentLocationIV;
     private SearchView searchView;
-
+    private RecyclerView mapLocateSearchRv;
 
     private ProgressDialogFragment progressDialogFragment;
     private LocationRequester locationRequester;
+
+    //search adapter
+    private PlaceSearchAdapter searchAdapter;
+    private ArrayList<PlaceSearchResult> searchResults;
+
+    private PlacesUtil placesUtil;
+
+    private Map<String,PlaceSearchResult> placeResultMap;
+    private int selectedSearchRestaurant = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,12 +83,35 @@ public class RestaurantLocationActivity extends AppCompatActivity
         confirmLocationBtn = findViewById(R.id.confirmLocationBtn);
         currentLocationIV = findViewById(R.id.currentLocationIV);
         searchView = findViewById(R.id.mapLocateSearchView);
+        mapLocateSearchRv = findViewById(R.id.mapLocateSearchRv);
 
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
 
+                Log.d("ttt","closed search view");
+
+                if(mapLocateSearchRv.getVisibility() == View.VISIBLE){
+                    mapLocateSearchRv.setVisibility(View.GONE);
+                }
+
+                if(!searchResults.isEmpty()){
+                    searchResults.clear();
+                    searchAdapter.notifyDataSetChanged();
+                }
+
+                return false;
+            }
+        });
         confirmLocationBtn.setOnClickListener(this);
         currentLocationIV.setOnClickListener(this);
         searchView.setOnQueryTextListener(this);
 
+
+        searchResults = new ArrayList<>();
+        searchAdapter = new PlaceSearchAdapter(searchResults,this);
+
+        mapLocateSearchRv.setAdapter(searchAdapter);
 
 //        CursorAdapter cursorAdapter = new CursorAdapter() {
 //            @Override
@@ -108,7 +148,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
 
-        markLocation(latLng);
+        markLocation(latLng,"Restaurant location");
     }
 
     @Override
@@ -186,7 +226,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-                markLocation(new LatLng(-34, 151));
+                markLocation(new LatLng(-34, 151),"Restaurant location");
 
             }
         }
@@ -240,12 +280,12 @@ public class RestaurantLocationActivity extends AppCompatActivity
 //    }
 
 
-    private void markLocation(LatLng latLng){
+    private void markLocation(LatLng latLng,String name){
         if (currentMapMarker != null)
             currentMapMarker.remove();
 
 
-        currentMapMarker = mMap.addMarker(new MarkerOptions().position(latLng).title("Restaurant location"));
+        currentMapMarker = mMap.addMarker(new MarkerOptions().position(latLng).title(name));
 
         if(currentMapMarker!=null){
             currentMapMarker.setIcon(BitmapDescriptorFactory.fromBitmap(
@@ -327,13 +367,56 @@ public class RestaurantLocationActivity extends AppCompatActivity
     @Override
     public void locationFetched(LatLng latLng) {
 
-        markLocation(latLng);
+        markLocation(latLng,"Restaurant location");
 
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        return false;
+
+        if(!searchResults.isEmpty()){
+            searchResults.clear();
+            searchAdapter.notifyDataSetChanged();
+        }
+
+        if(placeResultMap != null){
+
+            final String placeSearchName = query.toLowerCase();
+
+            for(String placeName:placeResultMap.keySet()){
+
+                placeName = placeName.toLowerCase();
+
+                if(placeName.equals(placeSearchName) || placeName.contains(placeSearchName)
+                        || placeSearchName.contains(placeName)){
+                    searchResults.add(placeResultMap.get(placeName));
+                }
+
+            }
+
+        }
+
+
+        if(!searchResults.isEmpty()){
+
+            if(mapLocateSearchRv.getVisibility() ==View.GONE){
+                mapLocateSearchRv.setVisibility(View.VISIBLE);
+            }
+            searchAdapter.notifyDataSetChanged();
+
+        }else{
+            showProgressDialog();
+
+
+            if(placesUtil == null)
+                placesUtil = new PlacesUtil(this,this);
+
+            placesUtil.searchForRestaurant(query);
+
+        }
+
+
+        return true;
     }
 
     @Override
@@ -350,9 +433,21 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
             final Intent intent = new Intent(this,RestaurantMediaFillingActivity.class);
             intent.putExtra("addressMap", (Serializable) addressMap);
+
+            if(!searchResults.isEmpty() && selectedSearchRestaurant > -1 && selectedSearchRestaurant < searchResults.size()){
+
+                final PlaceSearchResult searchResult = searchResults.get(selectedSearchRestaurant);
+
+                if(searchResult.getLat() == currentMapMarker.getPosition().latitude &&
+                        searchResult.getLng() == currentMapMarker.getPosition().longitude){
+
+                    intent.putExtra("restaurantName", searchResult.getName());
+                    intent.putExtra("restaurantImageURL", searchResult.getImageURL());
+                }
+            }
+
             startActivity(intent);
             finish();
-
     }
 
     @Override
@@ -377,5 +472,69 @@ public class RestaurantLocationActivity extends AppCompatActivity
             progressDialogFragment.dismiss();
 
         }
+    }
+
+    @Override
+    public void onSearchResultClicked(int position) {
+
+        selectedSearchRestaurant = position;
+
+        final PlaceSearchResult searchResult= searchResults.get(position);
+
+        mapLocateSearchRv.setVisibility(View.GONE);
+        markLocation(new LatLng(searchResult.getLat(),searchResult.getLng()),searchResult.getName());
+
+
+    }
+
+    @Override
+    public void onPlacesFound(ArrayList<PlaceSearchResult> placeSearchResults) {
+
+        if(placeResultMap ==null)
+            placeResultMap = new HashMap<>();
+
+        for(PlaceSearchResult placeSearchResult:placeSearchResults){
+
+            boolean found = false;
+            for(String placeName:placeResultMap.keySet()){
+
+                placeName = placeName.toLowerCase();
+
+                if(placeName.equalsIgnoreCase(placeSearchResult.getName())){
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found){
+                placeResultMap.put(placeSearchResult.getName().toLowerCase(),placeSearchResult);
+            }
+
+        }
+
+
+        dismissProgressDialog();
+
+//        if(!searchResults.isEmpty()){
+//            searchResults.clear();
+//            searchAdapter.notifyDataSetChanged();
+//        }
+
+        searchResults.addAll(placeSearchResults);
+        searchAdapter.notifyDataSetChanged();
+
+        if(mapLocateSearchRv.getVisibility() == View.GONE){
+            mapLocateSearchRv.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onPlacesError(String errorMessage) {
+        dismissProgressDialog();
+        Toast.makeText(this,
+                "An error occurred while search for restaurant! " +
+                        "Please try again", Toast.LENGTH_SHORT).show();
+        Log.d("RestuarantLocation",errorMessage);
+
     }
 }
