@@ -20,30 +20,32 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
 
-    <TextView
-        android:id="@+id/restaurantsTv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:fontFamily="@font/almarai_regular"
-        android:text="Category"
-        android:textColor="@color/orange"
-        android:layout_marginTop="15dp"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/filterToolBar" />
+<!--    <TextView-->
+<!--        android:id="@+id/restaurantsTv"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="10dp"-->
+<!--        android:fontFamily="@font/almarai_regular"-->
+<!--        android:text="Category"-->
+<!--        android:visibility="gone"-->
+<!--        android:textColor="@color/orange"-->
+<!--        android:layout_marginTop="15dp"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/filterToolBar" />-->
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/filterCategoriesRv"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:clipToPadding="false"
-        android:orientation="horizontal"
-        android:paddingHorizontal="14dp"
-        android:layout_marginTop="10dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@+id/restaurantsTv" />
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/filterCategoriesRv"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:clipToPadding="false"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:paddingHorizontal="14dp"-->
+<!--        android:visibility="gone"-->
+<!--        android:layout_marginTop="10dp"-->
+<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/restaurantsTv" />-->
 
     <TextView
         android:id="@+id/textView19"
@@ -56,7 +58,7 @@
         android:textColor="@color/orange"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/filterCategoriesRv" />
+        app:layout_constraintTop_toBottomOf="@id/filterToolBar" />
 
 
     <androidx.recyclerview.widget.RecyclerView

@@ -1,13 +1,13 @@
 package com.developers.wajbaty.Customer.Activities;
 
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
-
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 
 import com.developers.wajbaty.Adapters.FragmentsPagerAdapter;
 import com.developers.wajbaty.Customer.Fragments.FavoriteMenuItemsFragment;
@@ -17,7 +17,7 @@ import com.developers.wajbaty.R;
 public class FavoriteActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    private Button favRestaurantBtn,favMenuItemsBtn;
+    private Button favRestaurantBtn, favMenuItemsBtn;
     private ViewPager2 favoritesViewPager;
 
 
@@ -36,15 +36,15 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
     }
 
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
-        final Fragment[] fragments = {new FavoriteRestaurantsFragment(),new FavoriteMenuItemsFragment()};
-        pagerAdapter = new FragmentsPagerAdapter(this,fragments);
+        final Fragment[] fragments = {new FavoriteRestaurantsFragment(), new FavoriteMenuItemsFragment()};
+        pagerAdapter = new FragmentsPagerAdapter(this, fragments);
 
     }
 
-    
-    private void getViews(){
+
+    private void getViews() {
 
         //views
         Toolbar favoriteToolbar = findViewById(R.id.favoriteToolbar);
@@ -53,7 +53,7 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
         favMenuItemsBtn = findViewById(R.id.favMenuItemsBtn);
 
 
-        favoriteToolbar.setNavigationOnClickListener(v-> finish());
+        favoriteToolbar.setNavigationOnClickListener(v -> finish());
         favoritesViewPager.setAdapter(pagerAdapter);
         favRestaurantBtn.setOnClickListener(this);
         favMenuItemsBtn.setOnClickListener(this);
@@ -68,10 +68,10 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
-                if(position == 0){
+                if (position == 0) {
                     favRestaurantBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);
                     favMenuItemsBtn.setBackgroundResource(R.drawable.option_un_checked_background);
-                }else{
+                } else {
                     favMenuItemsBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);
                     favRestaurantBtn.setBackgroundResource(R.drawable.option_un_checked_background);
                 }
@@ -90,9 +90,9 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == favRestaurantBtn.getId()){
+        if (v.getId() == favRestaurantBtn.getId()) {
 
-            if(favoritesViewPager.getCurrentItem() != 0){
+            if (favoritesViewPager.getCurrentItem() != 0) {
 
                 favoritesViewPager.setCurrentItem(0);
                 favRestaurantBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);
@@ -100,9 +100,9 @@ public class FavoriteActivity extends AppCompatActivity implements View.OnClickL
 
             }
 
-        }else if(v.getId() == favMenuItemsBtn.getId()){
+        } else if (v.getId() == favMenuItemsBtn.getId()) {
 
-            if(favoritesViewPager.getCurrentItem() != 1){
+            if (favoritesViewPager.getCurrentItem() != 1) {
 
                 favoritesViewPager.setCurrentItem(1);
                 favMenuItemsBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);

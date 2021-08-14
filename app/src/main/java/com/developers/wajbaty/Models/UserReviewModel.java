@@ -3,34 +3,25 @@ package com.developers.wajbaty.Models;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.Exclude;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.IgnoreExtraProperties;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Observer;
-import java.util.UUID;
 
 public class UserReviewModel extends Observable {
 
@@ -45,31 +36,30 @@ public class UserReviewModel extends Observable {
             HAS_NOT_REVIEWED = 8;
 
     private final CollectionReference reviewsRef;
+    private final List<String> likedReviews;
+
+    public UserReviewModel(CollectionReference reviewsRef) {
+        this.reviewsRef = reviewsRef;
+        likedReviews = new ArrayList<>();
+    }
 
     public List<String> getLikedReviews() {
         return likedReviews;
     }
 
-    private final List<String> likedReviews;
-
-    public UserReviewModel(CollectionReference reviewsRef){
-        this.reviewsRef = reviewsRef;
-        likedReviews = new ArrayList<>();
-    }
-
-    public void getReviewSummary(){
+    public void getReviewSummary() {
 
         reviewsRef.getParent().get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
 
-                if(snapshot.contains("reviewSummary")) {
+                if (snapshot.contains("reviewSummary")) {
 
                     final ReviewSummary reviewSummary = (ReviewSummary) snapshot.get("reviewSummary");
                     setChanged();
                     notifyObservers(reviewSummary);
 
-                }else{
+                } else {
 
 //                    HashMap<Integer,Integer> emptyRatingMap = new HashMap<>();
 //
@@ -86,12 +76,12 @@ public class UserReviewModel extends Observable {
 
     }
 
-    public void addReview(String comment,int rating){
+    public void addReview(String comment, int rating) {
 
 //        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        final UserReview userReview = new UserReview(userId,rating,System.currentTimeMillis(),comment);
+        final UserReview userReview = new UserReview(userId, rating, System.currentTimeMillis(), comment);
 
         reviewsRef.document(userId).set(userReview).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -101,23 +91,23 @@ public class UserReviewModel extends Observable {
                     @Override
                     public void onSuccess(DocumentSnapshot snapshot) {
 
-                        if(!snapshot.contains("reviewSummary") || snapshot.get("reviewSummary") == null){
+                        if (!snapshot.contains("reviewSummary") || snapshot.get("reviewSummary") == null) {
 
-                            final HashMap<String,Long> ratingMap = new HashMap<>();
+                            final HashMap<String, Long> ratingMap = new HashMap<>();
 
-                            for(int i=1;i<=5;i++){
-                                if(i == rating)
+                            for (int i = 1; i <= 5; i++) {
+                                if (i == rating)
                                     continue;
 
-                                ratingMap.put(String.valueOf(i),0L);
+                                ratingMap.put(String.valueOf(i), 0L);
                             }
 
-                            ratingMap.put(String.valueOf(rating),1L);
+                            ratingMap.put(String.valueOf(rating), 1L);
 
                             final ReviewSummary reviewSummary = new ReviewSummary(
-                                    rating,ratingMap,1);
+                                    rating, ratingMap, 1);
 
-                            snapshot.getReference().update("reviewSummary",reviewSummary)
+                            snapshot.getReference().update("reviewSummary", reviewSummary)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
@@ -129,18 +119,18 @@ public class UserReviewModel extends Observable {
 
                                         }
                                     })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    reviewsRef.document(userId).delete();
-                                    setChanged();
-                                    notifyObservers(e.getMessage());
-                                }
-                            });
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            reviewsRef.document(userId).delete();
+                                            setChanged();
+                                            notifyObservers(e.getMessage());
+                                        }
+                                    });
 
-                        }else{
+                        } else {
 
-                            updatedRatingSummary(rating,userReview,snapshot);
+                            updatedRatingSummary(rating, userReview, snapshot);
 
                         }
 
@@ -167,30 +157,30 @@ public class UserReviewModel extends Observable {
 
     }
 
-    private void updatedRatingSummary(int rating,UserReview userReview,DocumentSnapshot snapshot){
+    private void updatedRatingSummary(int rating, UserReview userReview, DocumentSnapshot snapshot) {
 
-        if(!snapshot.contains("reviewSummary")){
+        if (!snapshot.contains("reviewSummary")) {
             return;
         }
 
         Object object = snapshot.get("reviewSummary");
 
-        if(object == null){
+        if (object == null) {
             return;
         }
 
-        if(!(object instanceof HashMap)){
+        if (!(object instanceof HashMap)) {
             return;
         }
 
-        final ReviewSummary reviewSummary = new ReviewSummary((HashMap<String,Object>) object);
+        final ReviewSummary reviewSummary = new ReviewSummary((HashMap<String, Object>) object);
 
         final DocumentReference ref = snapshot.getReference();
 
-        final HashMap<String,Long> ratingsMap = reviewSummary.getRatingsMap();
+        final HashMap<String, Long> ratingsMap = reviewSummary.getRatingsMap();
 
 
-        ref.update("reviewSummary.ratingsMap."+rating,
+        ref.update("reviewSummary.ratingsMap." + rating,
                 FieldValue.increment(1))
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -198,9 +188,9 @@ public class UserReviewModel extends Observable {
 
 //                        int value = ((Long)ratingsMap.get(String.valueOf(rating))).intValue();
 
-                        ratingsMap.put(String.valueOf(rating),ratingsMap.get(String.valueOf(rating)) + 1);
+                        ratingsMap.put(String.valueOf(rating), ratingsMap.get(String.valueOf(rating)) + 1);
 
-                        ref.update("reviewSummary.totalReviews",FieldValue.increment(1))
+                        ref.update("reviewSummary.totalReviews", FieldValue.increment(1))
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
@@ -209,7 +199,7 @@ public class UserReviewModel extends Observable {
 
                                         float totalRating = 0;
 
-                                        for(String rating:ratingsMap.keySet()){
+                                        for (String rating : ratingsMap.keySet()) {
 
                                             totalRating += ratingsMap.get(rating) * Integer.parseInt(rating);
 
@@ -222,8 +212,8 @@ public class UserReviewModel extends Observable {
 
                                         reviewSummary.setAverageRating(newAverageRating);
 
-                                        ref.update("reviewSummary.averageRating",newAverageRating,
-                                                "averageRating",newAverageRating)
+                                        ref.update("reviewSummary.averageRating", newAverageRating,
+                                                "averageRating", newAverageRating)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
@@ -244,168 +234,168 @@ public class UserReviewModel extends Observable {
 
     }
 
-    public void likeReview(String userId,String reviewId,String targetId){
+    public void likeReview(String userId, String reviewId, String targetId) {
 
         final boolean hasLiked = likedReviews.contains(reviewId);
 
-        final Map<Integer,String> resultMap = new HashMap<>();
+        final Map<Integer, String> resultMap = new HashMap<>();
 
-            reviewsRef.document(reviewId).update("likes", FieldValue.increment(hasLiked?-1:1))
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
+        reviewsRef.document(reviewId).update("likes", FieldValue.increment(hasLiked ? -1 : 1))
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
 
-                            FirebaseFirestore.getInstance().collection("Users")
-                                    .document(userId)
-                                    .collection("LikedReviews")
-                                    .document(targetId)
-                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(DocumentSnapshot snapshot) {
+                        FirebaseFirestore.getInstance().collection("Users")
+                                .document(userId)
+                                .collection("LikedReviews")
+                                .document(targetId)
+                                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot snapshot) {
 
-                                    if(snapshot.exists()){
-                                        updateUserLikes(snapshot.getReference(),reviewId,hasLiked,resultMap,userId);
-                                    }else{
+                                if (snapshot.exists()) {
+                                    updateUserLikes(snapshot.getReference(), reviewId, hasLiked, resultMap, userId);
+                                } else {
 
-                                        final HashMap<String,Object> likedMap = new HashMap<>();
-                                        likedMap.put("LikedReviews",new ArrayList<>());
+                                    final HashMap<String, Object> likedMap = new HashMap<>();
+                                    likedMap.put("LikedReviews", new ArrayList<>());
 
-                                        snapshot.getReference().set(likedMap)
-                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        updateUserLikes(snapshot.getReference(),reviewId,false,resultMap,userId);
-                                                    }
-                                                }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
+                                    snapshot.getReference().set(likedMap)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    updateUserLikes(snapshot.getReference(), reviewId, false, resultMap, userId);
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
 
-                                                resultMap.put(hasLiked?UNLIKE_RESULT_FAILED:LIKE_RESULT_FAILED,reviewId);
-                                                resultMap.put(-1,e.getMessage());
-                                                setChanged();
-                                                notifyObservers(resultMap);
+                                            resultMap.put(hasLiked ? UNLIKE_RESULT_FAILED : LIKE_RESULT_FAILED, reviewId);
+                                            resultMap.put(-1, e.getMessage());
+                                            setChanged();
+                                            notifyObservers(resultMap);
 
-                                            }
-                                        });
+                                        }
+                                    });
 
-                                    }
                                 }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
 
-                                    resultMap.put(hasLiked?UNLIKE_RESULT_FAILED:LIKE_RESULT_FAILED,reviewId);
-                                    resultMap.put(-1,e.getMessage());
-                                    setChanged();
-                                    notifyObservers(resultMap);
-                                }
-                            });
+                                resultMap.put(hasLiked ? UNLIKE_RESULT_FAILED : LIKE_RESULT_FAILED, reviewId);
+                                resultMap.put(-1, e.getMessage());
+                                setChanged();
+                                notifyObservers(resultMap);
+                            }
+                        });
 
 
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
 
-                    Log.d("ttt","failed to inceremetn like count: "+e.getMessage());
-                    resultMap.put(hasLiked?UNLIKE_RESULT_FAILED:LIKE_RESULT_FAILED,reviewId);
-                    resultMap.put(-1,e.getMessage());
-                    setChanged();
-                    notifyObservers(resultMap);
+                Log.d("ttt", "failed to inceremetn like count: " + e.getMessage());
+                resultMap.put(hasLiked ? UNLIKE_RESULT_FAILED : LIKE_RESULT_FAILED, reviewId);
+                resultMap.put(-1, e.getMessage());
+                setChanged();
+                notifyObservers(resultMap);
 
-                }
-            });
+            }
+        });
 
 
     }
 
     private void updateUserLikes(DocumentReference documentReference, String reviewId, boolean hasLiked,
-                                 Map<Integer, String> resultMap, String userId){
+                                 Map<Integer, String> resultMap, String userId) {
 
         documentReference.update("LikedReviews",
-                hasLiked?FieldValue.arrayRemove(reviewId):
+                hasLiked ? FieldValue.arrayRemove(reviewId) :
                         FieldValue.arrayUnion(reviewId))
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
 
-                        resultMap.put(hasLiked?UNLIKE_RESULT_SUCCESS:LIKE_RESULT_SUCCESS,reviewId);
+                        resultMap.put(hasLiked ? UNLIKE_RESULT_SUCCESS : LIKE_RESULT_SUCCESS, reviewId);
                         setChanged();
                         notifyObservers(resultMap);
 
                     }
                 }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+            @Override
+            public void onFailure(@NonNull Exception e) {
 
-                        Log.d("ttt","failed to add to users likes: "+e.getMessage());
+                Log.d("ttt", "failed to add to users likes: " + e.getMessage());
 
-                        reviewsRef.document(reviewId)
-                                .update("likes", FieldValue.increment(hasLiked?1:-1));
+                reviewsRef.document(reviewId)
+                        .update("likes", FieldValue.increment(hasLiked ? 1 : -1));
 
-                        resultMap.put(hasLiked?UNLIKE_RESULT_FAILED:LIKE_RESULT_FAILED,reviewId);
-                        resultMap.put(-1,e.getMessage());
-                        setChanged();
-                        notifyObservers(resultMap);
+                resultMap.put(hasLiked ? UNLIKE_RESULT_FAILED : LIKE_RESULT_FAILED, reviewId);
+                resultMap.put(-1, e.getMessage());
+                setChanged();
+                notifyObservers(resultMap);
 
-                    }
-                });
+            }
+        });
     }
 
 
-    public void getUserLikedReviews(String userId,String targetId){
+    public void getUserLikedReviews(String userId, String targetId) {
 
-        Log.d("ttt","getUserLikedReviews");
+        Log.d("ttt", "getUserLikedReviews");
 
-            FirebaseFirestore.getInstance().collection("Users")
+        FirebaseFirestore.getInstance().collection("Users")
                 .document(userId)
                 .collection("LikedReviews")
                 .document(targetId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot snapshot) {
-                    if(snapshot.exists()){
-                        Log.d("ttt","onSuccess liked");
-                        likedReviews.addAll((ArrayList<String>) snapshot.get("LikedReviews"));
-                    }
+            @Override
+            public void onSuccess(DocumentSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Log.d("ttt", "onSuccess liked");
+                    likedReviews.addAll((ArrayList<String>) snapshot.get("LikedReviews"));
                 }
-            }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+            }
+        }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                    if(task.isSuccessful()){
+                if (task.isSuccessful()) {
 
-                        setChanged();
-                        notifyObservers(LIKED_REVIEWS_SUCCESS);
-
-                        Log.d("ttt","complete exits");
-                    }else{
-                        setChanged();
-                        notifyObservers(LIKED_REVIEWS_FAILED);
-
-                        Log.d("ttt","complete doesn;'t exits");
-                    }
-
-
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
                     setChanged();
-                    Log.d("ttt","failed: "+e.getMessage());
+                    notifyObservers(LIKED_REVIEWS_SUCCESS);
+
+                    Log.d("ttt", "complete exits");
+                } else {
+                    setChanged();
                     notifyObservers(LIKED_REVIEWS_FAILED);
 
+                    Log.d("ttt", "complete doesn;'t exits");
                 }
-            });
+
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                setChanged();
+                Log.d("ttt", "failed: " + e.getMessage());
+                notifyObservers(LIKED_REVIEWS_FAILED);
+
+            }
+        });
 
     }
 
-    public void checkUserHasReviewed(){
+    public void checkUserHasReviewed() {
         reviewsRef.document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 setChanged();
-                notifyObservers(task.getResult().exists()?ALREADY_REVIEWED:HAS_NOT_REVIEWED);
+                notifyObservers(task.getResult().exists() ? ALREADY_REVIEWED : HAS_NOT_REVIEWED);
             }
         });
 

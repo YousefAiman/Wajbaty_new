@@ -23,32 +23,21 @@ import java.util.Locale;
 
 public class MessageTextMapAdapter extends RecyclerView.Adapter<MessageTextMapAdapter.ViewHolder> {
 
+    private static final Date date = new Date();
+    private static final int
+            MSG_TYPE_LEFT = 0,
+            MSG_TYPE_RIGHT = 1;
     private final DateFormat
             hourMinuteFormat = new SimpleDateFormat("h:mm a", Locale.getDefault()),
             withoutYearFormat = new SimpleDateFormat("h:mm a MMM dd", Locale.getDefault()),
             formatter = new SimpleDateFormat("h:mm a yyyy MMM dd", Locale.getDefault()),
             todayYearFormat = new SimpleDateFormat("yyyy", Locale.getDefault()),
             todayYearMonthDayFormat = new SimpleDateFormat("yyyy MMM dd", Locale.getDefault());
-
-    private static final Date date = new Date();
-
-    private static final int
-            MSG_TYPE_LEFT = 0,
-            MSG_TYPE_RIGHT = 1;
-
-    private boolean longCLickEnabled = true;
     private final ArrayList<MessageMap> messages;
     private final Context context;
     private final DeleteMessageListener deleteMessageListener;
     private final String currentUid;
-
-    public interface DeleteMessageListener {
-        void deleteMessage(MessageMap messageMap, DialogInterface dialog);
-    }
-
-    public void disableLongClick() {
-        longCLickEnabled = false;
-    }
+    private boolean longCLickEnabled = true;
 
     public MessageTextMapAdapter(ArrayList<MessageMap> messages,
                                  Context context,
@@ -59,6 +48,9 @@ public class MessageTextMapAdapter extends RecyclerView.Adapter<MessageTextMapAd
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
+    public void disableLongClick() {
+        longCLickEnabled = false;
+    }
 
     @NonNull
     @Override
@@ -90,11 +82,41 @@ public class MessageTextMapAdapter extends RecyclerView.Adapter<MessageTextMapAd
     @Override
     public int getItemViewType(int position) {
 
-        if(messages.get(position).getSender().equals(currentUid)){
+        if (messages.get(position).getSender().equals(currentUid)) {
             return MSG_TYPE_RIGHT;
         }
 
         return MSG_TYPE_LEFT;
+    }
+
+    void showMessageDeleteDialog(MessageMap messageMap) {
+        final AlertDialog.Builder alert = new AlertDialog.Builder(context);
+        alert.setTitle("Do you want to delete this message?");
+        alert.setPositiveButton("Delete", (dialog, which) -> {
+            deleteMessageListener.deleteMessage(messageMap, dialog);
+        });
+        alert.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        alert.create().show();
+    }
+
+    private String getTimeFormatted(long time) {
+
+        if (time < 1000000000000L) {
+            time *= 1000;
+        }
+        if (todayYearMonthDayFormat.format(date)
+                .equals(todayYearMonthDayFormat.format(time))) {
+            return hourMinuteFormat.format(time);
+
+        } else if (todayYearFormat.format(date).equals(todayYearFormat.format(time))) {
+            return withoutYearFormat.format(time);
+        } else {
+            return formatter.format(time);
+        }
+    }
+
+    public interface DeleteMessageListener {
+        void deleteMessage(MessageMap messageMap, DialogInterface dialog);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener,
@@ -143,7 +165,7 @@ public class MessageTextMapAdapter extends RecyclerView.Adapter<MessageTextMapAd
 
             final MessageMap message = messages.get(getAdapterPosition());
 
-            if(message.getSender().equals(currentUid)){
+            if (message.getSender().equals(currentUid)) {
                 showMessageDeleteDialog(message);
             }
 
@@ -165,32 +187,6 @@ public class MessageTextMapAdapter extends RecyclerView.Adapter<MessageTextMapAd
 
         }
 
-    }
-
-    void showMessageDeleteDialog(MessageMap messageMap) {
-        final AlertDialog.Builder alert = new AlertDialog.Builder(context);
-        alert.setTitle("Do you want to delete this message?");
-        alert.setPositiveButton("Delete", (dialog, which) -> {
-            deleteMessageListener.deleteMessage(messageMap, dialog);
-        });
-        alert.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-        alert.create().show();
-    }
-
-    private String getTimeFormatted(long time) {
-
-        if (time < 1000000000000L) {
-            time *= 1000;
-        }
-        if (todayYearMonthDayFormat.format(date)
-                .equals(todayYearMonthDayFormat.format(time))) {
-            return hourMinuteFormat.format(time);
-
-        } else if (todayYearFormat.format(date).equals(todayYearFormat.format(time))) {
-            return withoutYearFormat.format(time);
-        } else {
-            return formatter.format(time);
-        }
     }
 
 }

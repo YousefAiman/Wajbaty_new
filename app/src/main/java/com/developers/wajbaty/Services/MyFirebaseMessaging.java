@@ -3,7 +3,6 @@ package com.developers.wajbaty.Services;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,13 +29,11 @@ import com.developers.wajbaty.Utils.CloudMessagingNotificationsSender;
 import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class MyFirebaseMessaging extends FirebaseMessagingService {
@@ -50,21 +47,20 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
 
-        if(FirebaseAuth.getInstance().getCurrentUser()!=null){
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             FirebaseFirestore.getInstance().collection("Users").document(
                     FirebaseAuth.getInstance().getCurrentUser().getUid())
-                    .update("cloudMessagingToken",s);
+                    .update("cloudMessagingToken", s);
         }
 
     }
 
-    
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        Log.d("ttt","Firebase Messaging serivice created");
+        Log.d("ttt", "Firebase Messaging serivice created");
 
     }
 
@@ -72,8 +68,8 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        Log.d("ttt","message reciceived");
-        if(currentUID == null){
+        Log.d("ttt", "message reciceived");
+        if (currentUID == null) {
             currentUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
 
@@ -94,7 +90,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
                 if (data.getSenderID()
                         .equals(sharedPreferences.getString("currentMessagingUserId", "")) &&
-                        data.getDestinationID().equals(sharedPreferences.getString("currentMessagingDeliveryID",""))) {
+                        data.getDestinationID().equals(sharedPreferences.getString("currentMessagingDeliveryID", ""))) {
 
                     if (sharedPreferences.contains("isPaused") &&
                             sharedPreferences.getBoolean("isPaused", false)) {
@@ -119,7 +115,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         String type = String.valueOf(data.getType());
         createChannel(type);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,type)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, type)
                 .setSmallIcon(R.drawable.app_logo_round_icon)
                 .setContentTitle(data.getTitle())
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
@@ -128,7 +124,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        if (data.getImageUrl()!=null) {
+        if (data.getImageUrl() != null) {
             builder.setLargeIcon(
                     Glide.with(this)
                             .asBitmap()
@@ -161,16 +157,16 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
         PendingIntent pendingIntent;
 
-        if(data.getType() == CloudMessagingNotificationsSender.Data.TYPE_DELIVERY_REQUEST){
+        if (data.getType() == CloudMessagingNotificationsSender.Data.TYPE_DELIVERY_REQUEST) {
 
             Intent deliveryIntent = new Intent(this, DeliveryInfoActivity.class);
             deliveryIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            deliveryIntent.putExtra("deliveryID",data.getDestinationID());
+            deliveryIntent.putExtra("deliveryID", data.getDestinationID());
 
-             pendingIntent = PendingIntent.getBroadcast(this,notificationNum,
-                     deliveryIntent,PendingIntent.FLAG_ONE_SHOT);
+            pendingIntent = PendingIntent.getBroadcast(this, notificationNum,
+                    deliveryIntent, PendingIntent.FLAG_ONE_SHOT);
 
-                builder.setContentIntent(pendingIntent);
+            builder.setContentIntent(pendingIntent);
 
 
             if (Build.VERSION.SDK_INT < 26) {
@@ -183,14 +179,14 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
             manager.notify(notificationNum, builder.build());
 
 
-        }else if(data.getType() == CloudMessagingNotificationsSender.Data.TYPE_MESSAGE){
+        } else if (data.getType() == CloudMessagingNotificationsSender.Data.TYPE_MESSAGE) {
 
 
             final Intent newIntent = new Intent(this, NotificationClickReceiver.class);
             newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             final Bundle messagingBundle = new Bundle();
             messagingBundle.putString("messagingUID", data.getSenderID());
-            messagingBundle.putString("destinationUID",data.getDestinationID());
+            messagingBundle.putString("destinationUID", data.getDestinationID());
             newIntent.putExtra("messagingBundle", messagingBundle);
 
             pendingIntent = PendingIntent
@@ -218,16 +214,16 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
                         , builder.build());
             }
 
-        }else if(data.getType() == CloudMessagingNotificationsSender.Data.TYPE_DRIVER_PROPOSAL){
+        } else if (data.getType() == CloudMessagingNotificationsSender.Data.TYPE_DRIVER_PROPOSAL) {
 
             Intent deliveryIntent = new Intent(this, MainActivity.class);
             deliveryIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            deliveryIntent.putExtra("notificationType",data.getType());
-            deliveryIntent.putExtra("deliveryID",data.getDestinationID());
-            deliveryIntent.putExtra("driverID",data.getSenderID());
+            deliveryIntent.putExtra("notificationType", data.getType());
+            deliveryIntent.putExtra("deliveryID", data.getDestinationID());
+            deliveryIntent.putExtra("driverID", data.getSenderID());
 
-            pendingIntent = PendingIntent.getBroadcast(this,notificationNum,
-                    deliveryIntent,PendingIntent.FLAG_ONE_SHOT);
+            pendingIntent = PendingIntent.getBroadcast(this, notificationNum,
+                    deliveryIntent, PendingIntent.FLAG_ONE_SHOT);
 
             builder.setContentIntent(pendingIntent);
 

@@ -1,13 +1,6 @@
 package com.developers.wajbaty.Customer.Fragments;
 
-import android.app.Dialog;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +9,12 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.developers.wajbaty.Models.DeliveryDriver;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
+
 import com.developers.wajbaty.R;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -33,27 +31,16 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
 
     //views
     private ImageView deliveryDriverImageIv;
-    private TextView deliveryDriverNameTv;
+    private TextView deliveryDriverNameTv, deliveryDriverRatingNumberTv;
     private RatingBar deliveryDriverRatingBar;
-    private Button deliveryDriverStartDeliveryBtn;
-    private Button deliveryDriverCancelDeliveryBtn;
+    private Button deliveryDriverStartDeliveryBtn, deliveryDriverCancelDeliveryBtn;
 
-
-    public interface DeliveryListener{
-        void startDelivery();
-        void cancelDelivery();
-    }
-
-    public void setDeliveryListener(DeliveryListener deliveryListener) {
-        this.deliveryListener = deliveryListener;
-    }
 
     public DeliveryDriverInfoFragment() {
         // Required empty public constructor
     }
 
-
-    public static DeliveryDriverInfoFragment newInstance(String deliveryDriverID,DeliveryDriverInfoFragment.DeliveryListener deliveryListener) {
+    public static DeliveryDriverInfoFragment newInstance(String deliveryDriverID, DeliveryDriverInfoFragment.DeliveryListener deliveryListener) {
         DeliveryDriverInfoFragment fragment = new DeliveryDriverInfoFragment();
         Bundle args = new Bundle();
         args.putSerializable(DELIVERY_DRIVER_ID, deliveryDriverID);
@@ -62,11 +49,15 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
         return fragment;
     }
 
+    public void setDeliveryListener(DeliveryListener deliveryListener) {
+        this.deliveryListener = deliveryListener;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            deliveryDriverID =  getArguments().getString(DELIVERY_DRIVER_ID);
+            deliveryDriverID = getArguments().getString(DELIVERY_DRIVER_ID);
         }
     }
 
@@ -76,18 +67,18 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
         requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_delivery_driver_info, container, false);
+        View view = inflater.inflate(R.layout.fragment_delivery_driver_info, container, false);
 
         deliveryDriverImageIv = view.findViewById(R.id.deliveryDriverImageIv);
         deliveryDriverNameTv = view.findViewById(R.id.deliveryDriverNameTv);
         deliveryDriverRatingBar = view.findViewById(R.id.deliveryDriverRatingBar);
         deliveryDriverStartDeliveryBtn = view.findViewById(R.id.deliveryDriverStartDeliveryBtn);
         deliveryDriverCancelDeliveryBtn = view.findViewById(R.id.deliveryDriverCancelDeliveryBtn);
+        deliveryDriverRatingNumberTv = view.findViewById(R.id.deliveryDriverRatingNumberTv);
 
         deliveryDriverStartDeliveryBtn.setOnClickListener(this);
         deliveryDriverCancelDeliveryBtn.setOnClickListener(this);
@@ -105,10 +96,22 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                if(documentSnapshot.exists()){
-                    Picasso.get().load(documentSnapshot.getString("imageURL")).fit().centerCrop().into(deliveryDriverImageIv);
+                if (documentSnapshot.exists()) {
+
+                    final CircularProgressDrawable progressDrawable = new CircularProgressDrawable(requireContext());
+                    progressDrawable.setColorSchemeColors(ResourcesCompat.getColor(getResources(), R.color.orange, null));
+                    progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                    progressDrawable.start();
+
+                    Picasso.get().load(documentSnapshot.getString("imageURL")).fit()
+                            .centerCrop().placeholder(progressDrawable).into(deliveryDriverImageIv);
                     deliveryDriverNameTv.setText(documentSnapshot.getString("name"));
-                    deliveryDriverRatingBar.setRating(documentSnapshot.getDouble("rating").floatValue());
+                    if (documentSnapshot.contains("totalRatings")) {
+                        deliveryDriverRatingNumberTv.setText(documentSnapshot.getLong("totalRatings") + " Reviews");
+                    }
+                    if (documentSnapshot.contains("rating")) {
+                        deliveryDriverRatingBar.setRating(documentSnapshot.getDouble("rating").floatValue());
+                    }
                 }
 
             }
@@ -119,17 +122,23 @@ public class DeliveryDriverInfoFragment extends DialogFragment implements View.O
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == deliveryDriverStartDeliveryBtn.getId()){
+        if (v.getId() == deliveryDriverStartDeliveryBtn.getId()) {
 
             dismiss();
             deliveryListener.startDelivery();
 
-        }else if(v.getId() == deliveryDriverCancelDeliveryBtn.getId()){
+        } else if (v.getId() == deliveryDriverCancelDeliveryBtn.getId()) {
 
             dismiss();
             deliveryListener.cancelDelivery();
 
         }
 
+    }
+
+    public interface DeliveryListener {
+        void startDelivery();
+
+        void cancelDelivery();
     }
 }

@@ -1,22 +1,22 @@
 package com.developers.wajbaty.PartneredRestaurant.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PersistableBundle;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.developers.wajbaty.Activities.MapsActivity;
 import com.developers.wajbaty.Adapters.FragmentsPagerAdapter;
@@ -27,7 +27,6 @@ import com.developers.wajbaty.Models.PartneredRestaurantModel;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.FirebaseReviewsFragment;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantInfoFragment;
 import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantMenuFragment;
-import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantReviewsFragment;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.FullScreenImagesUtil;
 import com.developers.wajbaty.Utils.GlobalVariables;
@@ -46,7 +45,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -60,7 +58,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener,
-        View.OnClickListener , Observer {
+        View.OnClickListener, Observer {
 
 
     private static final String TAG = "RestaurantActivity";
@@ -90,6 +88,14 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     private String currentUid;
 
     private boolean onSavedState;
+
+    public static void main(String[] args) {
+
+        System.out.println(new SimpleDateFormat("EEEE", Locale.getDefault())
+                .format(System.currentTimeMillis()));
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,16 +122,16 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
         onSavedState = true;
     }
 
-    private void intializeObjects(){
+    private void intializeObjects() {
 
         //        ID  = getIntent().getStringExtra("ID");
 //        ID  = "b60dc8bd-4756-4f9f-b7a2-04c92c97167d";
 
         final Intent intent = getIntent();
 
-        if(intent != null && intent.hasExtra("ID")){
+        if (intent != null && intent.hasExtra("ID")) {
             ID = intent.getStringExtra("ID");
-        }else{
+        } else {
             Toast.makeText(this,
                     "An error occurred while trying to view restaurant! Please try again",
                     Toast.LENGTH_SHORT).show();
@@ -139,14 +145,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
     }
 
-    public static void main(String[] args){
-
-        System.out.println(new SimpleDateFormat("EEEE",Locale.getDefault())
-                .format(System.currentTimeMillis()));
-
-    }
-
-    private void checkUserLiked(){
+    private void checkUserLiked() {
 
         firestore.collection("Users")
                 .document(getCurrentUid())
@@ -155,9 +154,9 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
-                if(snapshot.exists() & snapshot.contains("FavoriteRestaurants")){
-                    alreadyFavored = ((List<String>)snapshot.get("FavoriteRestaurants")).contains(ID);
-                    if(alreadyFavored){
+                if (snapshot.exists() & snapshot.contains("FavoriteRestaurants")) {
+                    alreadyFavored = ((List<String>) snapshot.get("FavoriteRestaurants")).contains(ID);
+                    if (alreadyFavored) {
                         changeFavIcon(R.drawable.heart_filled_icon);
                     }
                 }
@@ -168,28 +167,27 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
     private String getCurrentUid() {
 
-        if(currentUid == null)
+        if (currentUid == null)
             currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         return currentUid;
 
     }
 
-    private void showProgressDialog(){
+    private void showProgressDialog() {
 
-        if(progressDialog == null){
+        if (progressDialog == null) {
             progressDialog = new ProgressDialogFragment();
         }
-        if(!onSavedState){
-            progressDialog.show(getSupportFragmentManager(),"progress");
+        if (!onSavedState) {
+            progressDialog.show(getSupportFragmentManager(), "progress");
         }
     }
 
-    private void hideProgressDialog(){
+    private void hideProgressDialog() {
 
 
-        if(progressDialog!=null && progressDialog.isVisible()){
-
+        if (progressDialog != null && progressDialog.isVisible()) {
 
 
             progressDialog.dismiss();
@@ -200,7 +198,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
     private void fetchRestaurantInfo() {
 
-        if (ID!=null){
+        if (ID != null) {
 
 //            final boolean[] waitForSchedule = {false};
 
@@ -212,7 +210,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                    if(documentSnapshot.exists()){
+                    if (documentSnapshot.exists()) {
                         restaurant = documentSnapshot.toObject(PartneredRestaurant.class);
 
                         restaurantRef.collection("Lists")
@@ -220,9 +218,9 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                             @Override
                             public void onSuccess(QuerySnapshot snapshots) {
 
-                                for(DocumentSnapshot snapshot:snapshots){
+                                for (DocumentSnapshot snapshot : snapshots) {
 
-                                    switch (snapshot.getId()){
+                                    switch (snapshot.getId()) {
 
                                         case "SocialMediaLinks":
 
@@ -262,12 +260,12 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-                                if(task.isSuccessful()){
+                                if (task.isSuccessful()) {
 
-                                    if(scheduleMap!=null){
-                                        final LinkedHashMap<String,Map<String,Object>> scheduleObjectMap = new LinkedHashMap<>();
+                                    if (scheduleMap != null) {
+                                        final LinkedHashMap<String, Map<String, Object>> scheduleObjectMap = new LinkedHashMap<>();
 
-                                        for(String weekDay:scheduleMap.keySet()){
+                                        for (String weekDay : scheduleMap.keySet()) {
                                             scheduleObjectMap.put(weekDay.split("-")[1],
                                                     (Map<String, Object>) scheduleMap.get(weekDay));
                                         }
@@ -281,63 +279,63 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                                             .document(ID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                         @Override
                                         public void onSuccess(DocumentSnapshot snapshot) {
-                                            if(snapshot!=null && snapshot.exists()){
+                                            if (snapshot != null && snapshot.exists()) {
                                                 likedMenuItems = (ArrayList<String>) snapshot.get("FavoriteMenuItems");
                                             }
                                         }
                                     }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                         @Override
                                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                            if(task.isSuccessful()){
-                                                if(restaurant.getSchedule()!=null){
+                                            if (task.isSuccessful()) {
+                                                if (restaurant.getSchedule() != null) {
 
 //                                                    new Thread(new Runnable() {
 //                                                        @Override
 //                                                        public void run() {
 //
-                                                            final int status = getRestaurantStatus();
+                                                    final int status = getRestaurantStatus();
 
-                                                                    switch (status){
+                                                    switch (status) {
 
-                                                                        case PartneredRestaurant.STATUS_OPEN:
+                                                        case PartneredRestaurant.STATUS_OPEN:
 
-                                                                                    statusToolbarTv.setText("Open "+currentOpenTimeRange);
+                                                            statusToolbarTv.setText("Open " + currentOpenTimeRange);
 
-                                                                                    statusToolbarTv.setCompoundDrawablesWithIntrinsicBounds(R.drawable.green_circle,
-                                                                                            0,0,0);
-
-
-                                                                            break;
-
-                                                                        case PartneredRestaurant.STATUS_CLOSED:
-
-                                                                                    statusToolbarTv.setText("Closed");
-                                                                                    statusToolbarTv.setCompoundDrawablesWithIntrinsicBounds(R.drawable.red_circle,
-                                                                                            0,0,0);
-
-                                                                            break;
-
-                                                                        case PartneredRestaurant.STATUS_SHUTDOWN:
-
-                                                                                    statusToolbarTv.setText("Shut down");
-                                                                            break;
+                                                            statusToolbarTv.setCompoundDrawablesWithIntrinsicBounds(R.drawable.green_circle,
+                                                                    0, 0, 0);
 
 
-                                                                        case PartneredRestaurant.STATUS_UNKNOWN:
+                                                            break;
 
-                                                                                    statusToolbarTv.setVisibility(View.GONE);
+                                                        case PartneredRestaurant.STATUS_CLOSED:
 
-                                                                            break;
-                                                                    }
+                                                            statusToolbarTv.setText("Closed");
+                                                            statusToolbarTv.setCompoundDrawablesWithIntrinsicBounds(R.drawable.red_circle,
+                                                                    0, 0, 0);
+
+                                                            break;
+
+                                                        case PartneredRestaurant.STATUS_SHUTDOWN:
+
+                                                            statusToolbarTv.setText("Shut down");
+                                                            break;
 
 
-                                                                    fillRestaurantInfo();
+                                                        case PartneredRestaurant.STATUS_UNKNOWN:
 
-                                                                    setupViewPager(status);
+                                                            statusToolbarTv.setVisibility(View.GONE);
+
+                                                            break;
+                                                    }
+
+
+                                                    fillRestaurantInfo();
+
+                                                    setupViewPager(status);
 
 //                                                        }
 //                                                    }).start();
-                                                }else{
+                                                } else {
 
                                                     statusToolbarTv.setVisibility(View.GONE);
                                                     fillRestaurantInfo();
@@ -347,14 +345,13 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                                                 }
 
 
-                                            }else{
+                                            } else {
                                                 finish();
                                             }
 
                                         }
                                     });
                                 }
-
 
 
                             }
@@ -570,8 +567,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     }
 
 
-
-    private void getViews(){
+    private void getViews() {
 
         collapsingToolbar = findViewById(R.id.collapsingToolbar);
         restaurantMainIv = findViewById(R.id.restaurantMainIv);
@@ -581,26 +577,33 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
         restaurantTabLayout = findViewById(R.id.restaurantTabLayout);
         restaurantViewPager = findViewById(R.id.restaurantViewPager);
 
-        if(GlobalVariables.getCurrentRestaurantId() == null){
+        if (GlobalVariables.getCurrentRestaurantId() == null) {
             restaurantToolbar.inflateMenu(R.menu.restaurant_customer_menu);
         }
 
     }
 
-    private void addListeners(){
+    private void addListeners() {
 
         restaurantMainIv.setOnClickListener(this);
-        restaurantToolbar.setNavigationOnClickListener(v->finish());
+        restaurantToolbar.setNavigationOnClickListener(v -> finish());
         restaurantToolbar.setOnMenuItemClickListener(this);
 
     }
 
-    private void fillRestaurantInfo(){
+    private void fillRestaurantInfo() {
 
         hideProgressDialog();
 
-        if(restaurant.getMainImage()!=null && !restaurant.getMainImage().isEmpty()){
-            Picasso.get().load(restaurant.getMainImage()).fit().centerCrop().into(restaurantMainIv);
+        if (restaurant.getMainImage() != null && !restaurant.getMainImage().isEmpty()) {
+
+            final CircularProgressDrawable progressDrawable = new CircularProgressDrawable(this);
+            progressDrawable.setColorSchemeColors(ResourcesCompat.getColor(getResources(), R.color.orange, null));
+            progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+            progressDrawable.start();
+
+            Picasso.get().load(restaurant.getMainImage()).fit().centerCrop()
+                    .placeholder(progressDrawable).into(restaurantMainIv);
         }
 
         collapsingToolbar.setTitle(restaurant.getName());
@@ -614,7 +617,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 //            markLocationFb.setOnClickListener(this);
 //        }
 
-        if(restaurant.getLat()!=0 && restaurant.getLng()!=0){
+        if (restaurant.getLat() != 0 && restaurant.getLng() != 0) {
             markLocationFb.setOnClickListener(this);
         }
 
@@ -631,18 +634,17 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 //        }
     }
 
-    private void setupViewPager(int status){
+    private void setupViewPager(int status) {
 
-        final Integer[] icons = {R.drawable.info_icon,R.drawable.menu_icon,R.drawable.star_icon};
-        final String[] titles = {"About","Menu","Reviews"};
+        final Integer[] icons = {R.drawable.info_icon, R.drawable.menu_icon, R.drawable.star_icon};
+        final String[] titles = {"About", "Menu", "Reviews"};
 
-        Log.d("ttt","restaurant activity currency: "+
+        Log.d("ttt", "restaurant activity currency: " +
                 getIntent().getStringExtra("currency"));
 
 
-
-        final Fragment[] fragments = new Fragment[]{new RestaurantInfoFragment(restaurant,status),
-                RestaurantMenuFragment.newInstance(restaurant,likedMenuItems,getIntent().getStringExtra("currency")),
+        final Fragment[] fragments = new Fragment[]{new RestaurantInfoFragment(restaurant, status),
+                RestaurantMenuFragment.newInstance(restaurant, likedMenuItems, getIntent().getStringExtra("currency")),
 //                new RestaurantReviewsFragment(restaurant)
                 new FirebaseReviewsFragment(restaurantRef,
                         restaurantRef.collection("Reviews"),
@@ -656,7 +658,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 //        fragments.add(new RestaurantInfoFragment());
 //        fragments.add(new RestaurantInfoFragment());
 
-        restaurantViewPager.setAdapter(new FragmentsPagerAdapter(this,fragments));
+        restaurantViewPager.setAdapter(new FragmentsPagerAdapter(this, fragments));
 
         new TabLayoutMediator(restaurantTabLayout, restaurantViewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
@@ -668,22 +670,22 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
             }
         }).attach();
 
-    restaurantTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-        @Override
-        public void onTabSelected(TabLayout.Tab tab) {
-            tab.setText(titles[tab.getPosition()]);
-        }
+        restaurantTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                tab.setText(titles[tab.getPosition()]);
+            }
 
-        @Override
-        public void onTabUnselected(TabLayout.Tab tab) {
-            tab.setText("");
-        }
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                tab.setText("");
+            }
 
-        @Override
-        public void onTabReselected(TabLayout.Tab tab) {
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
 
-        }
-    });
+            }
+        });
 
         restaurantTabLayout.getTabAt(0).setText(titles[0]);
 //        restaurantTabLayout.select;
@@ -692,26 +694,26 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
 
     }
 
-    private int getRestaurantStatus(){
+    private int getRestaurantStatus() {
 
 
         final long currentTime = System.currentTimeMillis();
 
-        final String dayName = new SimpleDateFormat("EEEE",Locale.getDefault())
+        final String dayName = new SimpleDateFormat("EEEE", Locale.getDefault())
                 .format(currentTime);
 
 
-        if(restaurant.getSchedule().containsKey(dayName)){
+        if (restaurant.getSchedule().containsKey(dayName)) {
 
-            final Map<String,Object> dayMap =
+            final Map<String, Object> dayMap =
                     restaurant.getSchedule().get(dayName);
 
-            if(dayMap.containsKey("isClosed") && (boolean)dayMap.get("isClosed")){
+            if (dayMap.containsKey("isClosed") && (boolean) dayMap.get("isClosed")) {
 
                 return PartneredRestaurant.STATUS_CLOSED;
 
-            }else if(dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_START)) &&
-                    dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_END))){
+            } else if (dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_START)) &&
+                    dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_END))) {
 
                 final long firstStart
                         = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.FIRST_START));
@@ -726,23 +728,23 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                 calendar.setTime(new Date(currentTime));
 
                 final int year = calendar.get(Calendar.YEAR),
-                 month = calendar.get(Calendar.MONTH),
-                 day = calendar.get(Calendar.DATE);
+                        month = calendar.get(Calendar.MONTH),
+                        day = calendar.get(Calendar.DATE);
 
-                calendar.set(year,month,day,0,0,0);
+                calendar.set(year, month, day, 0, 0, 0);
                 final long elapsedTimeOfDay = currentTime - calendar.getTimeInMillis();
-                Log.d(TAG,"elapsedTimeOfDay: "+elapsedTimeOfDay);
+                Log.d(TAG, "elapsedTimeOfDay: " + elapsedTimeOfDay);
 
-                if(elapsedTimeOfDay > firstStart && elapsedTimeOfDay < firstEnd){
+                if (elapsedTimeOfDay > firstStart && elapsedTimeOfDay < firstEnd) {
 
-                    currentOpenTimeRange = hourMinuteFormat.format(firstStart) +" - "+hourMinuteFormat.format(firstEnd);
+                    currentOpenTimeRange = hourMinuteFormat.format(firstStart) + " - " + hourMinuteFormat.format(firstEnd);
 
-                    Log.d(TAG,"currentOpenTimeRange: "+currentOpenTimeRange);
+                    Log.d(TAG, "currentOpenTimeRange: " + currentOpenTimeRange);
 
                     return PartneredRestaurant.STATUS_OPEN;
 
-                }else if(dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_START)) &&
-                        dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_END))){
+                } else if (dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_START)) &&
+                        dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_END))) {
 
 
                     final long secondStart
@@ -751,27 +753,27 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
                     final long secondEnd
                             = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.SECOND_END));
 
-                    if(elapsedTimeOfDay > secondStart && elapsedTimeOfDay < secondEnd){
+                    if (elapsedTimeOfDay > secondStart && elapsedTimeOfDay < secondEnd) {
 
-                        currentOpenTimeRange = hourMinuteFormat.format(secondStart) +" - "+hourMinuteFormat.format(secondEnd);
+                        currentOpenTimeRange = hourMinuteFormat.format(secondStart) + " - " + hourMinuteFormat.format(secondEnd);
 
-                        Log.d(TAG,"currentOpenTimeRange: "+currentOpenTimeRange);
+                        Log.d(TAG, "currentOpenTimeRange: " + currentOpenTimeRange);
 
                         return PartneredRestaurant.STATUS_OPEN;
 
-                    }else{
+                    } else {
                         return PartneredRestaurant.STATUS_CLOSED;
                     }
 
-                }else{
+                } else {
                     return PartneredRestaurant.STATUS_CLOSED;
                 }
 
-            }else{
+            } else {
                 return PartneredRestaurant.STATUS_UNKNOWN;
             }
 
-        }else{
+        } else {
             return PartneredRestaurant.STATUS_UNKNOWN;
         }
 
@@ -781,7 +783,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     public boolean onMenuItemClick(MenuItem item) {
 
 
-        if(item.getItemId() == R.id.fav_action){
+        if (item.getItemId() == R.id.fav_action) {
 
             showProgressDialog();
 
@@ -796,18 +798,18 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == markLocationFb.getId()){
+        if (v.getId() == markLocationFb.getId()) {
 
             final Intent restaurantIntent = new Intent(this, MapsActivity.class);
-            restaurantIntent.putExtra("restaurantName",restaurant.getName());
-            restaurantIntent.putExtra("lat",restaurant.getLat());
-            restaurantIntent.putExtra("lng",restaurant.getLng());
+            restaurantIntent.putExtra("restaurantName", restaurant.getName());
+            restaurantIntent.putExtra("lat", restaurant.getLat());
+            restaurantIntent.putExtra("lng", restaurant.getLng());
 //            restaurantIntent.putExtra("destinationMap",(Serializable) restaurant.getCoordinates());
             startActivity(restaurantIntent);
 
-        }else if(v.getId() == restaurantMainIv.getId()){
+        } else if (v.getId() == restaurantMainIv.getId()) {
 
-            FullScreenImagesUtil.showImageFullScreen(this,restaurant.getMainImage(),null);
+            FullScreenImagesUtil.showImageFullScreen(this, restaurant.getMainImage(), null);
 
         }
 
@@ -817,32 +819,32 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     public void update(Observable o, Object arg) {
 
 
-        if(arg instanceof HashMap){
+        if (arg instanceof HashMap) {
 
 
-            final HashMap<Integer,Object> resultMap = (HashMap<Integer,Object>)arg;
+            final HashMap<Integer, Object> resultMap = (HashMap<Integer, Object>) arg;
 
             final int key = resultMap.keySet().iterator().next();
             final Object result = resultMap.get(key);
 
-            if(key == PartneredRestaurantModel.TYPE_FAVORITE){
+            if (key == PartneredRestaurantModel.TYPE_FAVORITE) {
 
                 hideProgressDialog();
 
-                if(result instanceof Boolean && (boolean)result){
+                if (result instanceof Boolean && (boolean) result) {
 
 
-                    changeFavIcon(alreadyFavored?R.drawable.heart_outlined_icon:R.drawable.heart_filled_icon);
+                    changeFavIcon(alreadyFavored ? R.drawable.heart_outlined_icon : R.drawable.heart_filled_icon);
 
                     alreadyFavored = !alreadyFavored;
 
-                }else if(result instanceof String){
+                } else if (result instanceof String) {
 
                     Toast.makeText(this,
                             "Adding to favorite failed! Please try again",
                             Toast.LENGTH_LONG).show();
 
-                    Log.d(TAG,"failed to fav restautant: "+ result);
+                    Log.d(TAG, "failed to fav restautant: " + result);
                 }
 
             }
@@ -852,7 +854,7 @@ public class RestaurantActivity extends AppCompatActivity implements Toolbar.OnM
     }
 
 
-    private void changeFavIcon(int icon){
+    private void changeFavIcon(int icon) {
         restaurantToolbar.getMenu().findItem(R.id.fav_action).setIcon(icon);
     }
 }

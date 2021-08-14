@@ -1,17 +1,8 @@
 package com.developers.wajbaty.PartneredRestaurant.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -20,26 +11,27 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Adapters.ImageInputRecyclerAdapter;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.PermissionRequester;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantMediaFillingActivity extends AppCompatActivity implements
-    ImageInputRecyclerAdapter.CloudImageRemoveListener , ImageInputRecyclerAdapter.LocalImageListener,
-        View.OnClickListener{
+        ImageInputRecyclerAdapter.CloudImageRemoveListener, ImageInputRecyclerAdapter.LocalImageListener,
+        View.OnClickListener {
 
     private static final int IMAGE_STORAGE_REQUEST = 1, PICK_IMAGE = 10,
             MAIN_IMAGE = 100, BANNER_IMAGE = 101, ALBUM_IMAGE = 103,
@@ -50,12 +42,12 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
     private Button imageInputNextBtn;
 
     //mainImage
-    private ImageView mainImageIv, mainImageCloseIv,mainAddIv;
+    private ImageView mainImageIv, mainImageCloseIv, mainAddIv;
     private Uri mainImageUri;
     private String previousMainImageURL;
 
     //banner recycler
-    private  RecyclerView bannerImagesRv;
+    private RecyclerView bannerImagesRv;
     private List<Object> bannerImages;
     private ImageInputRecyclerAdapter bannerAdapter;
 
@@ -74,6 +66,7 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
     private int chosenImageNumber;
     private int chosenImageType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,18 +76,18 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
         final Intent intent = getIntent();
 
-        if(intent!=null){
+        if (intent != null) {
 
-            if(intent.hasExtra("imagesBundle")){
+            if (intent.hasExtra("imagesBundle")) {
                 imagesBundle = getIntent().getBundleExtra("imagesBundle");
             }
 
-            if(intent.hasExtra("restaurantName")){
+            if (intent.hasExtra("restaurantName")) {
                 infoBundle = new Bundle();
-                infoBundle.putString("restaurantName",intent.getStringExtra("restaurantName"));
-                if(intent.hasExtra("restaurantImageURL")){
+                infoBundle.putString("restaurantName", intent.getStringExtra("restaurantName"));
+                if (intent.hasExtra("restaurantImageURL")) {
                     previousMainImageURL = intent.getStringExtra("restaurantImageURL");
-                    infoBundle.putString("restaurantImageURL",previousMainImageURL);
+                    infoBundle.putString("restaurantImageURL", previousMainImageURL);
                 }
             }
         }
@@ -107,7 +100,7 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
     }
 
 
-    private void getViews(){
+    private void getViews() {
 
         backIv = findViewById(R.id.backIv);
         mainImageIv = findViewById(R.id.mainImageIv);
@@ -118,7 +111,7 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
         restaurantMediaRv = findViewById(R.id.restaurantMediaRv);
         imageInputNextBtn = findViewById(R.id.imageInputNextBtn);
 
-        bannerImagesRv.setLayoutManager(new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false){
+        bannerImagesRv.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false) {
             @Override
             public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
                 lp.height = getHeight();
@@ -126,7 +119,7 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
                 return true;
             }
         });
-        restaurantMediaRv.setLayoutManager(new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false){
+        restaurantMediaRv.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false) {
             @Override
             public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
                 lp.height = getHeight();
@@ -142,9 +135,9 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
     }
 
-    private void getMainImage(){
+    private void getMainImage() {
 
-        if(previousMainImageURL!=null){
+        if (previousMainImageURL != null) {
 
             mainAddIv.setVisibility(View.GONE);
             mainImageCloseIv.setVisibility(View.VISIBLE);
@@ -153,39 +146,39 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
             Picasso.get().load(previousMainImageURL).fit().centerCrop().into(mainImageIv);
 
-        }else{
-            if(imagesBundle!=null && imagesBundle.containsKey("mainImage")){
+        } else {
+            if (imagesBundle != null && imagesBundle.containsKey("mainImage")) {
                 Picasso.get().load(imagesBundle.getString("mainImage")).fit().centerCrop().into(mainImageIv);
             }
         }
     }
 
-    private void setupBannerImagesRv(){
+    private void setupBannerImagesRv() {
 
         bannerImages = new ArrayList<>();
 
 
-        if(imagesBundle!=null && imagesBundle.containsKey("bannerImages")){
+        if (imagesBundle != null && imagesBundle.containsKey("bannerImages")) {
 
             final ArrayList<String> oldBannerImages = imagesBundle.getStringArrayList("bannerImages");
 
             bannerImages.addAll(oldBannerImages);
 
-            if(oldBannerImages.size() < MAX_BANNER_IMAGE_COUNT){
-                for(int i = oldBannerImages.size(); i < MAX_BANNER_IMAGE_COUNT;i++){
+            if (oldBannerImages.size() < MAX_BANNER_IMAGE_COUNT) {
+                for (int i = oldBannerImages.size(); i < MAX_BANNER_IMAGE_COUNT; i++) {
                     bannerImages.add(null);
                 }
             }
 
-        }else{
+        } else {
 
-                for(int i = 0; i < MAX_BANNER_IMAGE_COUNT;i++){
-                    bannerImages.add(null);
-                }
+            for (int i = 0; i < MAX_BANNER_IMAGE_COUNT; i++) {
+                bannerImages.add(null);
+            }
         }
 
         bannerAdapter = new ImageInputRecyclerAdapter(this, bannerImages,
-                 this, this,
+                this, this,
                 ImageInputRecyclerAdapter.TYPE_BANNER);
 
 
@@ -193,31 +186,31 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
     }
 
-    private void setupAlbumImagesRv(){
+    private void setupAlbumImagesRv() {
 
         albumImages = new ArrayList<>();
 
-        if(imagesBundle!=null && imagesBundle.containsKey("albumImages")){
+        if (imagesBundle != null && imagesBundle.containsKey("albumImages")) {
 
             final ArrayList<String> oldAlbumImages = imagesBundle.getStringArrayList("albumImages");
 
             albumImages.addAll(oldAlbumImages);
 
-            if(oldAlbumImages.size() < MAX_ALBUM_IMAGE_COUNT){
-                for(int i = oldAlbumImages.size(); i < MAX_ALBUM_IMAGE_COUNT;i++){
+            if (oldAlbumImages.size() < MAX_ALBUM_IMAGE_COUNT) {
+                for (int i = oldAlbumImages.size(); i < MAX_ALBUM_IMAGE_COUNT; i++) {
                     albumImages.add(null);
                 }
             }
 
-        }else{
+        } else {
 
-            for(int i = 0; i < MAX_ALBUM_IMAGE_COUNT;i++){
+            for (int i = 0; i < MAX_ALBUM_IMAGE_COUNT; i++) {
                 albumImages.add(null);
             }
         }
 
         albumAdapter = new ImageInputRecyclerAdapter(this, albumImages,
-                this, this,ImageInputRecyclerAdapter.TYPE_ALBUM);
+                this, this, ImageInputRecyclerAdapter.TYPE_ALBUM);
 
 
         restaurantMediaRv.setAdapter(albumAdapter);
@@ -225,25 +218,25 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
 
     @Override
-    public void removeCloudImage(int index,int adapterType) {
+    public void removeCloudImage(int index, int adapterType) {
 
         showProgressDialog();
 
-        switch (adapterType){
+        switch (adapterType) {
 
             case ImageInputRecyclerAdapter.TYPE_BANNER:
 
-                getFirebaseStorage().getReferenceFromUrl((String)bannerImages.get(index)).delete()
+                getFirebaseStorage().getReferenceFromUrl((String) bannerImages.get(index)).delete()
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
 
-                                if(task.isSuccessful()){
+                                if (task.isSuccessful()) {
 
                                     bannerImages.remove(index);
                                     bannerAdapter.notifyItemChanged(index);
 
-                                }else{
+                                } else {
 
                                     Toast.makeText(RestaurantMediaFillingActivity.this,
                                             "Deletion failed please try again!",
@@ -257,77 +250,75 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
                 break;
 
-             case ImageInputRecyclerAdapter.TYPE_ALBUM:
+            case ImageInputRecyclerAdapter.TYPE_ALBUM:
 
-                 getFirebaseStorage().getReferenceFromUrl((String)albumImages.get(index)).delete()
-                         .addOnCompleteListener(new OnCompleteListener<Void>() {
-                             @Override
-                             public void onComplete(@NonNull Task<Void> task) {
+                getFirebaseStorage().getReferenceFromUrl((String) albumImages.get(index)).delete()
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
 
-                                 if(task.isSuccessful()){
+                                if (task.isSuccessful()) {
 
-                                     albumImages.remove(index);
-                                     albumAdapter.notifyItemChanged(index);
+                                    albumImages.remove(index);
+                                    albumAdapter.notifyItemChanged(index);
 
-                                 }else{
+                                } else {
 
-                                     Toast.makeText(RestaurantMediaFillingActivity.this,
-                                             "Deletion failed please try again!",
-                                             Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(RestaurantMediaFillingActivity.this,
+                                            "Deletion failed please try again!",
+                                            Toast.LENGTH_SHORT).show();
 
-                                 }
+                                }
 
-                                 progressDialogFragment.dismiss();
-                             }
-                         });
+                                progressDialogFragment.dismiss();
+                            }
+                        });
 
 
-
-                 break;
+                break;
 
 
         }
 
-        Log.d("imageInput","removeCloudImage");
+        Log.d("imageInput", "removeCloudImage");
     }
 
 
-
     @Override
-    public void removeLocaleImage(int index,int adapterType) {
+    public void removeLocaleImage(int index, int adapterType) {
 
-        switch (adapterType){
+        switch (adapterType) {
 
             case ImageInputRecyclerAdapter.TYPE_BANNER:
 
-                bannerImages.set(index,null);
+                bannerImages.set(index, null);
                 bannerAdapter.notifyItemChanged(index);
 
                 break;
 
-             case ImageInputRecyclerAdapter.TYPE_ALBUM:
+            case ImageInputRecyclerAdapter.TYPE_ALBUM:
 
-                 albumImages.set(index,null);
-                 albumAdapter.notifyItemChanged(index);
+                albumImages.set(index, null);
+                albumAdapter.notifyItemChanged(index);
 
                 break;
 
 
         }
 
-        Log.d("imageInput","remove Locale image");
+        Log.d("imageInput", "remove Locale image");
 
     }
 
     @Override
-    public void addLocalImage(int index,int adapterType) {
+    public void addLocalImage(int index, int adapterType) {
 
-        Log.d("imageInput","addLocalImage");
+        Log.d("imageInput", "addLocalImage");
 
         chosenImageNumber = index;
 
         int type = 0;
-        switch (adapterType){
+        switch (adapterType) {
 
             case ImageInputRecyclerAdapter.TYPE_BANNER:
 
@@ -347,22 +338,21 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
     }
 
 
-
     void getImage(int type) {
 
         chosenImageType = type;
 
-        if(PermissionRequester.needsToRequestStoragePermissions(IMAGE_STORAGE_REQUEST,this)){
-                startActivityIfNeeded(Intent.createChooser(
-                        new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"),
-                        "Select Image"), type);
+        if (PermissionRequester.needsToRequestStoragePermissions(IMAGE_STORAGE_REQUEST, this)) {
+            startActivityIfNeeded(Intent.createChooser(
+                    new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"),
+                    "Select Image"), type);
         }
 
     }
 
 
     public FirebaseStorage getFirebaseStorage() {
-        if(firebaseStorage == null)
+        if (firebaseStorage == null)
             firebaseStorage = FirebaseStorage.getInstance();
         return firebaseStorage;
     }
@@ -386,12 +376,12 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
         if (resultCode == RESULT_OK && data != null && data.getData() != null) {
 
 
-            switch (requestCode){
+            switch (requestCode) {
 
                 case BANNER_IMAGE:
 
 
-                    bannerImages.set(chosenImageNumber,data.getData());
+                    bannerImages.set(chosenImageNumber, data.getData());
                     bannerAdapter.notifyItemChanged(chosenImageNumber);
 
 
@@ -409,10 +399,10 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
                     break;
 
-                    case ALBUM_IMAGE:
+                case ALBUM_IMAGE:
 
-                        albumImages.set(chosenImageNumber,data.getData());
-                        albumAdapter.notifyItemChanged(chosenImageNumber);
+                    albumImages.set(chosenImageNumber, data.getData());
+                    albumAdapter.notifyItemChanged(chosenImageNumber);
 
 //
 //                    for(int i=0;i<albumImages.size();i++){
@@ -436,7 +426,6 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
                     mainImageUri = data.getData();
                     Picasso.get().load(mainImageUri).fit().centerCrop().into(mainImageIv);
-
 
 
                     break;
@@ -463,25 +452,25 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
 
 
     private void showProgressDialog() {
-        if(progressDialogFragment == null){
+        if (progressDialogFragment == null) {
             progressDialogFragment = new ProgressDialogFragment();
         }
-        progressDialogFragment.show(getSupportFragmentManager(),"progress");
+        progressDialogFragment.show(getSupportFragmentManager(), "progress");
     }
 
 
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == backIv.getId()){
+        if (v.getId() == backIv.getId()) {
 
             onBackPressed();
 
-        }else if(v.getId() == mainImageIv.getId()){
+        } else if (v.getId() == mainImageIv.getId()) {
 
             getImage(MAIN_IMAGE);
 
-        }else if(v.getId() == mainImageCloseIv.getId()){
+        } else if (v.getId() == mainImageCloseIv.getId()) {
 
 
             mainAddIv.setVisibility(View.VISIBLE);
@@ -492,57 +481,57 @@ public class RestaurantMediaFillingActivity extends AppCompatActivity implements
             mainImageUri = null;
             mainImageIv.setImageDrawable(null);
 
-        }else if(v.getId() == imageInputNextBtn.getId()){
+        } else if (v.getId() == imageInputNextBtn.getId()) {
 
-            if(mainImageUri == null && previousMainImageURL == null){
+            if (mainImageUri == null && previousMainImageURL == null) {
                 Toast.makeText(this,
-                            R.string.atleast_main_image, Toast.LENGTH_SHORT).show();
+                        R.string.atleast_main_image, Toast.LENGTH_SHORT).show();
                 return;
             }
 
-         final Bundle newImagesBundle = new Bundle();
+            final Bundle newImagesBundle = new Bundle();
 
-            if(mainImageUri == null && previousMainImageURL!=null){
-                newImagesBundle.putString("mainImageURL",previousMainImageURL);
-            }else if(mainImageUri != null){
-                newImagesBundle.putParcelable("mainImage",mainImageUri);
+            if (mainImageUri == null && previousMainImageURL != null) {
+                newImagesBundle.putString("mainImageURL", previousMainImageURL);
+            } else if (mainImageUri != null) {
+                newImagesBundle.putParcelable("mainImage", mainImageUri);
             }
 
 
             final List<Uri> newBannerImages = new ArrayList<>();
 
-            for(Object bannerImage:bannerImages){
-                if(bannerImage!=null){
-                    if(bannerImage instanceof Uri){
-                        newBannerImages.add((Uri)bannerImage);
+            for (Object bannerImage : bannerImages) {
+                if (bannerImage != null) {
+                    if (bannerImage instanceof Uri) {
+                        newBannerImages.add((Uri) bannerImage);
                     }
                 }
             }
 
-            if(!newBannerImages.isEmpty()){
+            if (!newBannerImages.isEmpty()) {
                 newImagesBundle.putParcelableArrayList("bannerImages", (ArrayList<? extends Parcelable>) newBannerImages);
             }
 
             final List<Uri> newAlbumImages = new ArrayList<>();
 
-            for(Object albumImage:albumImages){
-                if(albumImage!=null){
-                    if(albumImage instanceof Uri){
-                        newAlbumImages.add((Uri)albumImage);
+            for (Object albumImage : albumImages) {
+                if (albumImage != null) {
+                    if (albumImage instanceof Uri) {
+                        newAlbumImages.add((Uri) albumImage);
                     }
                 }
             }
 
-            if(!newAlbumImages.isEmpty()){
+            if (!newAlbumImages.isEmpty()) {
                 newImagesBundle.putParcelableArrayList("albumImages", (ArrayList<? extends Parcelable>) newAlbumImages);
             }
 
-            final Intent intent = new Intent(this,RestaurantInfoActivity.class);
-            intent.putExtra("imagesBundle",newImagesBundle);
-            intent.putExtra("addressMap",getIntent().getSerializableExtra("addressMap"));
+            final Intent intent = new Intent(this, RestaurantInfoActivity.class);
+            intent.putExtra("imagesBundle", newImagesBundle);
+            intent.putExtra("addressMap", getIntent().getSerializableExtra("addressMap"));
 
-            if(infoBundle!=null && !infoBundle.isEmpty()){
-                intent.putExtra("infoBundle",infoBundle);
+            if (infoBundle != null && !infoBundle.isEmpty()) {
+                intent.putExtra("infoBundle", infoBundle);
             }
             startActivity(intent);
 

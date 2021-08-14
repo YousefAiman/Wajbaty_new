@@ -3,7 +3,6 @@ package com.developers.wajbaty.Models;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
-
 import java.io.Serializable;
 
 @IgnoreExtraProperties
@@ -16,8 +15,10 @@ public class UserReview implements Serializable {
     private int likes;
 
 
-    @Exclude private String reviewerImageUrl;
-    @Exclude private String reviewerUsername;
+    @Exclude
+    private String reviewerImageUrl;
+    @Exclude
+    private String reviewerUsername;
 
 
     public UserReview() {

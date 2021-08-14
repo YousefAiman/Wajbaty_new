@@ -26,17 +26,6 @@ public class CloudMessagingNotificationsSender {
     private static final APIService apiService =
             Client.getClient("https://fcm.googleapis.com/").create(APIService.class);
 
-    public interface APIService {
-        @Headers(
-                {
-                        "Content-Type:application/json",
-                        "Authorization:key=AAAA1TvAi2Q:APA91bEFvUyII3AEKn29H4Nl9cnOx5jQ1SyjDWvXFjsHJ_gWfj3dOp8san1mjiP2FExDOU2i0iWoVlJFRXVpiDdOPSxAX0I3rTszV54gVTFBx0eYL_tu8VFT8zuxxenZfMnDJkiMecJQ"
-                }
-        )
-        @POST("fcm/send")
-        Call<MyResponse> sendNotification(@Body Sender body);
-    }
-
     public static void sendNotification(String userId, Data data) {
 
         if (data != null) {
@@ -76,6 +65,17 @@ public class CloudMessagingNotificationsSender {
 
     }
 
+    public interface APIService {
+        @Headers(
+                {
+                        "Content-Type:application/json",
+                        "Authorization:key=AAAA1TvAi2Q:APA91bEFvUyII3AEKn29H4Nl9cnOx5jQ1SyjDWvXFjsHJ_gWfj3dOp8san1mjiP2FExDOU2i0iWoVlJFRXVpiDdOPSxAX0I3rTszV54gVTFBx0eYL_tu8VFT8zuxxenZfMnDJkiMecJQ"
+                }
+        )
+        @POST("fcm/send")
+        Call<MyResponse> sendNotification(@Body Sender body);
+    }
+
     public static class Client {
         private static Retrofit retrofit = null;
 
@@ -87,7 +87,7 @@ public class CloudMessagingNotificationsSender {
         }
     }
 
-    private static class  Sender {
+    private static class Sender {
         private final Data data;
         private final String to;
 
@@ -112,7 +112,7 @@ public class CloudMessagingNotificationsSender {
 
     public static class Data {
 
-        public static final int TYPE_DELIVERY_REQUEST = 1,TYPE_MESSAGE = 2,TYPE_DRIVER_PROPOSAL = 3;
+        public static final int TYPE_DELIVERY_REQUEST = 1, TYPE_MESSAGE = 2, TYPE_DRIVER_PROPOSAL = 3;
 
         private String senderID;
         private String title;
@@ -121,26 +121,26 @@ public class CloudMessagingNotificationsSender {
         private String destinationID;
         private int type;
 
-        public Data(Map<String,String> dataMap){
+        public Data(Map<String, String> dataMap) {
 
-            if(dataMap.containsKey("senderID")){
+            if (dataMap.containsKey("senderID")) {
                 this.senderID = dataMap.get("senderID");
             }
-            if(dataMap.containsKey("title")){
+            if (dataMap.containsKey("title")) {
                 this.title = dataMap.get("title");
             }
-            if(dataMap.containsKey("body")){
+            if (dataMap.containsKey("body")) {
                 this.body = dataMap.get("body");
             }
-            if(dataMap.containsKey("imageUrl")){
-                this.imageUrl = dataMap.get("imageUrl");
+            if (dataMap.containsKey("imageURL")) {
+                this.imageUrl = dataMap.get("imageURL");
             }
 
-            if(dataMap.containsKey("destinationID")){
+            if (dataMap.containsKey("destinationID")) {
                 this.destinationID = dataMap.get("destinationID");
             }
 
-            if(dataMap.containsKey("type")){
+            if (dataMap.containsKey("type")) {
                 this.type = Integer.parseInt(dataMap.get("type"));
             }
 

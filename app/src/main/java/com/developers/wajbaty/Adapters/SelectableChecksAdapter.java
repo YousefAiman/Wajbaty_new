@@ -15,94 +15,93 @@ import java.util.ArrayList;
 
 public class SelectableChecksAdapter extends RecyclerView.Adapter<SelectableChecksAdapter.SelectableItemVH> {
 
-  private static final int TYPE_UNSELECTED = 1,TYPE_SELECTED = 2;
-  private final ArrayList<SelectableItem> selectableItems;
-  private final SelectListener selectListener;
-  private int selectedItem;
-  private String selectableType;
+    private static final int TYPE_UNSELECTED = 1, TYPE_SELECTED = 2;
+    private final ArrayList<SelectableItem> selectableItems;
+    private final SelectListener selectListener;
+    private int selectedItem;
+    private String selectableType;
 
-  public interface SelectListener{
-    void itemSelected(int position,String type);
-  }
-
-  public SelectableChecksAdapter(ArrayList<SelectableItem> selectableItems,
-                                 SelectListener selectListener,
-                                 int selectedItem) {
-    this.selectableItems = selectableItems;
-    this.selectListener = selectListener;
-    this.selectedItem = selectedItem;
-  }
-
-  public SelectableChecksAdapter(ArrayList<SelectableItem> selectableItems,
-                                 SelectListener selectListener,
-                                 int selectedItem,
-                                 String selectableType) {
-    this.selectableItems = selectableItems;
-    this.selectListener = selectListener;
-    this.selectedItem = selectedItem;
-    this.selectableType = selectableType;
-  }
-
-  public void setSelectedItem(int selectedItem){
-    this.selectedItem = selectedItem;
-  }
-
-  public int getSelectedItem() {
-    return selectedItem;
-  }
-
-
-  @NonNull
-  @Override
-  public SelectableItemVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-      return new SelectableItemVH(LayoutInflater.from(parent.getContext())
-              .inflate(viewType == TYPE_UNSELECTED?
-                              R.layout.item_unselected_check:R.layout.item_selected_check,
-                      parent, false));
-
-  }
-
-  @Override
-  public void onBindViewHolder(@NonNull SelectableItemVH holder, int position) {
-    holder.bind(selectableItems.get(position));
-  }
-
-  @Override
-  public int getItemCount() {
-    return selectableItems.size();
-  }
-
-  @Override
-  public int getItemViewType(int position) {
-
-    if(position == selectedItem){
-      return TYPE_SELECTED;
+    public SelectableChecksAdapter(ArrayList<SelectableItem> selectableItems,
+                                   SelectListener selectListener,
+                                   int selectedItem) {
+        this.selectableItems = selectableItems;
+        this.selectListener = selectListener;
+        this.selectedItem = selectedItem;
     }
 
-    return TYPE_UNSELECTED;
-  }
-
-  public class SelectableItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-    private final TextView selectableTv;
-
-    public SelectableItemVH(@NonNull View itemView) {
-      super(itemView);
-      selectableTv = itemView.findViewById(R.id.selectableTv);
-      itemView.setOnClickListener(this);
+    public SelectableChecksAdapter(ArrayList<SelectableItem> selectableItems,
+                                   SelectListener selectListener,
+                                   int selectedItem,
+                                   String selectableType) {
+        this.selectableItems = selectableItems;
+        this.selectListener = selectListener;
+        this.selectedItem = selectedItem;
+        this.selectableType = selectableType;
     }
 
-    private void bind(SelectableItem selectableItem){
+    public int getSelectedItem() {
+        return selectedItem;
+    }
 
-      selectableTv.setText(selectableItem.getName());
+    public void setSelectedItem(int selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    @NonNull
+    @Override
+    public SelectableItemVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+        return new SelectableItemVH(LayoutInflater.from(parent.getContext())
+                .inflate(viewType == TYPE_UNSELECTED ?
+                                R.layout.item_unselected_check : R.layout.item_selected_check,
+                        parent, false));
 
     }
 
     @Override
-    public void onClick(View v) {
-
-    selectListener.itemSelected(getAdapterPosition(),selectableType);
+    public void onBindViewHolder(@NonNull SelectableItemVH holder, int position) {
+        holder.bind(selectableItems.get(position));
     }
-  }
+
+    @Override
+    public int getItemCount() {
+        return selectableItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+
+        if (position == selectedItem) {
+            return TYPE_SELECTED;
+        }
+
+        return TYPE_UNSELECTED;
+    }
+
+    public interface SelectListener {
+        void itemSelected(int position, String type);
+    }
+
+    public class SelectableItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private final TextView selectableTv;
+
+        public SelectableItemVH(@NonNull View itemView) {
+            super(itemView);
+            selectableTv = itemView.findViewById(R.id.selectableTv);
+            itemView.setOnClickListener(this);
+        }
+
+        private void bind(SelectableItem selectableItem) {
+
+            selectableTv.setText(selectableItem.getName());
+
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            selectListener.itemSelected(getAdapterPosition(), selectableType);
+        }
+    }
 }

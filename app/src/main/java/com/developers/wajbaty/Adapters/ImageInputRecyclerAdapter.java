@@ -9,44 +9,37 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.developers.wajbaty.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRecyclerAdapter.ImageInputViewHolder>{
+public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRecyclerAdapter.ImageInputViewHolder> {
 
-    private static final int TYPE_LOCAL = 1,TYPE_CLOUD = 2;
+    public static final int TYPE_BANNER = 1, TYPE_ALBUM = 2;
+    private static final int TYPE_LOCAL = 1, TYPE_CLOUD = 2;
+    private static int orangeColor;
     private final Context context;
     private final List<Object> images;
-
     private final CloudImageRemoveListener cloudImageRemoveListener;
     private final LocalImageListener localImageListener;
-    public static final int TYPE_BANNER = 1,TYPE_ALBUM = 2;
     private final int adapterType;
 
-    public interface CloudImageRemoveListener {
-        void removeCloudImage(int index,int adapterType);
-    }
-
-    public interface LocalImageListener{
-        void removeLocaleImage(int index,int adapterType);
-        void addLocalImage(int index,int adapterType);
-    }
-
-    public ImageInputRecyclerAdapter(Context context,List<Object> images,
+    public ImageInputRecyclerAdapter(Context context, List<Object> images,
                                      CloudImageRemoveListener cloudImageRemoveListener,
                                      LocalImageListener localImageListener,
-                                     int adapterType){
+                                     int adapterType) {
         this.images = images;
         this.context = context;
         this.cloudImageRemoveListener = cloudImageRemoveListener;
         this.localImageListener = localImageListener;
         this.adapterType = adapterType;
+        orangeColor = ResourcesCompat.getColor(context.getResources(), R.color.orange, null);
     }
-
 
     @NonNull
     @Override
@@ -63,7 +56,7 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
 //                return new CloudImageInputViewHolder(LayoutInflater.from(context).inflate(R.layout.item_image_input_layout,parent,false));
 //
 //            default:
-                return new ImageInputViewHolder(LayoutInflater.from(context).inflate(R.layout.item_image_input_layout, parent, false));
+        return new ImageInputViewHolder(LayoutInflater.from(context).inflate(R.layout.item_image_input_layout, parent, false));
 //        }
 
     }
@@ -72,10 +65,10 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
     public int getItemViewType(int position) {
 
         final Object image = images.get(position);
-        if(image instanceof Uri){
+        if (image instanceof Uri) {
 
             return TYPE_LOCAL;
-        }else if(image instanceof String){
+        } else if (image instanceof String) {
             return TYPE_CLOUD;
         }
 
@@ -88,20 +81,19 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
 
         final Object object = images.get(position);
 
-        if(object instanceof Uri){
+        if (object instanceof Uri) {
 
             holder.bind((Uri) object);
 
-        }else if(object instanceof String){
+        } else if (object instanceof String) {
 
             holder.bind((String) object);
 
-        }else if(object == null){
+        } else if (object == null) {
 
             holder.bindEmpty();
 
         }
-
 
 
 //        if(holder instanceof LocalImageInputViewHolder){
@@ -119,11 +111,20 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
         return images.size();
     }
 
+    public interface CloudImageRemoveListener {
+        void removeCloudImage(int index, int adapterType);
+    }
 
-    public  class ImageInputViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public interface LocalImageListener {
+        void removeLocaleImage(int index, int adapterType);
 
-        private final ImageView imageIv,cancelIv,addImageIv;
+        void addLocalImage(int index, int adapterType);
+    }
 
+    public class ImageInputViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private final ImageView imageIv, cancelIv, addImageIv;
+        private CircularProgressDrawable progressDrawable;
 
         public ImageInputViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -132,11 +133,24 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
             addImageIv = itemView.findViewById(R.id.addImageIv);
         }
 
-        public void bind(Uri imageUri){
+        public void bind(Uri imageUri) {
 
-            if(imageUri != null){
+            if (imageUri != null) {
 
-                Picasso.get().load(imageUri).fit().centerCrop().into(imageIv);
+                if (progressDrawable == null) {
+                    progressDrawable = new CircularProgressDrawable(itemView.getContext());
+                    progressDrawable.setColorSchemeColors(orangeColor);
+                    progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                    progressDrawable.start();
+                }
+
+                if (!progressDrawable.isRunning()) {
+                    progressDrawable.start();
+                }
+
+
+                Picasso.get().load(imageUri).fit().centerCrop().placeholder(progressDrawable)
+                        .into(imageIv);
                 cancelIv.setVisibility(View.VISIBLE);
                 addImageIv.setVisibility(View.GONE);
                 cancelIv.setOnClickListener(this);
@@ -145,11 +159,23 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
 
         }
 
-        public void bind(String imageUrl){
+        public void bind(String imageUrl) {
 
-            if(imageUrl != null){
+            if (imageUrl != null) {
 
-                Picasso.get().load(imageUrl).fit().centerCrop().into(imageIv);
+                if (progressDrawable == null) {
+                    progressDrawable = new CircularProgressDrawable(itemView.getContext());
+                    progressDrawable.setColorSchemeColors(orangeColor);
+                    progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                    progressDrawable.start();
+                }
+
+                if (!progressDrawable.isRunning()) {
+                    progressDrawable.start();
+                }
+
+                Picasso.get().load(imageUrl).fit().centerCrop()
+                        .placeholder(progressDrawable).into(imageIv);
                 cancelIv.setVisibility(View.VISIBLE);
                 addImageIv.setVisibility(View.GONE);
 
@@ -158,7 +184,7 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
             }
         }
 
-        public void bindEmpty(){
+        public void bindEmpty() {
 
 
             cancelIv.setVisibility(View.GONE);
@@ -173,39 +199,38 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
         @Override
         public void onClick(View v) {
 
-            Log.d("ttt","clicked");
+            Log.d("ttt", "clicked");
 
             final Object image = images.get(getAdapterPosition());
 
 
-            if(v.getId() == R.id.cancelIv){
+            if (v.getId() == R.id.cancelIv) {
 
-                if(image!=null){
+                if (image != null) {
 
-                    if(image instanceof Uri){
+                    if (image instanceof Uri) {
 
-                        localImageListener.removeLocaleImage(getAdapterPosition(),adapterType);
+                        localImageListener.removeLocaleImage(getAdapterPosition(), adapterType);
 
-                    }else if(image instanceof String){
+                    } else if (image instanceof String) {
 
-                        cloudImageRemoveListener.removeCloudImage(getAdapterPosition(),adapterType);
+                        cloudImageRemoveListener.removeCloudImage(getAdapterPosition(), adapterType);
 
                     }
 
                 }
 
-            }else{
+            } else {
 
-                Log.d("ttt","clicked itemview");
+                Log.d("ttt", "clicked itemview");
 
-                if(image != null)
+                if (image != null)
                     return;
 
-                localImageListener.addLocalImage(getAdapterPosition(),adapterType);
+                localImageListener.addLocalImage(getAdapterPosition(), adapterType);
 
 
             }
-
 
 
         }
@@ -219,9 +244,9 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
 
         @Override
         public void onClick(View v) {
-            if(v.getId() == R.id.cancelIv){
+            if (v.getId() == R.id.cancelIv) {
 
-                cloudImageRemoveListener.removeCloudImage(images.indexOf(getAdapterPosition()),adapterType);
+                cloudImageRemoveListener.removeCloudImage(images.indexOf(getAdapterPosition()), adapterType);
 
             }
 
@@ -239,13 +264,13 @@ public class ImageInputRecyclerAdapter extends RecyclerView.Adapter<ImageInputRe
         @Override
         public void onClick(View v) {
 
-            if(v.getId() == R.id.cancelIv){
+            if (v.getId() == R.id.cancelIv) {
 
-                localImageListener.removeLocaleImage(getAdapterPosition(),adapterType);
+                localImageListener.removeLocaleImage(getAdapterPosition(), adapterType);
 
-            }else{
+            } else {
 
-                localImageListener.addLocalImage(getAdapterPosition(),adapterType);
+                localImageListener.addLocalImage(getAdapterPosition(), adapterType);
 
             }
 

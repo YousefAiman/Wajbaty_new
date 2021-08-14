@@ -1,31 +1,24 @@
 package com.developers.wajbaty.Customer.Activities;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.developers.wajbaty.Activities.MessagingActivity;
 import com.developers.wajbaty.Adapters.DeliveryCourseAdapter;
@@ -69,12 +62,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class CustomerDeliveryMapActivity extends AppCompatActivity  implements OnMapReadyCallback,
+public class CustomerDeliveryMapActivity extends AppCompatActivity implements OnMapReadyCallback,
         View.OnClickListener,
         DeliveryCourseAdapter.DeliverCourseListener,
         DirectionsUtil.DirectionsListeners,
         GoogleMap.OnMapClickListener,
-        DeliveryConfirmationFragment.DeliveryConfirmationListener{
+        DeliveryConfirmationFragment.DeliveryConfirmationListener {
 
     private Delivery delivery;
 
@@ -89,19 +82,25 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     private DeliveryCourseAdapter adapter;
     private ArrayList<DeliveryCourse> deliveryCourses;
     private ArrayList<DeliveryCourse> allDeliveryCourses;
-    private HashMap<String,Marker> markerMap;
+    private HashMap<String, Marker> markerMap;
 
     //views
-    private ImageButton driverDeliveryBackIB,driverDeliveryCurrentLocationIB,driverDeliveryMessageIB;
+    private ImageButton driverDeliveryBackIB, driverDeliveryCurrentLocationIB, driverDeliveryMessageIB;
     private RecyclerView driverDeliveryCourseRv;
-    private Button driverDeliveryItemsBtn,driverDeliveryConfirmBtn;
+    private Button driverDeliveryItemsBtn, driverDeliveryConfirmBtn;
     private ImageView driverDeliveryCourseArrowIv;
 
     //firestore
     private DocumentReference deliveryRef;
     private ListenerRegistration snapshotListener;
 
+    public static void main(String[] args) {
 
+        float lat = BigDecimal.valueOf(31.540959008656653)
+                .setScale(2, RoundingMode.DOWN).floatValue();
+
+        System.out.println(lat);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +110,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.driverDeliveryMap);
 
-        if(mapFragment == null){
+        if (mapFragment == null) {
             finish();
             return;
         }
@@ -125,7 +124,6 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         setUpListeners();
 
     }
-
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -142,13 +140,12 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         listenToDeliveryChanges();
     }
 
-
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         final Intent intent = getIntent();
-        if(intent!=null && intent.hasExtra("delivery")){
+        if (intent != null && intent.hasExtra("delivery")) {
             delivery = (Delivery) intent.getSerializableExtra("delivery");
-        }else{
+        } else {
             finish();
             return;
         }
@@ -159,10 +156,9 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
         allDeliveryCourses = new ArrayList<>();
         deliveryCourses = new ArrayList<>();
-        adapter = new DeliveryCourseAdapter(deliveryCourses,this);
+        adapter = new DeliveryCourseAdapter(deliveryCourses, this);
 
     }
-
 
     private void getViews() {
 
@@ -181,81 +177,82 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         driverDeliveryCourseRv.setAdapter(adapter);
     }
 
-    private void listenToDeliveryChanges(){
+    private void listenToDeliveryChanges() {
 
-        snapshotListener =  deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        snapshotListener = deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             boolean isInitial = true;
             boolean initialApproval = true;
+
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                if(value!=null) {
+                if (value != null) {
                     if (value.contains("lat") && value.contains("lng")) {
                         final double lat = value.getDouble("lat"),
                                 lng = value.getDouble("lng");
 
                         if (lat != 0 && lng != 0) {
 
-                        if (isInitial) {
+                            if (isInitial) {
 
                                 currentDeliveryLocation = new Location("currentDeliveryLocation");
                                 currentDeliveryLocation.setLatitude(lat);
                                 currentDeliveryLocation.setLongitude(lng);
 
-                                LatLng latLng = new LatLng(lat,lng);
+                                LatLng latLng = new LatLng(lat, lng);
 
-                           driverMarker = map.addMarker(new MarkerOptions().position(latLng).title("Your Delivery")
-                                   .icon(bitmapDescriptorFromVector(CustomerDeliveryMapActivity.this)));
+                                driverMarker = map.addMarker(new MarkerOptions().position(latLng).title("Your Delivery")
+                                        .icon(bitmapDescriptorFromVector(CustomerDeliveryMapActivity.this)));
 
 
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20.0f));
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20.0f));
 
-                            fetchCourse();
-                            isInitial = false;
-                        }else {
-                            if(currentDeliveryLocation!=null){
-                                if(lat!= currentDeliveryLocation.getLatitude() || lng!= currentDeliveryLocation.getLongitude()){
+                                fetchCourse();
+                                isInitial = false;
+                            } else {
+                                if (currentDeliveryLocation != null) {
+                                    if (lat != currentDeliveryLocation.getLatitude() || lng != currentDeliveryLocation.getLongitude()) {
 
-                                    currentDeliveryLocation = new Location("currentDeliveryLocation");
-                                    currentDeliveryLocation.setLatitude(lat);
-                                    currentDeliveryLocation.setLongitude(lng);
+                                        currentDeliveryLocation = new Location("currentDeliveryLocation");
+                                        currentDeliveryLocation.setLatitude(lat);
+                                        currentDeliveryLocation.setLongitude(lng);
 
-                                    if(driverMarker!=null){
-                                        Log.d("ttt","delivery updated location: "+
-                                                lat+","+lng);
+                                        if (driverMarker != null) {
+                                            Log.d("ttt", "delivery updated location: " +
+                                                    lat + "," + lng);
 
-                                        LatLng newPosition = new LatLng(lat,lng);
+                                            LatLng newPosition = new LatLng(lat, lng);
 
-                                        MarkerAnimator.animateMarkerToICS(driverMarker,
-                                                newPosition,
-                                                new MarkerAnimator.LatLngInterpolator.Linear());
+                                            MarkerAnimator.animateMarkerToICS(driverMarker,
+                                                    newPosition,
+                                                    new MarkerAnimator.LatLngInterpolator.Linear());
 
-                                        map.animateCamera(CameraUpdateFactory.newLatLng(newPosition));
+                                            map.animateCamera(CameraUpdateFactory.newLatLng(newPosition));
 
 //                                    animateMarker(driverMarker,new LatLng(lat,lng),false);
+                                        }
                                     }
                                 }
-                            }
 
-                                long status  = value.getLong("status");
+                                long status = value.getLong("status");
 
-                                if(status == Delivery.STATUS_WAITING_USER_APPROVAL){
+                                if (status == Delivery.STATUS_WAITING_USER_APPROVAL) {
 
-                                    if(initialApproval){
+                                    if (initialApproval) {
                                         DeliveryConfirmationFragment.newInstance(
-                                                CustomerDeliveryMapActivity.this,"")
-                                                .show(getSupportFragmentManager(),"deliveryConfirmation");
+                                                CustomerDeliveryMapActivity.this, "")
+                                                .show(getSupportFragmentManager(), "deliveryConfirmation");
                                     }
 
-                                }else if(status == Delivery.STATUS_USER_DENIED_APPROVAL){
+                                } else if (status == Delivery.STATUS_USER_DENIED_APPROVAL) {
                                     initialApproval = false;
                                 }
 
 
-                        }
+                            }
 
 
-                        }else{
+                        } else {
 
 
                         }
@@ -287,12 +284,9 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 //        });
 
 
-
-
     }
 
-
-    private void setUpListeners(){
+    private void setUpListeners() {
 
         driverDeliveryBackIB.setOnClickListener(this);
         driverDeliveryItemsBtn.setOnClickListener(this);
@@ -304,15 +298,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
     }
 
-    public static void main(String[] args){
-
-    float lat = BigDecimal.valueOf(31.540959008656653)
-                .setScale(2, RoundingMode.DOWN).floatValue();
-
-        System.out.println(lat);
-    }
-
-    private void fetchCourse(){
+    private void fetchCourse() {
 
 
         allDeliveryCourses.add(new DeliveryCourse(
@@ -331,86 +317,87 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         deliveryRef.collection("RestaurantsOrdered")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     private boolean isInitial = true, decidedActiveCourse = false;
+
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                        if(value!=null){
+                        if (value != null) {
 
-                            if(isInitial){
+                            if (isInitial) {
 
 
-                                 if (!value.isEmpty()) {
+                                if (!value.isEmpty()) {
 
-                                      final LatLng[] wayPoints = new LatLng[value.size()];
+                                    final LatLng[] wayPoints = new LatLng[value.size()];
 
-                                            int index = 0;
+                                    int index = 0;
 
-                                            for(DocumentSnapshot restaurantSnap:value.getDocuments()){
-                                                final int finalIndex = index;
+                                    for (DocumentSnapshot restaurantSnap : value.getDocuments()) {
+                                        final int finalIndex = index;
 
-                                                restaurantTasks.add(restaurantRef.document(restaurantSnap.getId()).get()
-                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                                            @Override
-                                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        restaurantTasks.add(restaurantRef.document(restaurantSnap.getId()).get()
+                                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                                                                if(documentSnapshot.exists()){
+                                                        if (documentSnapshot.exists()) {
 
-                                                                    double lat = documentSnapshot.getDouble("lat"),
-                                                                            lng = documentSnapshot.getDouble("lng");
+                                                            double lat = documentSnapshot.getDouble("lat"),
+                                                                    lng = documentSnapshot.getDouble("lng");
 
-                                                                    wayPoints[finalIndex] = new LatLng(lat,lng);
+                                                            wayPoints[finalIndex] = new LatLng(lat, lng);
 
-                                                                    Log.d("ttt","course lat: "+lat+" , lng: "+lng);
+                                                            Log.d("ttt", "course lat: " + lat + " , lng: " + lng);
 
-                                                                    final String name = documentSnapshot.getString("name");
-                                                                    Location restaurantLocation = new Location(name);
-                                                                    restaurantLocation.setLatitude(lat);
-                                                                    restaurantLocation.setLongitude(lng);
+                                                            final String name = documentSnapshot.getString("name");
+                                                            Location restaurantLocation = new Location(name);
+                                                            restaurantLocation.setLatitude(lat);
+                                                            restaurantLocation.setLongitude(lng);
 
-                                                                    boolean pickedUp = restaurantSnap.getBoolean("orderPickedUp");
+                                                            boolean pickedUp = restaurantSnap.getBoolean("orderPickedUp");
 
-                                                                    boolean isCurrentlyActive = !pickedUp && !decidedActiveCourse;
+                                                            boolean isCurrentlyActive = !pickedUp && !decidedActiveCourse;
 
-                                                                    allDeliveryCourses.add(new DeliveryCourse(
-                                                                            restaurantSnap.getId(),
-                                                                            name,
-                                                                            restaurantLocation,
-                                                                            restaurantSnap.getLong("itemCount").intValue(),
-                                                                            restaurantSnap.getBoolean("orderPickedUp"),
-                                                                            isCurrentlyActive));
+                                                            allDeliveryCourses.add(new DeliveryCourse(
+                                                                    restaurantSnap.getId(),
+                                                                    name,
+                                                                    restaurantLocation,
+                                                                    restaurantSnap.getLong("itemCount").intValue(),
+                                                                    restaurantSnap.getBoolean("orderPickedUp"),
+                                                                    isCurrentlyActive));
 
-                                                                    if(isCurrentlyActive){
-                                                                        decidedActiveCourse = true;
-                                                                    }
-
-                                                                    addMarker(name,restaurantLocation);
-
-                                                                    Log.d("ttt","restaurantLocation: "+restaurantLocation.getLatitude()
-                                                                            +", "+restaurantLocation.getLongitude());
-                                                                }
-
+                                                            if (isCurrentlyActive) {
+                                                                decidedActiveCourse = true;
                                                             }
-                                                        }));
 
-                                                index++;
-                                            }
+                                                            addMarker(name, restaurantLocation);
 
-                                            Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<List<Task<?>>> task) {
+                                                            Log.d("ttt", "restaurantLocation: " + restaurantLocation.getLatitude()
+                                                                    + ", " + restaurantLocation.getLongitude());
+                                                        }
 
-                                                    Location deliveryLocation = new Location("deliveryLocation");
-                                                    deliveryLocation.setLatitude(delivery.getLat());
-                                                    deliveryLocation.setLongitude(delivery.getLng());
+                                                    }
+                                                }));
 
-                                                    allDeliveryCourses.add(
-                                                            new DeliveryCourse(
-                                                                    delivery.getID(),
-                                                                    "Delivery Location",
-                                                                    deliveryLocation,
-                                                                    0,
-                                                                    false,
-                                                                    false));
+                                        index++;
+                                    }
+
+                                    Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<List<Task<?>>> task) {
+
+                                            Location deliveryLocation = new Location("deliveryLocation");
+                                            deliveryLocation.setLatitude(delivery.getLat());
+                                            deliveryLocation.setLongitude(delivery.getLng());
+
+                                            allDeliveryCourses.add(
+                                                    new DeliveryCourse(
+                                                            delivery.getID(),
+                                                            "Delivery Location",
+                                                            deliveryLocation,
+                                                            0,
+                                                            false,
+                                                            false));
 
 //                if(){
 //
@@ -418,111 +405,111 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 //
 //                }
 
-                                                    addMarker("Delivery Location",deliveryLocation);
+                                            addMarker("Delivery Location", deliveryLocation);
 
-                                                    deliveryCourses.addAll(allDeliveryCourses);
+                                            deliveryCourses.addAll(allDeliveryCourses);
 
-                                                    adapter.notifyDataSetChanged();
-
-
-                                                    final LatLng startLatLng = new LatLng(deliveryLocation.getLatitude(),deliveryLocation.getLongitude());
-                                                    final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
-
-//                deliveryRef.collection("Directions")
-//                        .document("Directions")
-//                        .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-//
-//                        if(documentSnapshot.exists()){
-//                            Log.d("DirectionsApi","gotten result from firestore");
-//                            new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
-//                                    .getDirections(CustomerDeliveryMapActivity.this,documentSnapshot.getString("DirectionsJsonObject"));
-//
-//                        }else{
-//                            Log.d("DirectionsApi","gotten result from string");
-//                            new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
-//                                    .getDirections(CustomerDeliveryMapActivity.this
-//                                            ,startLatLng,wayPoints,destinationLatLng);
-//                        }
-//                    }
-//                }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.d("DirectionsApi","gotten result from string");
-//                        new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
-//                                .getDirections(CustomerDeliveryMapActivity.this
-//                                        ,startLatLng,wayPoints,destinationLatLng);
-//                    }
-//                });
+                                            adapter.notifyDataSetChanged();
 
 
+                                            final LatLng startLatLng = new LatLng(deliveryLocation.getLatitude(), deliveryLocation.getLongitude());
+                                            final LatLng destinationLatLng = new LatLng(delivery.getLat(), delivery.getLng());
+
+                                            deliveryRef.collection("Directions")
+                                                    .document("Directions")
+                                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                                                    if (documentSnapshot.exists()) {
+                                                        Log.d("DirectionsApi", "gotten result from firestore");
+                                                        new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
+                                                                .getDirections(CustomerDeliveryMapActivity.this, documentSnapshot.getString("DirectionsJsonObject"));
+
+                                                    } else {
+                                                        Log.d("DirectionsApi", "gotten result from string");
+                                                        new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
+                                                                .getDirections(CustomerDeliveryMapActivity.this
+                                                                        , startLatLng, wayPoints, destinationLatLng);
+                                                    }
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.d("DirectionsApi", "gotten result from string");
+                                                    new DirectionsUtil(CustomerDeliveryMapActivity.this, deliveryRef)
+                                                            .getDirections(CustomerDeliveryMapActivity.this
+                                                                    , startLatLng, wayPoints, destinationLatLng);
                                                 }
                                             });
+
+
                                         }
+                                    });
+                                }
 
                                 isInitial = false;
-                            }else{
+                            } else {
 
-                                for(DocumentChange dc:value.getDocumentChanges()){
+                                for (DocumentChange dc : value.getDocumentChanges()) {
 
-                                    if(dc.getType() == DocumentChange.Type.MODIFIED){
+                                    if (dc.getType() == DocumentChange.Type.MODIFIED) {
 
-                                       DocumentSnapshot restaurantSnap = dc.getDocument();
+                                        DocumentSnapshot restaurantSnap = dc.getDocument();
 
-                                        if(restaurantSnap.contains("orderPickedUp")
-                                        & restaurantSnap.getBoolean("orderPickedUp")){
+                                        if (restaurantSnap.contains("orderPickedUp")
+                                                & restaurantSnap.getBoolean("orderPickedUp")) {
 
-                                            for(int j = 0;j<allDeliveryCourses.size();j++) {
+                                            for (int j = 0; j < allDeliveryCourses.size(); j++) {
 
                                                 DeliveryCourse deliveryCourse = allDeliveryCourses.get(j);
 
-                                                if(deliveryCourse==null || deliveryCourse.getLocationID() == null)
+                                                if (deliveryCourse == null || deliveryCourse.getLocationID() == null)
                                                     return;
 
-                                                if(deliveryCourse.getLocationID().equals(restaurantSnap.getId())){
+                                                if (deliveryCourse.getLocationID().equals(restaurantSnap.getId())) {
 
                                                     deliveryCourse.setActive(false);
                                                     deliveryCourse.setWasPassed(true);
 
                                                     boolean assignNextCourseActive = true;
 
-                                                    int previousPosition = j-1;
-                                                    if(previousPosition > -1){
+                                                    int previousPosition = j - 1;
+                                                    if (previousPosition > -1) {
 
-                                                       DeliveryCourse previousDeliveryCourse =
-                                                               allDeliveryCourses.get(previousPosition);
+                                                        DeliveryCourse previousDeliveryCourse =
+                                                                allDeliveryCourses.get(previousPosition);
 
-                                                       if(!previousDeliveryCourse.isWasPassed()){
+                                                        if (!previousDeliveryCourse.isWasPassed()) {
 
-                                                           assignNextCourseActive = false;
+                                                            assignNextCourseActive = false;
 
-                                                       }
-                                                   }
+                                                        }
+                                                    }
 
-                                                    if(assignNextCourseActive && j + 1 < allDeliveryCourses.size()){
-                                                        DeliveryCourse newActiveDeliveryCourse = allDeliveryCourses.get(j+1);
+                                                    if (assignNextCourseActive && j + 1 < allDeliveryCourses.size()) {
+                                                        DeliveryCourse newActiveDeliveryCourse = allDeliveryCourses.get(j + 1);
                                                         newActiveDeliveryCourse.setActive(true);
                                                         newActiveDeliveryCourse.setWasPassed(false);
                                                     }
 
-                                                    for(int i=0;i<deliveryCourses.size();i++){
+                                                    for (int i = 0; i < deliveryCourses.size(); i++) {
 
                                                         DeliveryCourse currentDeliveryCourse = deliveryCourses.get(i);
 
-                                                        if(currentDeliveryCourse.getLocationID().equals(deliveryCourse.getLocationID())){
+                                                        if (currentDeliveryCourse.getLocationID().equals(deliveryCourse.getLocationID())) {
 
                                                             currentDeliveryCourse.setActive(false);
                                                             currentDeliveryCourse.setWasPassed(true);
                                                             adapter.notifyItemChanged(i);
 
-                                                            if(i + 1 < deliveryCourses.size()){
+                                                            if (i + 1 < deliveryCourses.size()) {
 
-                                                                DeliveryCourse newActiveDeliveryCourse  = allDeliveryCourses.get(i+1);
+                                                                DeliveryCourse newActiveDeliveryCourse = allDeliveryCourses.get(i + 1);
                                                                 newActiveDeliveryCourse.setActive(true);
                                                                 newActiveDeliveryCourse.setWasPassed(false);
 
-                                                                adapter.notifyItemChanged(i+1);
+                                                                adapter.notifyItemChanged(i + 1);
                                                             }
 
                                                             break;
@@ -553,15 +540,15 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
     }
 
-    private void addMarker(String name,Location location){
+    private void addMarker(String name, Location location) {
 
-        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-        if(markerMap == null){
+        if (markerMap == null) {
             markerMap = new HashMap<>();
         }
 
-       markerMap.put(name,map.addMarker(new MarkerOptions().position(latLng).title(name)
+        markerMap.put(name, map.addMarker(new MarkerOptions().position(latLng).title(name)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))));
 
     }
@@ -611,44 +598,41 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == driverDeliveryBackIB.getId()){
+        if (v.getId() == driverDeliveryBackIB.getId()) {
 
             finish();
 
-        }else if(v.getId() == driverDeliveryItemsBtn.getId()){
+        } else if (v.getId() == driverDeliveryItemsBtn.getId()) {
 
             startActivity(new Intent(this, DeliveryInfoActivity.class)
-                    .putExtra("isForShow",true)
-                    .putExtra("delivery",delivery));
+                    .putExtra("isForShow", true)
+                    .putExtra("delivery", delivery));
 
-        }
-        else if(v.getId() == driverDeliveryCurrentLocationIB.getId()){
+        } else if (v.getId() == driverDeliveryCurrentLocationIB.getId()) {
 
             zoomOnCurrentLocation();
 
-        }
-        else if(v.getId() == driverDeliveryConfirmBtn.getId()){
+        } else if (v.getId() == driverDeliveryConfirmBtn.getId()) {
 
 
-
-        }else if(v.getId() == driverDeliveryMessageIB.getId()){
+        } else if (v.getId() == driverDeliveryMessageIB.getId()) {
 
             Intent messagingIntent = new Intent(this, MessagingActivity.class);
             messagingIntent.putExtra("messagingUserId", delivery.getDriverID());
             messagingIntent.putExtra("intendedDeliveryID", delivery.getID());
             startActivity(messagingIntent);
 
-        }else if(v.getId() == driverDeliveryCourseArrowIv.getId()){
+        } else if (v.getId() == driverDeliveryCourseArrowIv.getId()) {
 
-            if(driverDeliveryCourseRv.getVisibility() == View.GONE){
+            if (driverDeliveryCourseRv.getVisibility() == View.GONE) {
 
                 driverDeliveryCourseRv.setVisibility(View.VISIBLE);
                 driverDeliveryCourseArrowIv.setRotation(90);
 
 
-            }else{
+            } else {
 
-                if(driverDeliveryCourseArrowIv.getRotation() == 90){
+                if (driverDeliveryCourseArrowIv.getRotation() == 90) {
 
                     driverDeliveryCourseArrowIv.setRotation(-90);
 
@@ -656,11 +640,11 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                         @Override
                         public void run() {
 
-                            for(int i=0;i<deliveryCourses.size();i++){
+                            for (int i = 0; i < deliveryCourses.size(); i++) {
 
-                                if(!deliveryCourses.get(i).isWasPassed()){
+                                if (!deliveryCourses.get(i).isWasPassed()) {
 
-                                    Log.d("ttt","found active at: "+i);
+                                    Log.d("ttt", "found active at: " + i);
 
 //
 //                                if(i+1 >= deliveryCourses.size()){
@@ -669,7 +653,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 ////                            deliveryCourses.remove();
 //
 //                                }else
-                                    if(i-1 >= 0){
+                                    if (i - 1 >= 0) {
 
                                         DeliveryCourse previousActive = deliveryCourses.get(i - 1);
                                         DeliveryCourse currentActive = deliveryCourses.get(i);
@@ -700,8 +684,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
                     }).start();
 
 
-
-                }else{
+                } else {
 
                     driverDeliveryCourseArrowIv.setRotation(90);
                     deliveryCourses.clear();
@@ -710,7 +693,6 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 
                 }
             }
-
 
 
         }
@@ -728,14 +710,14 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
         }
     }
 
-    private void zoomOnCurrentLocation(){
+    private void zoomOnCurrentLocation() {
 
-        if(currentDeliveryLocation != null){
+        if (currentDeliveryLocation != null) {
             LatLng currentLatLng =
                     new LatLng(currentDeliveryLocation.getLatitude(), currentDeliveryLocation.getLongitude());
 
 
-            if(!map.getCameraPosition().target.equals(currentLatLng)){
+            if (!map.getCameraPosition().target.equals(currentLatLng)) {
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.0f));
             }
         }
@@ -750,7 +732,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
 //        vectorDrawable.setBounds(40, 20, vectorDrawable.getIntrinsicWidth() + 40, vectorDrawable.getIntrinsicHeight() + 20);
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-        vectorDrawable.setBounds(0,0,canvas.getWidth(),canvas.getHeight());
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 //        background.draw(canvas);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
@@ -759,14 +741,14 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     @Override
     public void onDeliveryCourseClicked(int position) {
 
-        if(deliveryCourses.size() > position){
+        if (deliveryCourses.size() > position) {
 
-            if(markerMap.containsKey(deliveryCourses.get(position).getLocationName())){
+            if (markerMap.containsKey(deliveryCourses.get(position).getLocationName())) {
 
                 Marker marker = markerMap.get(deliveryCourses.get(position).getLocationName());
-                if(marker!=null){
+                if (marker != null) {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
-                    if(marker.isVisible()){
+                    if (marker.isVisible()) {
                         marker.showInfoWindow();
                     }
                 }
@@ -780,10 +762,10 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
 
-        if(driverDeliveryCourseRv.getVisibility() == View.VISIBLE){
+        if (driverDeliveryCourseRv.getVisibility() == View.VISIBLE) {
             driverDeliveryCourseRv.setVisibility(View.GONE);
 
-            if(driverDeliveryCourseArrowIv.getRotation() == 90) {
+            if (driverDeliveryCourseArrowIv.getRotation() == 90) {
                 driverDeliveryCourseArrowIv.setRotation(-90);
             }
 
@@ -795,7 +777,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     public void onPolyLineFetched(PolylineOptions polylineOptions) {
 
 
-        if(polylineOptions != null && map != null){
+        if (polylineOptions != null && map != null) {
             PolylineOptions finalLineOptions = polylineOptions;
             runOnUiThread(new Runnable() {
                 @Override
@@ -811,30 +793,30 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     @Override
     public void onDeliveryConfirmed() {
 
-        deliveryRef.update("status",Delivery.STATUS_DELIVERED)
+        deliveryRef.update("status", Delivery.STATUS_DELIVERED)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
+                    @Override
+                    public void onSuccess(Void aVoid) {
 
-                FirebaseFirestore.getInstance().collection("Users")
-                        .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .update("currentDelivery",null)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
+                        FirebaseFirestore.getInstance().collection("Users")
+                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                .update("currentDelivery", null)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
 
-                                DeliveryDriverRatingFragment fragment =
-                                        DeliveryDriverRatingFragment.newInstance(delivery.getDriverID(),
-                                                CustomerDeliveryMapActivity.this::finish);
+                                        DeliveryDriverRatingFragment fragment =
+                                                DeliveryDriverRatingFragment.newInstance(delivery.getDriverID(),
+                                                        CustomerDeliveryMapActivity.this::finish);
 
-                                fragment.setCancelable(false);
-                                fragment.show(getSupportFragmentManager(),"driverRating");
+                                        fragment.setCancelable(false);
+                                        fragment.show(getSupportFragmentManager(), "driverRating");
 
-                            }
-                        });
+                                    }
+                                });
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
 
@@ -846,7 +828,7 @@ public class CustomerDeliveryMapActivity extends AppCompatActivity  implements O
     @Override
     public void onDeliveryDenied() {
 
-        deliveryRef.update("status",Delivery.STATUS_USER_DENIED_APPROVAL).addOnSuccessListener(new OnSuccessListener<Void>() {
+        deliveryRef.update("status", Delivery.STATUS_USER_DENIED_APPROVAL).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
 

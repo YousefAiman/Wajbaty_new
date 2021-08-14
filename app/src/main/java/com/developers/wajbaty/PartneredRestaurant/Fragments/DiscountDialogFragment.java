@@ -2,17 +2,10 @@ package com.developers.wajbaty.PartneredRestaurant.Fragments;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +14,10 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.MenuItem;
@@ -32,7 +29,6 @@ import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -62,11 +58,6 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
     private DiscountDialogInterface discountDialogInterface;
     private ProgressDialogFragment progressDialog;
 
-    public interface DiscountDialogInterface{
-
-        void onMenuItemDiscounted(int position,Map<String,Object> discountMap);
-    }
-
     public DiscountDialogFragment() {
     }
 
@@ -92,14 +83,6 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
         requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
-//    @NonNull
-//    @Override
-//    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-//        requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-//                ViewGroup.LayoutParams.MATCH_PARENT);
-//        return super.onCreateDialog(savedInstanceState);
-//    }
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -110,11 +93,19 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
 
     }
 
+//    @NonNull
+//    @Override
+//    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+//        requireDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT);
+//        return super.onCreateDialog(savedInstanceState);
+//    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        final View view =  inflater.inflate(R.layout.fragment_discount_dialog, container, false);
+        final View view = inflater.inflate(R.layout.fragment_discount_dialog, container, false);
         discountDialogMealTv = view.findViewById(R.id.discountDialogMealTv);
         discountDialogPriceTv = view.findViewById(R.id.discountDialogPriceTv);
         discountDialogTimeTv = view.findViewById(R.id.discountDialogTimeTv);
@@ -127,7 +118,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
         super.onViewCreated(view, savedInstanceState);
 
 
-        discountDialogMealTv.setText("Discount on "+menuItem.getName() + " - "+
+        discountDialogMealTv.setText("Discount on " + menuItem.getName() + " - " +
                 menuItem.getPrice() + menuItem.getCurrency());
 
         discountDialogTimeTv.setOnClickListener(this);
@@ -138,11 +129,11 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == discountDialogConfirmBtn.getId()){
+        if (v.getId() == discountDialogConfirmBtn.getId()) {
 
             addDiscountOffer();
 
-        }else if(v.getId() == discountDialogTimeTv.getId()){
+        } else if (v.getId() == discountDialogTimeTv.getId()) {
 
             pickDiscountEndTime();
 
@@ -150,14 +141,12 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
 
     }
 
-
-
-    private void pickDiscountEndTime(){
+    private void pickDiscountEndTime() {
 
 
         final Calendar currentDate = Calendar.getInstance(Locale.getDefault());
 
-        if(untilTimeInMillis != 0){
+        if (untilTimeInMillis != 0) {
             currentDate.setTimeInMillis(untilTimeInMillis);
         }
 
@@ -172,7 +161,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
                 Calendar newDate = Calendar.getInstance(Locale.getDefault());
                 newDate.set(year, monthOfYear, dayOfMonth);
 
-                if (currentYear >= year && currentMonth >= monthOfYear && currentDay >= dayOfMonth){
+                if (currentYear >= year && currentMonth >= monthOfYear && currentDay >= dayOfMonth) {
 
                     TimePickerDialog mTimePicker = new TimePickerDialog(requireContext(), (timePicker, selectedHour, selectedMinute) -> {
 
@@ -185,19 +174,19 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
                         calendar.set(Calendar.SECOND, 0);
                         calendar.set(Calendar.MILLISECOND, 0);
 
-                        if(calendar.getTimeInMillis() > currentDate.getTimeInMillis()){
+                        if (calendar.getTimeInMillis() > currentDate.getTimeInMillis()) {
 
                             untilTimeInMillis = calendar.getTimeInMillis();
 
                             String format =
                                     TimeFormatter.formatWithPattern(calendar.getTimeInMillis(),
-                                        TimeFormatter.MONTH_DAY_HOUR_MINUTE);
+                                            TimeFormatter.MONTH_DAY_HOUR_MINUTE);
 
 
-                            discountDialogTimeTv.setText(new SimpleDateFormat(format,Locale.getDefault())
+                            discountDialogTimeTv.setText(new SimpleDateFormat(format, Locale.getDefault())
                                     .format(calendar.getTime()));
 
-                        }else{
+                        } else {
 
                             Toast.makeText(requireContext(),
                                     "The discount end time can't be at the specified time",
@@ -209,7 +198,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
                     mTimePicker.setTitle("Select Time");
                     mTimePicker.show();
 
-                    }else{
+                } else {
 
                     Toast.makeText(requireContext(),
                             "The discount end time can't be at the specified time",
@@ -218,20 +207,19 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
                 }
 
 
-
             }
 
-        }, currentYear,currentMonth,currentDay);
+        }, currentYear, currentMonth, currentDay);
         StartTime.show();
 
 
     }
 
-    private void addDiscountOffer(){
+    private void addDiscountOffer() {
 
         final String newPriceString = discountDialogPriceTv.getText().toString().trim();
 
-        if(newPriceString.isEmpty()){
+        if (newPriceString.isEmpty()) {
             Toast.makeText(requireContext(),
                     "Please add the new discounted price!", Toast.LENGTH_SHORT).show();
             return;
@@ -239,23 +227,23 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
 
         final float newPrice = Float.parseFloat(newPriceString);
 
-        if(newPrice >= menuItem.getPrice()){
+        if (newPrice >= menuItem.getPrice()) {
             Toast.makeText(requireContext(),
                     "Discount price must be lower than the original menu item price!",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if(untilTimeInMillis == 0){
+        if (untilTimeInMillis == 0) {
             Toast.makeText(requireContext(),
                     "Please add the discount end date", Toast.LENGTH_SHORT).show();
             return;
         }
 
         progressDialog = new ProgressDialogFragment();
-        progressDialog.show(getChildFragmentManager(),"progress");
+        progressDialog.show(getChildFragmentManager(), "progress");
 
-        if(menuItem.isDiscounted()){
+        if (menuItem.isDiscounted()) {
 
             final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(requireContext());
             alertBuilder.setTitle("Are you sure you want to add this discount?");
@@ -267,7 +255,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
                 }
             });
 
-        }else{
+        } else {
 
             discountMenuItem(newPrice);
 
@@ -275,24 +263,23 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
 
     }
 
-    private void discountMenuItem(float newPrice){
+    private void discountMenuItem(float newPrice) {
 
         final String offerId = UUID.randomUUID().toString();
-
 
 
         final long startTime = System.currentTimeMillis();
 
         final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        Map<String,Object> discountMap = new HashMap<>();
-        discountMap.put("discountedPrice",newPrice);
-        discountMap.put("startedAt",startTime);
-        discountMap.put("endsAt",untilTimeInMillis);
+        Map<String, Object> discountMap = new HashMap<>();
+        discountMap.put("discountedPrice", newPrice);
+        discountMap.put("startedAt", startTime);
+        discountMap.put("endsAt", untilTimeInMillis);
 
         firestore.collection("MenuItems").document(menuItem.getID())
-                .update("isDiscounted",true,
-                        "discountMap",discountMap)
+                .update("isDiscounted", true,
+                        "discountMap", discountMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -303,7 +290,7 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
                                     @Override
                                     public void onSuccess(DocumentSnapshot snapshot) {
 
-                                        if(snapshot.exists()){
+                                        if (snapshot.exists()) {
 
                                             final GeoPoint geoPoint = new GeoPoint(snapshot.getDouble("lat"),
                                                     snapshot.getDouble("lng"));
@@ -361,5 +348,10 @@ public class DiscountDialogFragment extends DialogFragment implements View.OnCli
             }
         });
 
+    }
+
+    public interface DiscountDialogInterface {
+
+        void onMenuItemDiscounted(int position, Map<String, Object> discountMap);
     }
 }

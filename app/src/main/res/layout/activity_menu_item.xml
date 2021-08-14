@@ -96,7 +96,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
-        app:contentScrim="?attr/colorPrimary"
+        app:contentScrim="@color/transparent_grey"
         app:expandedTitleMarginBottom="50dp"
         app:collapsedTitleTextAppearance="@style/CollapsedAppBar"
         app:expandedTitleTextAppearance="@style/ExpandedAppBar"
@@ -126,6 +126,16 @@
                 android:layout_marginEnd="15dp"
                 app:layout_constraintBottom_toBottomOf="@+id/menuItemImagesPager"
                 app:layout_constraintEnd_toEndOf="parent"/>
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="3.5:1"
+                android:background="@drawable/gradient_black_background"
+                />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.appcompat.widget.Toolbar

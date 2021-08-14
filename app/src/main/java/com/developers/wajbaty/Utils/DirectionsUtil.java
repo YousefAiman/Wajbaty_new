@@ -30,99 +30,12 @@ public class DirectionsUtil {
     private final DocumentReference documentReference;
 
 
-    public DirectionsUtil(DirectionsListeners directionsListeners, DocumentReference documentReference){
+    public DirectionsUtil(DirectionsListeners directionsListeners, DocumentReference documentReference) {
         DirectionsUtil.directionsListeners = directionsListeners;
         this.documentReference = documentReference;
     }
 
-    public interface DirectionsListeners{
-        void onPolyLineFetched(PolylineOptions polylineOptions);
-    }
-
-    public void getDirections(Context context,String firestoreResult){
-
-        try {
-
-            JSONObject jsonObject = new JSONObject(firestoreResult);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    getPolyLinesForRoute(context,parse(jsonObject));
-                }
-            }).start();
-
-        } catch (JSONException e) {
-            Log.d("DirectionsApi","failed to convert to json: "+e.getMessage());
-            e.printStackTrace();
-        }
-
-    }
-
-    public void getDirections(Context context,LatLng startPoint, LatLng[] wayPoints, LatLng destinationPoint){
-
-
-        RequestQueue queue = Volley.newRequestQueue(context);
-
-        String url = getDirectionsUrl(context,startPoint,wayPoints,destinationPoint);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null, response -> {
-                    try {
-                        if (response.getString("status").equals("OK")) {
-
-                            getPolyLinesForRoute(context,parse(response));
-
-                            final HashMap<String,String> directionsMap = new HashMap<>();
-                            directionsMap.put("DirectionsJsonObject",response.toString());
-
-                            documentReference.collection("Directions")
-                                    .document("Directions")
-                                    .set(directionsMap)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-
-                                            Log.d("DirectionsApi","uploaded directions object to firestore");
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-
-                                    Log.d("DirectionsApi","failed uploading " +
-                                            "json object to firestore: "+e.getMessage());
-
-                                }
-                            });
-
-                        } else {
-                            Log.d("DirectionsApi", "error here man 3: " +
-                                    response.getJSONObject("status").getString("message"));
-                        }
-                    } catch (JSONException e) {
-                        Log.d("DirectionsApi", "error here man 1: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }, error -> {
-                    Log.d("DirectionsApi", "error here man 2: " + error.getMessage());
-                });
-                queue.add(jsonObjectRequest);
-                queue.start();
-
-                }
-            }).start();
-
-
-
-
-//        Log.d("DirectionsApi","url is: "+url);
-    }
-
-
-    public static List<List<HashMap<String, String>>> parse(JSONObject jObject){
+    public static List<List<HashMap<String, String>>> parse(JSONObject jObject) {
 
         List<List<HashMap<String, String>>> routes = new ArrayList<>();
 
@@ -135,29 +48,29 @@ public class DirectionsUtil {
             jRoutes = jObject.getJSONArray("routes");
             int jRoutesLength = jRoutes.length();
             // Traversing all routes
-            for(int i=0; i<jRoutesLength; i++){
+            for (int i = 0; i < jRoutesLength; i++) {
 
-                jLegs = ((JSONObject)jRoutes.get(i)).getJSONArray("legs");
+                jLegs = ((JSONObject) jRoutes.get(i)).getJSONArray("legs");
 
                 List<HashMap<String, String>> path = new ArrayList<>();
 
                 int jLegsLength = jLegs.length();
                 // Traversing all legs
-                for (int j = 0; j<jLegsLength; j++){
+                for (int j = 0; j < jLegsLength; j++) {
 
-                    jSteps = ((JSONObject)jLegs.get(j)).getJSONArray("steps");
+                    jSteps = ((JSONObject) jLegs.get(j)).getJSONArray("steps");
 
                     int jStepsLength = jSteps.length();
                     // Traversing all steps
-                    for (int k = 0; k<jStepsLength; k++){
+                    for (int k = 0; k < jStepsLength; k++) {
                         String polyline = "";
-                        polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
+                        polyline = (String) ((JSONObject) ((JSONObject) jSteps.get(k)).get("polyline")).get("points");
                         List<LatLng> list = decodePoly(polyline);
 
-                        for (int l = 0; l<list.size(); l++){
+                        for (int l = 0; l < list.size(); l++) {
                             HashMap<String, String> hm = new HashMap<>();
-                            hm.put("lat",Double.toString((list.get(l)).latitude));
-                            hm.put("lng",Double.toString((list.get(l)).longitude));
+                            hm.put("lat", Double.toString((list.get(l)).latitude));
+                            hm.put("lng", Double.toString((list.get(l)).longitude));
                             path.add(hm);
                         }
                     }
@@ -166,46 +79,10 @@ public class DirectionsUtil {
             }
 
 
-        } catch (JSONException ex){
+        } catch (JSONException ex) {
             ex.printStackTrace();
         }
         return routes;
-    }
-
-    private void getPolyLinesForRoute(Context context,List<List<HashMap<String, String>>> directionsResult){
-
-        ArrayList<LatLng> points;
-        PolylineOptions lineOptions = null;
-        int resultSize = directionsResult.size();
-
-        //Traversing through all the routes
-        for (int i = 0; i < resultSize; i++) {
-
-            points = new ArrayList<>();
-            lineOptions = new PolylineOptions();
-
-            //Fetching i-th route
-            List<HashMap<String, String>> path = directionsResult.get(i);
-
-            int pathSize = path.size();
-            // Fetching all the points in i-th route
-            for (int j = 0; j < pathSize; j++) {
-                HashMap<String, String> point = path.get(j);
-                double lat = Double.parseDouble(point.get("lat"));
-                double lng = Double.parseDouble(point.get("lng"));
-
-                LatLng position = new LatLng(lat, lng);
-
-                points.add(position);
-            }
-
-            // Adding all the points in the route to LineOptions
-            lineOptions.addAll(points);
-//            lineOptions.width(7);
-            lineOptions.color(ResourcesCompat.getColor(context.getResources(),R.color.orange,null));
-        }
-
-        directionsListeners.onPolyLineFetched(lineOptions);
     }
 
     private static List<LatLng> decodePoly(String encoded) {
@@ -242,9 +119,9 @@ public class DirectionsUtil {
         return poly;
     }
 
-    private static String getDirectionsUrl(Context context,LatLng origin, LatLng[] wayPoints,LatLng destination) {
+    private static String getDirectionsUrl(Context context, LatLng origin, LatLng[] wayPoints, LatLng destination) {
 
-        String baseUrl=  "https://maps.googleapis.com/maps/api/directions/json?";
+        String baseUrl = "https://maps.googleapis.com/maps/api/directions/json?";
 
         //Origin
         String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
@@ -257,15 +134,15 @@ public class DirectionsUtil {
 
         for (int i = 0; i < wayPoints.length; i++) {
 
-            LatLng point =  wayPoints[i];
+            LatLng point = wayPoints[i];
 
-            if (i == 0){
+            if (i == 0) {
                 waypoints = "waypoints=";
             }
 
-            waypoints = waypoints.concat("via:"+point.latitude+"%2C"+point.longitude);
+            waypoints = waypoints.concat("via:" + point.latitude + "%2C" + point.longitude);
 
-            if(i < waypoints.length() - 1){
+            if (i < waypoints.length() - 1) {
                 waypoints = waypoints.concat("%7C");
             }
 
@@ -274,7 +151,127 @@ public class DirectionsUtil {
         String api_key = "key=" + context.getString(R.string.directions_api_key);
 
 
-        return baseUrl +  str_origin + "&" + str_destination + "&" + waypoints + "&" + api_key;
+        return baseUrl + str_origin + "&" + str_destination + "&" + waypoints + "&" + api_key;
+    }
+
+    public void getDirections(Context context, String firestoreResult) {
+
+        try {
+
+            JSONObject jsonObject = new JSONObject(firestoreResult);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    getPolyLinesForRoute(context, parse(jsonObject));
+                }
+            }).start();
+
+        } catch (JSONException e) {
+            Log.d("DirectionsApi", "failed to convert to json: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
+
+    public void getDirections(Context context, LatLng startPoint, LatLng[] wayPoints, LatLng destinationPoint) {
+
+
+        RequestQueue queue = Volley.newRequestQueue(context);
+
+        String url = getDirectionsUrl(context, startPoint, wayPoints, destinationPoint);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null, response -> {
+                    try {
+                        if (response.getString("status").equals("OK")) {
+
+                            getPolyLinesForRoute(context, parse(response));
+
+                            final HashMap<String, String> directionsMap = new HashMap<>();
+                            directionsMap.put("DirectionsJsonObject", response.toString());
+
+                            documentReference.collection("Directions")
+                                    .document("Directions")
+                                    .set(directionsMap)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+
+                                            Log.d("DirectionsApi", "uploaded directions object to firestore");
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+
+                                    Log.d("DirectionsApi", "failed uploading " +
+                                            "json object to firestore: " + e.getMessage());
+
+                                }
+                            });
+
+                        } else {
+                            Log.d("DirectionsApi", "error here man 3: " +
+                                    response.getJSONObject("status").getString("message"));
+                        }
+                    } catch (JSONException e) {
+                        Log.d("DirectionsApi", "error here man 1: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }, error -> {
+                    Log.d("DirectionsApi", "error here man 2: " + error.getMessage());
+                });
+                queue.add(jsonObjectRequest);
+                queue.start();
+
+            }
+        }).start();
+
+
+//        Log.d("DirectionsApi","url is: "+url);
+    }
+
+    private void getPolyLinesForRoute(Context context, List<List<HashMap<String, String>>> directionsResult) {
+
+        ArrayList<LatLng> points;
+        PolylineOptions lineOptions = null;
+        int resultSize = directionsResult.size();
+
+        //Traversing through all the routes
+        for (int i = 0; i < resultSize; i++) {
+
+            points = new ArrayList<>();
+            lineOptions = new PolylineOptions();
+
+            //Fetching i-th route
+            List<HashMap<String, String>> path = directionsResult.get(i);
+
+            int pathSize = path.size();
+            // Fetching all the points in i-th route
+            for (int j = 0; j < pathSize; j++) {
+                HashMap<String, String> point = path.get(j);
+                double lat = Double.parseDouble(point.get("lat"));
+                double lng = Double.parseDouble(point.get("lng"));
+
+                LatLng position = new LatLng(lat, lng);
+
+                points.add(position);
+            }
+
+            // Adding all the points in the route to LineOptions
+            lineOptions.addAll(points);
+//            lineOptions.width(7);
+            lineOptions.color(ResourcesCompat.getColor(context.getResources(), R.color.orange, null));
+        }
+
+        directionsListeners.onPolyLineFetched(lineOptions);
+    }
+
+    public interface DirectionsListeners {
+        void onPolyLineFetched(PolylineOptions polylineOptions);
     }
 
 

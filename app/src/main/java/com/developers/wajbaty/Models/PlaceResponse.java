@@ -18,7 +18,7 @@ public class PlaceResponse {
     String language;
 
 
-    public PlaceResponse(){
+    public PlaceResponse() {
 
     }
 

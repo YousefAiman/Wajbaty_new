@@ -26,7 +26,7 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 
-public class FavoriteMenuItemsFragment extends Fragment implements FavoriteRestaurantsAdapter.FavoriteRestaurantsListener{
+public class FavoriteMenuItemsFragment extends Fragment implements FavoriteRestaurantsAdapter.FavoriteRestaurantsListener {
 
     private static final int FAVORITE_ITEM_LIMIT = 10;
     private static final String TAG = "FavoriteMenuItemsFragment";
@@ -53,13 +53,13 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        firestore =  FirebaseFirestore.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         restaurantSummaries = new ArrayList<>();
 
-        favoriteRestaurantsAdapter = new FavoriteRestaurantsAdapter(restaurantSummaries,this);
+        favoriteRestaurantsAdapter = new FavoriteRestaurantsAdapter(restaurantSummaries, this, requireContext());
 
         mainQuery = firestore.collection("PartneredRestaurant");
 
@@ -69,7 +69,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_favorites, container, false);
+        View view = inflater.inflate(R.layout.fragment_favorites, container, false);
         favoritesRv = view.findViewById(R.id.favoritesRv);
         noFavItemTv = view.findViewById(R.id.noFavItemTv);
 
@@ -86,7 +86,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
 
     }
 
-    private void getFavRestaurantsIds(){
+    private void getFavRestaurantsIds() {
 
         firestore.collection("Users")
                 .document(currentUid)
@@ -101,9 +101,9 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                if(favRestaurantsIds!=null && !favRestaurantsIds.isEmpty()){
+                if (favRestaurantsIds != null && !favRestaurantsIds.isEmpty()) {
                     getFavoriteRestaurants(true);
-                }else{
+                } else {
 
                     favoritesRv.setVisibility(View.INVISIBLE);
                     noFavItemTv.setVisibility(View.VISIBLE);
@@ -114,7 +114,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
 
     }
 
-    private void getFavoriteRestaurants(boolean isInitial){
+    private void getFavoriteRestaurants(boolean isInitial) {
 
 //        showProgressBar();
 
@@ -124,20 +124,20 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
 
         if (restaurantSummaries.isEmpty()) {
 
-            if(favRestaurantsIds.size() > 10){
-                currentQuery = mainQuery.whereIn("ID",favRestaurantsIds.subList(0,10));
-            }else{
-                currentQuery = mainQuery.whereIn("ID",favRestaurantsIds);
+            if (favRestaurantsIds.size() > 10) {
+                currentQuery = mainQuery.whereIn("ID", favRestaurantsIds.subList(0, 10));
+            } else {
+                currentQuery = mainQuery.whereIn("ID", favRestaurantsIds);
             }
 
-        }else if(favRestaurantsIds.size() >= restaurantSummaries.size() + 10){
+        } else if (favRestaurantsIds.size() >= restaurantSummaries.size() + 10) {
 
-            currentQuery = mainQuery.whereIn("ID",favRestaurantsIds.subList(
+            currentQuery = mainQuery.whereIn("ID", favRestaurantsIds.subList(
                     restaurantSummaries.size(), restaurantSummaries.size() + 10));
 
-        }else if(favRestaurantsIds.size() > restaurantSummaries.size()){
+        } else if (favRestaurantsIds.size() > restaurantSummaries.size()) {
 
-            currentQuery = mainQuery.whereIn("ID",favRestaurantsIds.subList(
+            currentQuery = mainQuery.whereIn("ID", favRestaurantsIds.subList(
                     restaurantSummaries.size(), favRestaurantsIds.size()));
         }
 
@@ -146,7 +146,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
 
             if (!snapshots.isEmpty()) {
 
-                if(favoritesRv.getVisibility() == View.INVISIBLE){
+                if (favoritesRv.getVisibility() == View.INVISIBLE) {
                     favoritesRv.setVisibility(View.VISIBLE);
                 }
 
@@ -158,7 +158,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
                     restaurantSummaries.addAll(restaurantSummaries.size() - 1,
                             snapshots.toObjects(PartneredRestaurant.PartneredRestaurantSummary.class));
                 }
-            }else if(restaurantSummaries.isEmpty() && favoritesRv.getVisibility() == View.VISIBLE){
+            } else if (restaurantSummaries.isEmpty() && favoritesRv.getVisibility() == View.VISIBLE) {
 
                 favoritesRv.setVisibility(View.INVISIBLE);
 
@@ -186,7 +186,7 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
                         int size = task.getResult().size();
 
                         favoriteRestaurantsAdapter.notifyItemRangeInserted(
-                                restaurantSummaries.size() - size,size);
+                                restaurantSummaries.size() - size, size);
 
                         if (task.getResult().size() < FAVORITE_ITEM_LIMIT && scrollListener != null) {
                             favoritesRv.removeOnScrollListener(scrollListener);
@@ -196,9 +196,9 @@ public class FavoriteMenuItemsFragment extends Fragment implements FavoriteResta
                 }
             }
 
-            if(restaurantSummaries.isEmpty() && noFavItemTv.getVisibility() == View.GONE){
+            if (restaurantSummaries.isEmpty() && noFavItemTv.getVisibility() == View.GONE) {
                 noFavItemTv.setVisibility(View.VISIBLE);
-            }else if(!restaurantSummaries.isEmpty() && noFavItemTv.getVisibility() == View.VISIBLE){
+            } else if (!restaurantSummaries.isEmpty() && noFavItemTv.getVisibility() == View.VISIBLE) {
                 noFavItemTv.setVisibility(View.GONE);
             }
 

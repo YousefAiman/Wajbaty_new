@@ -2,10 +2,8 @@ package com.developers.wajbaty.Models;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
-import java.util.List;
-
 @IgnoreExtraProperties
-public class RestaurantAdmin extends User{
+public class RestaurantAdmin extends User {
 
     private String myRestaurantID;
 

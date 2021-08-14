@@ -20,7 +20,7 @@ public class MenuItem implements Serializable {
     private List<String> ingredients;
     private ReviewSummary reviewSummary;
     private boolean isDiscounted;
-    private Map<String,Object> discountMap;
+    private Map<String, Object> discountMap;
     private float rating;
     private int favoriteCount;
     private String region;
@@ -30,7 +30,7 @@ public class MenuItem implements Serializable {
     }
 
     public MenuItem(String ID, String name, float price, List<String> imageUrls,
-                    String category, long timeCreated, String restaurantId,String region) {
+                    String category, long timeCreated, String restaurantId, String region) {
         this.ID = ID;
         this.name = name;
         this.price = price;
@@ -72,186 +72,6 @@ public class MenuItem implements Serializable {
 
     public void setRegion(String region) {
         this.region = region;
-    }
-
-    static class Builder{
-
-        private String ID,name,currency,category,restaurantId;
-        private float price;
-        private List<String> imageUrls,ingredients;
-        private long timeCreated;
-        private String region;
-
-
-        public MenuItem build(){
-
-            if(ID == null)
-                throw new NullPointerException(" add the menu item id");
-
-            if(name == null)
-                throw new NullPointerException(" add the menu item name");
-
-            if(category == null)
-                throw new NullPointerException(" add the menu item category");
-
-            if(price == 0)
-                throw new NullPointerException(" add the menu item price");
-
-            if(restaurantId == null)
-                throw new NullPointerException(" add the menu item restaurant id");
-
-            if(timeCreated == 0)
-                throw new NullPointerException(" add the menu item creation time");
-
-            if(imageUrls == null || imageUrls.isEmpty())
-                throw new NullPointerException(" add at least one menu item imageUrl");
-
-
-        final MenuItem menuItem = new MenuItem(ID,name,price,imageUrls,category,timeCreated,restaurantId, region);
-        if(currency!=null){
-            menuItem.setCurrency(currency);
-        }
-
-        if(ingredients!=null){
-            menuItem.setIngredients(ingredients);
-        }
-
-
-        return menuItem;
-
-        }
-
-
-        public void setID(String ID) {
-            this.ID = ID;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setPrice(float price) {
-            this.price = price;
-        }
-
-        public void setCurrency(String currency) {
-            this.currency = currency;
-        }
-
-        public void setImageUrls(List<String> imageUrls) {
-            this.imageUrls = imageUrls;
-        }
-
-        public void setCategory(String category) {
-            this.category = category;
-        }
-
-        public void setTimeCreated(long timeCreated) {
-            this.timeCreated = timeCreated;
-        }
-
-        public void setRestaurantId(String restaurantId) {
-            this.restaurantId = restaurantId;
-        }
-
-        public void setIngredients(List<String> ingredients) {
-            this.ingredients = ingredients;
-        }
-
-        public void setRegion(String region) {
-            this.region = region;
-        }
-    }
-
-    public static class MenuItemSummary implements Serializable{
-
-        private String ID;
-        private String name;
-        private float price;
-        private String currency;
-        private String restaurantId;
-        private List<String> imageUrls;
-        private boolean isDiscounted;
-        private Map<String,Object> discountMap;
-
-
-        public MenuItemSummary() {
-        }
-
-        public MenuItemSummary(MenuItem menuItem) {
-            this.ID = menuItem.getID();
-            this.name = menuItem.getName();
-            this.price = menuItem.getPrice();
-            this.currency = menuItem.getCurrency();
-            this.restaurantId = menuItem.getRestaurantId();
-            this.imageUrls = menuItem.getImageUrls();
-            this.isDiscounted = menuItem.isDiscounted();
-            this.discountMap = menuItem.getDiscountMap();
-        }
-
-        public String getID() {
-            return ID;
-        }
-
-        public void setID(String ID) {
-            this.ID = ID;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public float getPrice() {
-            return price;
-        }
-
-        public void setPrice(float price) {
-            this.price = price;
-        }
-
-        public String getCurrency() {
-            return currency;
-        }
-
-        public void setCurrency(String currency) {
-            this.currency = currency;
-        }
-
-        public List<String> getImageUrls() {
-            return imageUrls;
-        }
-
-        public void setImageUrls(List<String> imageUrls) {
-            this.imageUrls = imageUrls;
-        }
-
-        public boolean isDiscounted() {
-            return isDiscounted;
-        }
-
-        public void setDiscounted(boolean discounted) {
-            isDiscounted = discounted;
-        }
-
-        public Map<String, Object> getDiscountMap() {
-            return discountMap;
-        }
-
-        public void setDiscountMap(Map<String, Object> discountMap) {
-            this.discountMap = discountMap;
-        }
-
-        public String getRestaurantId() {
-            return restaurantId;
-        }
-
-        public void setRestaurantId(String restaurantId) {
-            this.restaurantId = restaurantId;
-        }
     }
 
     public String getID() {
@@ -340,6 +160,186 @@ public class MenuItem implements Serializable {
 
     public void setIngredients(List<String> ingredients) {
         this.ingredients = ingredients;
+    }
+
+    static class Builder {
+
+        private String ID, name, currency, category, restaurantId;
+        private float price;
+        private List<String> imageUrls, ingredients;
+        private long timeCreated;
+        private String region;
+
+
+        public MenuItem build() {
+
+            if (ID == null)
+                throw new NullPointerException(" add the menu item id");
+
+            if (name == null)
+                throw new NullPointerException(" add the menu item name");
+
+            if (category == null)
+                throw new NullPointerException(" add the menu item category");
+
+            if (price == 0)
+                throw new NullPointerException(" add the menu item price");
+
+            if (restaurantId == null)
+                throw new NullPointerException(" add the menu item restaurant id");
+
+            if (timeCreated == 0)
+                throw new NullPointerException(" add the menu item creation time");
+
+            if (imageUrls == null || imageUrls.isEmpty())
+                throw new NullPointerException(" add at least one menu item imageUrl");
+
+
+            final MenuItem menuItem = new MenuItem(ID, name, price, imageUrls, category, timeCreated, restaurantId, region);
+            if (currency != null) {
+                menuItem.setCurrency(currency);
+            }
+
+            if (ingredients != null) {
+                menuItem.setIngredients(ingredients);
+            }
+
+
+            return menuItem;
+
+        }
+
+
+        public void setID(String ID) {
+            this.ID = ID;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setPrice(float price) {
+            this.price = price;
+        }
+
+        public void setCurrency(String currency) {
+            this.currency = currency;
+        }
+
+        public void setImageUrls(List<String> imageUrls) {
+            this.imageUrls = imageUrls;
+        }
+
+        public void setCategory(String category) {
+            this.category = category;
+        }
+
+        public void setTimeCreated(long timeCreated) {
+            this.timeCreated = timeCreated;
+        }
+
+        public void setRestaurantId(String restaurantId) {
+            this.restaurantId = restaurantId;
+        }
+
+        public void setIngredients(List<String> ingredients) {
+            this.ingredients = ingredients;
+        }
+
+        public void setRegion(String region) {
+            this.region = region;
+        }
+    }
+
+    public static class MenuItemSummary implements Serializable {
+
+        private String ID;
+        private String name;
+        private float price;
+        private String currency;
+        private String restaurantId;
+        private List<String> imageUrls;
+        private boolean isDiscounted;
+        private Map<String, Object> discountMap;
+
+
+        public MenuItemSummary() {
+        }
+
+        public MenuItemSummary(MenuItem menuItem) {
+            this.ID = menuItem.getID();
+            this.name = menuItem.getName();
+            this.price = menuItem.getPrice();
+            this.currency = menuItem.getCurrency();
+            this.restaurantId = menuItem.getRestaurantId();
+            this.imageUrls = menuItem.getImageUrls();
+            this.isDiscounted = menuItem.isDiscounted();
+            this.discountMap = menuItem.getDiscountMap();
+        }
+
+        public String getID() {
+            return ID;
+        }
+
+        public void setID(String ID) {
+            this.ID = ID;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public float getPrice() {
+            return price;
+        }
+
+        public void setPrice(float price) {
+            this.price = price;
+        }
+
+        public String getCurrency() {
+            return currency;
+        }
+
+        public void setCurrency(String currency) {
+            this.currency = currency;
+        }
+
+        public List<String> getImageUrls() {
+            return imageUrls;
+        }
+
+        public void setImageUrls(List<String> imageUrls) {
+            this.imageUrls = imageUrls;
+        }
+
+        public boolean isDiscounted() {
+            return isDiscounted;
+        }
+
+        public void setDiscounted(boolean discounted) {
+            isDiscounted = discounted;
+        }
+
+        public Map<String, Object> getDiscountMap() {
+            return discountMap;
+        }
+
+        public void setDiscountMap(Map<String, Object> discountMap) {
+            this.discountMap = discountMap;
+        }
+
+        public String getRestaurantId() {
+            return restaurantId;
+        }
+
+        public void setRestaurantId(String restaurantId) {
+            this.restaurantId = restaurantId;
+        }
     }
 
 }

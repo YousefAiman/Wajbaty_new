@@ -1,5 +1,6 @@
 package com.developers.wajbaty.Adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,7 +8,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.R;
@@ -18,29 +21,21 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 
 public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveriesAdapter.DeliveryRequestVH> {
 
-    private static final int TYPE_REQUESTED_DELIVERY = 1,TYPE_CURRENT_DELIVERY = 2;
-    private String currentSummaryID;
-
+    private static final int TYPE_REQUESTED_DELIVERY = 1, TYPE_CURRENT_DELIVERY = 2;
+    private static DriverDeliveriesListener driverDeliveriesListener;
+    private static int orangeColor;
     private final ArrayList<Delivery> deliveries;
     private final CollectionReference customerRef;
-    private final HashMap<String,String> userImageURLsMap,userUserNamesMap;
-    private static DriverDeliveriesListener driverDeliveriesListener;
+    private final HashMap<String, String> userImageURLsMap, userUserNamesMap;
+    private String currentSummaryID;
 
-
-    public interface DriverDeliveriesListener{
-
-        void onDeliveryClicked(int position);
-
-    }
-
-    public DriverDeliveriesAdapter(ArrayList<Delivery> deliveries,DriverDeliveriesListener driverDeliveriesListener) {
+    public DriverDeliveriesAdapter(ArrayList<Delivery> deliveries, DriverDeliveriesListener driverDeliveriesListener,
+                                   Context context) {
 
         this.deliveries = deliveries;
         DriverDeliveriesAdapter.driverDeliveriesListener = driverDeliveriesListener;
@@ -48,6 +43,7 @@ public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveri
         customerRef = FirebaseFirestore.getInstance().collection("Users");
         userImageURLsMap = new HashMap<>();
         userUserNamesMap = new HashMap<>();
+        orangeColor = ResourcesCompat.getColor(context.getResources(), R.color.orange, null);
     }
 
     public void setCurrentSummaryID(String currentSummaryID) {
@@ -62,8 +58,8 @@ public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveri
 //            return new CurrentDeliveryVH(LayoutInflater.from(parent.getContext())
 //                    .inflate(R.layout.item_delivery_request,parent,false));
 //        }
-            return new DeliveryRequestVH(LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_delivery_request,parent,false));
+        return new DeliveryRequestVH(LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_delivery_request, parent, false));
 
 
     }
@@ -87,6 +83,36 @@ public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveri
         return deliveries.size();
     }
 
+    private void getUserInfo(String userID, ImageView userIv, TextView usernameTv, CircularProgressDrawable progressDrawable) {
+
+        customerRef.document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                if (documentSnapshot.exists()) {
+
+                    final String imageURL = documentSnapshot.getString("imageURL"),
+                            username = documentSnapshot.getString("name");
+
+
+                    if (!progressDrawable.isRunning()) {
+                        progressDrawable.start();
+                    }
+
+                    Picasso.get().load(imageURL).fit().centerCrop()
+                            .placeholder(progressDrawable).into(userIv);
+                    usernameTv.setText(username);
+
+                    userImageURLsMap.put(userID, imageURL);
+                    userUserNamesMap.put(userID, username);
+
+                }
+
+            }
+        });
+
+    }
+
 //    @Override
 //    public int getItemViewType(int position) {
 //
@@ -97,50 +123,10 @@ public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveri
 //        return TYPE_REQUESTED_DELIVERY;
 //    }
 
-    public class DeliveryRequestVH extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public interface DriverDeliveriesListener {
 
-        private final ImageView deliveryRequestUserImageIv;
-        private final TextView deliveryRequestUserNameTv,
-                deliveryRequestRequestedTimeTv,
-                deliveryRequestAddressTv;
+        void onDeliveryClicked(int position);
 
-
-        public DeliveryRequestVH(@NonNull View itemView) {
-            super(itemView);
-            deliveryRequestUserImageIv = itemView.findViewById(R.id.deliveryRequestUserImageIv);
-            deliveryRequestUserNameTv = itemView.findViewById(R.id.deliveryRequestUserNameTv);
-            deliveryRequestRequestedTimeTv = itemView.findViewById(R.id.deliveryRequestRequestedTimeTv);
-            deliveryRequestAddressTv = itemView.findViewById(R.id.deliveryRequestAddressTv);
-
-            itemView.setOnClickListener(this);
-        }
-
-        private void bind(Delivery delivery){
-
-            if(userUserNamesMap.containsKey(delivery.getRequesterID())){
-
-                Picasso.get().load(userImageURLsMap.get(delivery.getRequesterID())).fit()
-                        .centerCrop().into(deliveryRequestUserImageIv);
-
-                deliveryRequestUserNameTv.setText(userUserNamesMap.get(delivery.getRequesterID()));
-
-            }else{
-                getUserInfo(delivery.getRequesterID(),deliveryRequestUserImageIv,deliveryRequestUserNameTv);
-            }
-
-            deliveryRequestRequestedTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
-
-            deliveryRequestAddressTv.setText(delivery.getAddress());
-
-
-        }
-
-        @Override
-        public void onClick(View v) {
-
-            driverDeliveriesListener.onDeliveryClicked(getAdapterPosition());
-
-        }
     }
 
 //    private class CurrentDeliveryVH extends RecyclerView.ViewHolder{
@@ -184,28 +170,63 @@ public class DriverDeliveriesAdapter extends RecyclerView.Adapter<DriverDeliveri
 //
 //    }
 
-    private void getUserInfo(String userID,ImageView userIv,TextView usernameTv){
+    public class DeliveryRequestVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        customerRef.document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
+        private final ImageView deliveryRequestUserImageIv;
+        private final TextView deliveryRequestUserNameTv,
+                deliveryRequestRequestedTimeTv,
+                deliveryRequestAddressTv;
+        private CircularProgressDrawable progressDrawable;
 
-                if(documentSnapshot.exists()){
+        public DeliveryRequestVH(@NonNull View itemView) {
+            super(itemView);
+            deliveryRequestUserImageIv = itemView.findViewById(R.id.deliveryRequestUserImageIv);
+            deliveryRequestUserNameTv = itemView.findViewById(R.id.deliveryRequestUserNameTv);
+            deliveryRequestRequestedTimeTv = itemView.findViewById(R.id.deliveryRequestRequestedTimeTv);
+            deliveryRequestAddressTv = itemView.findViewById(R.id.deliveryRequestAddressTv);
 
-                    final String imageURL = documentSnapshot.getString("imageURL"),
-                    username = documentSnapshot.getString("name");
+            itemView.setOnClickListener(this);
+        }
 
-                    Picasso.get().load(imageURL).fit().centerCrop().into(userIv);
-                    usernameTv.setText(username);
+        private void bind(Delivery delivery) {
 
-                    userImageURLsMap.put(userID,imageURL);
-                    userUserNamesMap.put(userID,username);
-
-                }
-
+            if (progressDrawable == null) {
+                progressDrawable = new CircularProgressDrawable(itemView.getContext());
+                progressDrawable.setColorSchemeColors(orangeColor);
+                progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                progressDrawable.start();
             }
-        });
 
+            if (!progressDrawable.isRunning()) {
+                progressDrawable.start();
+            }
+
+            if (userUserNamesMap.containsKey(delivery.getRequesterID())) {
+
+
+                Picasso.get().load(userImageURLsMap.get(delivery.getRequesterID())).fit()
+                        .centerCrop().placeholder(progressDrawable).into(deliveryRequestUserImageIv);
+
+                deliveryRequestUserNameTv.setText(userUserNamesMap.get(delivery.getRequesterID()));
+
+            } else {
+                getUserInfo(delivery.getRequesterID(), deliveryRequestUserImageIv, deliveryRequestUserNameTv,
+                        progressDrawable);
+            }
+
+            deliveryRequestRequestedTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
+
+            deliveryRequestAddressTv.setText(delivery.getAddress());
+
+
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            driverDeliveriesListener.onDeliveryClicked(getAdapterPosition());
+
+        }
     }
 
 }

@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 public class Offer implements Serializable {
 
-    public static final int RESTAURANT_OFFER = 1,MENU_ITEM_DISCOUNT = 2,MEAL_OFFER = 3;
+    public static final int RESTAURANT_OFFER = 1, MENU_ITEM_DISCOUNT = 2, MEAL_OFFER = 3;
 
     private String ID;
     private String restaurantId;
@@ -22,7 +22,7 @@ public class Offer implements Serializable {
     public Offer() {
     }
 
-    public Offer(String ID, String restaurantId, String destinationId, int type, String imageUrl, String title, long startTime, long endTime, GeoPoint restaurantLatLng,String geohash) {
+    public Offer(String ID, String restaurantId, String destinationId, int type, String imageUrl, String title, long startTime, long endTime, GeoPoint restaurantLatLng, String geohash) {
         this.ID = ID;
         this.restaurantId = restaurantId;
         this.destinationId = destinationId;

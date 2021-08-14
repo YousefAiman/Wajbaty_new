@@ -1,16 +1,15 @@
 package com.developers.wajbaty.PartneredRestaurant.Fragments;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.developers.wajbaty.Adapters.FragmentsPagerAdapter;
 import com.developers.wajbaty.Models.PartneredRestaurant;
@@ -51,14 +50,14 @@ public class RestaurantReviewsFragment extends Fragment implements View.OnClickL
                         restaurantRef.document(restaurant.getID()).collection("Reviews"),
                         restaurant.getReviewSummary())};
 
-        tabAdapter = new FragmentsPagerAdapter(requireActivity(),reviewFragments);
+        tabAdapter = new FragmentsPagerAdapter(requireActivity(), reviewFragments);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        final View view =  inflater.inflate(R.layout.fragment_restaurant_reviews, container, false);
+        final View view = inflater.inflate(R.layout.fragment_restaurant_reviews, container, false);
         appReviewsBtn = view.findViewById(R.id.appReviewsBtn);
         googleReviewsBtn = view.findViewById(R.id.googleReviewsBtn);
         reviewsViewPager = view.findViewById(R.id.reviewsViewPager);
@@ -80,9 +79,9 @@ public class RestaurantReviewsFragment extends Fragment implements View.OnClickL
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == appReviewsBtn.getId()){
+        if (v.getId() == appReviewsBtn.getId()) {
 
-            if(reviewsViewPager.getCurrentItem() != 0){
+            if (reviewsViewPager.getCurrentItem() != 0) {
 
                 reviewsViewPager.setCurrentItem(0);
                 appReviewsBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);
@@ -90,9 +89,9 @@ public class RestaurantReviewsFragment extends Fragment implements View.OnClickL
 
             }
 
-        }else if(v.getId() == googleReviewsBtn.getId()){
+        } else if (v.getId() == googleReviewsBtn.getId()) {
 
-            if(reviewsViewPager.getCurrentItem() != 1){
+            if (reviewsViewPager.getCurrentItem() != 1) {
 
                 reviewsViewPager.setCurrentItem(1);
                 googleReviewsBtn.setBackgroundResource(R.drawable.option_checked_background_bordered);

@@ -1,11 +1,14 @@
 package com.developers.wajbaty.Adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.developers.wajbaty.R;
@@ -17,13 +20,14 @@ import java.util.List;
 public class ImagePagerAdapter extends PagerAdapter {
 
     private final List<String> imageUrls;
-    private final int pagerLayout;
+    private final int pagerLayout, orangeColor;
     private final float width;
 
-    public ImagePagerAdapter(List<String> imageUrls,int pagerLayout,float width){
+    public ImagePagerAdapter(List<String> imageUrls, int pagerLayout, float width, Context context) {
         this.imageUrls = imageUrls;
         this.pagerLayout = pagerLayout;
         this.width = width;
+        orangeColor = ResourcesCompat.getColor(context.getResources(), R.color.orange, null);
     }
 
     @Override
@@ -44,10 +48,22 @@ public class ImagePagerAdapter extends PagerAdapter {
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
-       final View view = LayoutInflater.from(container.getContext()).inflate(pagerLayout,null);
+        final View view = LayoutInflater.from(container.getContext()).inflate(pagerLayout, null);
 
         final ImageView pageImageIv = view.findViewById(R.id.pageImageIv);
-        Picasso.get().load(imageUrls.get(position)).fit().centerCrop().into(pageImageIv);
+
+
+        final CircularProgressDrawable progressDrawable = new CircularProgressDrawable(container.getContext());
+        progressDrawable.setColorSchemeColors(orangeColor);
+        progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+        progressDrawable.start();
+
+        if (!progressDrawable.isRunning()) {
+            progressDrawable.start();
+        }
+
+        Picasso.get().load(imageUrls.get(position)).fit().centerCrop()
+                .placeholder(progressDrawable).into(pageImageIv);
 
         pageImageIv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,7 +74,7 @@ public class ImagePagerAdapter extends PagerAdapter {
         });
         container.addView(view);
 
-       return view;
+        return view;
     }
 
     @Override

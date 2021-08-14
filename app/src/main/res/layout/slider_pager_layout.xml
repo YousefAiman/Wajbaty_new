@@ -27,10 +27,12 @@
 
     <TextView
         android:id="@+id/sliderDescTv"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="15dp"
+        android:textAlignment="center"
         android:textColor="#3D3D3D"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"

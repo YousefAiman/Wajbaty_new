@@ -1,6 +1,5 @@
 package com.developers.wajbaty.Models;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
@@ -12,7 +11,7 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class PartneredRestaurant implements Serializable {
 
-    public static final int STATUS_OPEN = 1,STATUS_CLOSED = 2,STATUS_SHUTDOWN = 3,STATUS_UNKNOWN = 4;
+    public static final int STATUS_OPEN = 1, STATUS_CLOSED = 2, STATUS_SHUTDOWN = 3, STATUS_UNKNOWN = 4;
 
     private String ID;
     private String name;
@@ -21,7 +20,7 @@ public class PartneredRestaurant implements Serializable {
     private String geohash;
     private double lat;
     private double lng;
-//    private Map<String,Object> coordinates;
+    //    private Map<String,Object> coordinates;
     private String countryCode;
     private String city;
     private String fullAddress;
@@ -33,12 +32,12 @@ public class PartneredRestaurant implements Serializable {
     private List<String> admins;
     private float averageRating;
     private int favCount;
-    private HashMap<String,String> address;
+    private HashMap<String, String> address;
     private ReviewSummary reviewSummary;
 
     private Map<String, Object> socialMediaLinks;
     private List<String> ServiceOptions;
-    private Map<String,Map<String,Object>> Schedule;
+    private Map<String, Map<String, Object>> Schedule;
     private Map<String, Object> ContactInformation;
     private List<String> AdditionalServices;
 
@@ -50,7 +49,6 @@ public class PartneredRestaurant implements Serializable {
         this.fullAddress = fullAddress;
     }
 //    private List<String> AdditionalServices;
-
 
 
     public String getID() {
@@ -193,7 +191,6 @@ public class PartneredRestaurant implements Serializable {
     }
 
 
-
     public ReviewSummary getReviewSummary() {
         return reviewSummary;
     }
@@ -251,7 +248,7 @@ public class PartneredRestaurant implements Serializable {
     }
 
     @IgnoreExtraProperties
-    public static class PartneredRestaurantSummary{
+    public static class PartneredRestaurantSummary {
 
         private String ID;
         private String name;
@@ -296,7 +293,7 @@ public class PartneredRestaurant implements Serializable {
 
 
     @IgnoreExtraProperties
-    public static class NearbyPartneredRestaurant{
+    public static class NearbyPartneredRestaurant {
 
         private String ID;
         private String name;
@@ -312,6 +309,15 @@ public class PartneredRestaurant implements Serializable {
 
 
         public NearbyPartneredRestaurant() {
+        }
+
+        public NearbyPartneredRestaurant(String ID, String name, String mainImage, String geohash, double lat, double lng) {
+            this.ID = ID;
+            this.name = name;
+            this.mainImage = mainImage;
+            this.geohash = geohash;
+            this.lat = lat;
+            this.lng = lng;
         }
 
         public String getID() {
@@ -342,6 +348,7 @@ public class PartneredRestaurant implements Serializable {
         public String getDistanceFormatted() {
             return distanceFormatted;
         }
+
         @Exclude
         public void setDistanceFormatted(String distanceFormatted) {
             this.distanceFormatted = distanceFormatted;
@@ -379,7 +386,6 @@ public class PartneredRestaurant implements Serializable {
             isSelected = selected;
         }
     }
-
 
 
 }

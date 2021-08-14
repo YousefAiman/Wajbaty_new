@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.developers.wajbaty">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -24,7 +25,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:debuggable="true"
+        tools:ignore="HardcodedDebugMode"
         android:theme="@style/Theme.Wajbaty">
+
         <activity android:name=".PartneredRestaurant.Activities.RestaurantOrderActivity"></activity>
 
         <meta-data
@@ -88,9 +92,6 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Customer.Activities.CartActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activities.TestAcitivty"
             android:screenOrientation="portrait" />
         <activity
             android:name=".PartneredRestaurant.Activities.MenuItemModifierActivity"

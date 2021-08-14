@@ -1,5 +1,6 @@
 package com.developers.wajbaty.Adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,9 +9,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
-import com.developers.wajbaty.Models.MessageMap;
 import com.developers.wajbaty.Models.UserMessage;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.TimeFormatter;
@@ -25,21 +27,20 @@ import java.util.List;
 
 public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdapter.ViewHolder> {
 
-    private final List<UserMessage> chattingUsers;
     private static MessagingUserListener messagingUserListener;
-    private final HashMap<String,String> userImageURLsMap,userUserNamesMap;
+    private static int orangeColor;
+    private final List<UserMessage> chattingUsers;
+    private final HashMap<String, String> userImageURLsMap, userUserNamesMap;
     private final CollectionReference userRef;
 
-    public MessagingUserAdapter(List<UserMessage> chattingUsers, MessagingUserListener messagingUserListener) {
+    public MessagingUserAdapter(List<UserMessage> chattingUsers, MessagingUserListener messagingUserListener,
+                                Context context) {
         this.chattingUsers = chattingUsers;
         MessagingUserAdapter.messagingUserListener = messagingUserListener;
         userImageURLsMap = new HashMap<>();
         userUserNamesMap = new HashMap<>();
         userRef = FirebaseFirestore.getInstance().collection("Users");
-    }
-
-    public interface MessagingUserListener{
-        void onMessagingUserClicked(int position);
+        orangeColor = ResourcesCompat.getColor(context.getResources(), R.color.orange, null);
     }
 
     @NonNull
@@ -64,6 +65,43 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
         return chattingUsers.size();
     }
 
+    private void getUserInfo(String userID, ImageView userIv, TextView usernameTv, CircularProgressDrawable progressDrawable) {
+
+        userRef.document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                if (documentSnapshot.exists()) {
+
+                    final String imageURL = documentSnapshot.getString("imageURL"),
+                            username = documentSnapshot.getString("name");
+
+                    if (imageURL != null) {
+
+                        if (!progressDrawable.isRunning()) {
+                            progressDrawable.start();
+                        }
+
+                        Picasso.get().load(imageURL).fit().centerCrop()
+                                .placeholder(progressDrawable).into(userIv);
+                    }
+
+                    usernameTv.setText(username);
+
+                    userImageURLsMap.put(userID, imageURL);
+                    userUserNamesMap.put(userID, username);
+
+                }
+
+            }
+        });
+
+    }
+
+    public interface MessagingUserListener {
+        void onMessagingUserClicked(int position);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private final ImageView chattingUserImageView;
         private final TextView chattingUserNameTv;
@@ -71,6 +109,7 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
         private final TextView chattingMessageTimeStampTv;
         private final TextView chattinglatestMessageTv;
         private final TextView unreadMessagesCountTv;
+        private CircularProgressDrawable progressDrawable;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -84,19 +123,31 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
             itemView.setOnClickListener(this);
         }
 
-        void bind(UserMessage userMessage){
+        void bind(UserMessage userMessage) {
 
             String senderID = userMessage.getMessagingUserId();
 
-            if(userUserNamesMap.containsKey(senderID)){
+            if (progressDrawable == null) {
+                progressDrawable = new CircularProgressDrawable(itemView.getContext());
+                progressDrawable.setColorSchemeColors(orangeColor);
+                progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                progressDrawable.start();
+            }
+
+            if (!progressDrawable.isRunning()) {
+                progressDrawable.start();
+            }
+
+            if (userUserNamesMap.containsKey(senderID)) {
+
 
                 Picasso.get().load(userImageURLsMap.get(senderID)).fit()
-                        .centerCrop().into(chattingUserImageView);
+                        .centerCrop().placeholder(progressDrawable).into(chattingUserImageView);
 
                 chattingUserNameTv.setText(userUserNamesMap.get(senderID));
 
-            }else{
-                getUserInfo(senderID,chattingUserImageView,chattingUserNameTv);
+            } else {
+                getUserInfo(senderID, chattingUserImageView, chattingUserNameTv, progressDrawable);
             }
 
 
@@ -136,35 +187,8 @@ public class MessagingUserAdapter extends RecyclerView.Adapter<MessagingUserAdap
 
             messagingUserListener.onMessagingUserClicked(getAdapterPosition());
 
-            }
+        }
 //        }
-    }
-
-    private void getUserInfo(String userID,ImageView userIv,TextView usernameTv){
-
-        userRef.document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-                if(documentSnapshot.exists()){
-
-                    final String imageURL = documentSnapshot.getString("imageURL"),
-                            username = documentSnapshot.getString("name");
-
-                    if(imageURL!=null){
-                        Picasso.get().load(imageURL).fit().centerCrop().into(userIv);
-                    }
-
-                    usernameTv.setText(username);
-
-                    userImageURLsMap.put(userID,imageURL);
-                    userUserNamesMap.put(userID,username);
-
-                }
-
-            }
-        });
-
     }
 
 }

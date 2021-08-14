@@ -3,6 +3,14 @@
 
     <group android:checkableBehavior="single">
 
+        <item android:id="@+id/show_home_action"
+            android:title="Home"
+            android:icon="@drawable/home_icon"/>
+
+        <item android:id="@+id/show_map_action"
+            android:title="Map"
+            android:icon="@drawable/marker_on_map_icon"/>
+
         <item android:id="@+id/show_Menu_items_action"
             android:title="Meals"
             android:icon="@drawable/fork_and_spoon_icon"/>
@@ -10,14 +18,6 @@
         <item android:id="@+id/show_Messages_action"
         android:title="Messages"
         android:icon="@drawable/messages_icon"/>
-
-    <item android:id="@+id/show_home_action"
-        android:title="Home"
-        android:icon="@drawable/home_icon"/>
-
-    <item android:id="@+id/show_map_action"
-        android:title="Map"
-        android:icon="@drawable/marker_on_map_icon"/>
 
     </group>
 

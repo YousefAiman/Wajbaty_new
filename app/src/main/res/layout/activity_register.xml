@@ -127,7 +127,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="15dp"
-                android:entries="@array/coddes"
                 android:background="@drawable/spinner_custom_layout"
                 android:padding="5dp"
                 android:dropDownWidth="wrap_content"

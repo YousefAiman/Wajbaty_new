@@ -1,9 +1,9 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.fragment.app.FragmentActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.fragment.app.FragmentActivity;
 
 import com.developers.wajbaty.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -12,8 +12,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -33,7 +31,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         restaurantName = intent.getStringExtra("restaurantName");
 
-        destinationLatLng = new LatLng(intent.getDoubleExtra("lat",0),intent.getDoubleExtra("lng",0));
+        destinationLatLng = new LatLng(intent.getDoubleExtra("lat", 0), intent.getDoubleExtra("lng", 0));
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -51,7 +49,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(destinationLatLng, 20.0f));
 
     }
-    
-    
+
 
 }

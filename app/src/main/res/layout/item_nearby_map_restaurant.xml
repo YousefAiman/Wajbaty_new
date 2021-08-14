@@ -12,8 +12,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/nearbyRestaurantConstraintLayout">
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/nearbyRestaurantNameTv"
@@ -60,7 +59,8 @@
             android:layout_marginEnd="12dp"
             android:background="@drawable/white_circle"
             android:padding="5dp"
-            android:src="@drawable/directions_icon"
+            android:visibility="gone"
+            android:src="@drawable/fork_and_spoon_icon"
             app:layout_constraintBottom_toBottomOf="@+id/nearbyRestaurantDistanceTv"
             app:layout_constraintDimensionRatio="1"
             app:layout_constraintEnd_toEndOf="parent"

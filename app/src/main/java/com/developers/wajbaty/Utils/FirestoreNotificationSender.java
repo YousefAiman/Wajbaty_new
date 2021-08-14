@@ -1,13 +1,9 @@
 package com.developers.wajbaty.Utils;
 
-import android.util.Log;
-
 import com.developers.wajbaty.Models.Notification;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
 
 public class FirestoreNotificationSender {
 
@@ -15,7 +11,7 @@ public class FirestoreNotificationSender {
             FirebaseFirestore.getInstance().collection("Users");
 
     public static void sendNotification(String destinationID, String receiverID, int type,
-                                                 String content) {
+                                        String content) {
 
         final String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -42,8 +38,8 @@ public class FirestoreNotificationSender {
                 if (type == Notification.TYPE_MESSAGE) {
 
                     documentSnapshot.getReference().update(
-                            "content",content
-                            ,"timeCreatedInMillis", System.currentTimeMillis());
+                            "content", content
+                            , "timeCreatedInMillis", System.currentTimeMillis());
 
                 }
 //                else {

@@ -9,7 +9,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="15dp">
 
         <TextView
             android:id="@+id/customerDeliveryTitleTv"
@@ -65,6 +66,7 @@
             android:ellipsize="marquee"
             android:fontFamily="@font/almarai_regular"
             android:maxLines="2"
+            android:visibility="gone"
             android:textColor="@color/light_black"
             android:textSize="18sp"
             android:layout_marginTop="12dp"
@@ -81,6 +83,7 @@
             android:fontFamily="@font/almarai_regular"
             android:maxLines="2"
             android:textColor="@color/light_black"
+            android:visibility="gone"
             android:textSize="18sp"
             android:layout_marginTop="12dp"
             app:layout_constraintEnd_toEndOf="@+id/customerDeliveryAddressTv"
@@ -90,28 +93,29 @@
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/customerShowItemsTv"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="25dp"
-            android:layout_marginBottom="40dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="18dp"
             android:background="@drawable/filled_button_background"
             android:elevation="3dp"
             android:fontFamily="@font/amlarai_bold"
             android:paddingVertical="10dp"
-            android:text="Show Cart"
+            android:text="Details"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="22sp"
-            android:layout_marginTop="18dp"
-            app:layout_constraintTop_toBottomOf="@+id/customerRestaurantCountTv" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/customerRestaurantCountTv"
+            app:layout_constraintWidth_percent="0.45" />
 
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/customerDeliveryCancelBtn"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="25dp"
-            android:layout_marginBottom="40dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="20dp"
             android:background="@drawable/filled_button_background"
             android:elevation="3dp"
             android:fontFamily="@font/amlarai_bold"
@@ -120,10 +124,11 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="22sp"
-            android:layout_marginTop="15dp"
-            app:layout_goneMarginBottom="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/customerShowItemsTv" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/customerShowItemsTv"
+            app:layout_constraintWidth_percent="0.45"
+            app:layout_goneMarginBottom="20dp" />
 
 
 

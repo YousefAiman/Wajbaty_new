@@ -3,21 +3,20 @@
 
     <group android:checkableBehavior="single">
 
-    <item android:id="@+id/show_Messages_action"
-        android:title="Messages"
-        android:enabled="true"
-        android:icon="@drawable/messages_icon"/>
-
         <item android:id="@+id/show_deliveries_action"
             android:title="Deliveries"
             android:enabled="true"
             android:icon="@drawable/delivery_bike_icon"/>
 
-
         <item android:id="@+id/show_profile_action"
             android:title="Profile"
             android:enabled="true"
             android:icon="@drawable/profile_circular_icon"/>
+
+        <item android:id="@+id/show_Messages_action"
+        android:title="Messages"
+        android:enabled="true"
+        android:icon="@drawable/messages_icon"/>
 
     </group>
 

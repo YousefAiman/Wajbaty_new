@@ -1,13 +1,9 @@
 package com.developers.wajbaty.Customer.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,18 +13,16 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.developers.wajbaty.Customer.Fragments.DeliveryDriverInfoFragment;
-import com.developers.wajbaty.DeliveryDriver.Activities.DeliveryInfoActivity;
-import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.CartItem;
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.DeliveryModel;
-import com.developers.wajbaty.Models.MenuItemModel;
-import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantMediaFillingActivity;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.BitmapUtil;
-import com.developers.wajbaty.Utils.CloudMessagingNotificationsSender;
 import com.developers.wajbaty.Utils.GeocoderUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
 import com.firebase.geofire.GeoFireUtils;
@@ -49,12 +43,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -65,15 +57,15 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;
 
-public class DeliveryLocationMapActivity extends AppCompatActivity implements OnMapReadyCallback ,
-        View.OnClickListener, GoogleMap.OnMapClickListener ,LocationRequester.LocationRequestAction,
-        GeocoderUtil.GeocoderResultListener , Observer {
+public class DeliveryLocationMapActivity extends AppCompatActivity implements OnMapReadyCallback,
+        View.OnClickListener, GoogleMap.OnMapClickListener, LocationRequester.LocationRequestAction,
+        GeocoderUtil.GeocoderResultListener, Observer {
 
-    private static final int BUTTON_ACTIVE = 1,BUTTON_INACTIVE = 2;
+    private static final int BUTTON_ACTIVE = 1, BUTTON_INACTIVE = 2;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
 
     private ArrayList<CartItem> cartItemList;
-    private HashMap<String,Object> addressMap;
+    private HashMap<String, Object> addressMap;
     private DeliveryModel model;
     private ListenerRegistration deliveryAcceptanceListener;
 
@@ -93,6 +85,22 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
     private Delivery currentDelivery;
 
+    public static void main(String[] args) {
+
+        final List<String> ids = new ArrayList<>();
+
+        for (int i = 0; i < 25; i++) {
+            ids.add("text");
+        }
+
+        for (int i = 0; i < ids.size(); i += 10) {
+
+            System.out.println("size: " + ids.subList(i, Math.min(ids.size(), i + 10)).size());
+
+        }
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,12 +108,12 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
         final Intent intent = getIntent();
 
-        if(intent != null && intent.hasExtra("cartItems")){
+        if (intent != null && intent.hasExtra("cartItems")) {
 
             cartItemList = (ArrayList<CartItem>) intent.getSerializableExtra("cartItems");
             addressMap = (HashMap<String, Object>) intent.getSerializableExtra("addressMap");
 
-        }else{
+        } else {
             finish();
         }
 
@@ -120,7 +128,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
     }
 
-
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
 
@@ -132,7 +139,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
     }
 
-    private void getViews(){
+    private void getViews() {
 
         deliveryLocationPlaceNameTv = findViewById(R.id.deliveryLocationPlaceNameTv);
         deliveryLocationCoordinatesTv = findViewById(R.id.deliveryLocationCoordinatesTv);
@@ -150,32 +157,32 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == deliveryLocationCurrentLocationIv.getId()){
+        if (v.getId() == deliveryLocationCurrentLocationIv.getId()) {
 
-            if(locationRequester == null){
+            if (locationRequester == null) {
 
                 initializeLocationRequester();
 
-            }else{
+            } else {
                 locationRequester.getCurrentLocation();
             }
 
 
-        }else if(v.getId() == deliveryLocationConfirmBtn.getId()){
+        } else if (v.getId() == deliveryLocationConfirmBtn.getId()) {
 
-           if(chosenAddress == null || currentMapMarker == null)
-               return;
+            if (chosenAddress == null || currentMapMarker == null)
+                return;
 
             progressDialogFragment = new ProgressDialogFragment();
             progressDialogFragment.setTitle("Creating your delivery");
             progressDialogFragment.setMessage("Please wait");
-            progressDialogFragment.show(getSupportFragmentManager(),"progress");
+            progressDialogFragment.show(getSupportFragmentManager(), "progress");
 
             final String ID = UUID.randomUUID().toString();
 
             final List<String> ids = new ArrayList<>();
 
-            for(CartItem cartItem:cartItemList){
+            for (CartItem cartItem : cartItemList) {
                 ids.add(cartItem.getItemId());
             }
 
@@ -186,14 +193,14 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
             final int loopNum = ids.size() / 10;
 
-            if(loopNum == 0){
+            if (loopNum == 0) {
 
-                tasks.add(query.whereIn("id",ids).get());
+                tasks.add(query.whereIn("id", ids).get());
 
-            }else{
+            } else {
 
                 for (int i = 0; i < ids.size(); i += 10) {
-                    tasks.add(query.whereIn("id",ids.subList(i, Math.min(ids.size(),i+10))).get());
+                    tasks.add(query.whereIn("id", ids.subList(i, Math.min(ids.size(), i + 10))).get());
                 }
             }
 
@@ -205,11 +212,11 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     final HashMap<String, Float> menuItemPriceMap = new HashMap<>();
 
-                    final HashMap<String,HashMap<String,Object>> restaurantMenuItemsMap = new HashMap<>();
+                    final HashMap<String, HashMap<String, Object>> restaurantMenuItemsMap = new HashMap<>();
 
                     for (Task<QuerySnapshot> queryTask : tasks) {
-                        if(queryTask.isSuccessful() && queryTask.getResult()!=null && !queryTask.getResult().isEmpty()){
-                            for(DocumentSnapshot snapshot:queryTask.getResult()){
+                        if (queryTask.isSuccessful() && queryTask.getResult() != null && !queryTask.getResult().isEmpty()) {
+                            for (DocumentSnapshot snapshot : queryTask.getResult()) {
 
                                 float price = snapshot.getDouble("price").floatValue();
 
@@ -219,23 +226,23 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                                 final String restaurantID = snapshot.getString("restaurantId");
 
-                                if(restaurantMenuItemsMap.containsKey(restaurantID)){
+                                if (restaurantMenuItemsMap.containsKey(restaurantID)) {
 
 //                                    restaurantMenuItemsMap.put(restaurantID,
 //                                            restaurantMenuItemsMap.get(restaurantID)+1);
 
-                                    HashMap<String,Object> restaurantMap = restaurantMenuItemsMap.get(restaurantID);
+                                    HashMap<String, Object> restaurantMap = restaurantMenuItemsMap.get(restaurantID);
 
-                                    if(restaurantMap!=null){
-                                        restaurantMap.put("itemCount",((Integer)restaurantMap.get("itemCount")) + 1);
+                                    if (restaurantMap != null) {
+                                        restaurantMap.put("itemCount", ((Integer) restaurantMap.get("itemCount")) + 1);
                                     }
 
-                                }else{
-                                    HashMap<String,Object> restaurantMap = new HashMap<>();
-                                    restaurantMap.put("itemCount",1);
-                                    restaurantMap.put("orderPickedUp",false);
+                                } else {
+                                    HashMap<String, Object> restaurantMap = new HashMap<>();
+                                    restaurantMap.put("itemCount", 1);
+                                    restaurantMap.put("orderPickedUp", false);
 
-                                    restaurantMenuItemsMap.put(restaurantID,restaurantMap);
+                                    restaurantMenuItemsMap.put(restaurantID, restaurantMap);
 //
 //                                    restaurantMenuItemsMap.put(restaurantID,1);
 
@@ -249,7 +256,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                             currentMapMarker.getPosition().latitude,
                             currentMapMarker.getPosition().longitude);
 
-                     currentDelivery = new Delivery(
+                    currentDelivery = new Delivery(
                             ID,
                             FirebaseAuth.getInstance().getCurrentUser().getUid(),
                             menuItemPriceMap,
@@ -264,7 +271,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                             restaurantMenuItemsMap.size()
 //                             ,
 //                            restaurantMenuItemsMap
-                     );
+                    );
 
 
                     final CollectionReference restaurantOrderedRef = FirebaseFirestore.getInstance()
@@ -273,17 +280,17 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     List<Task<?>> restaurantOrderedTasks = new ArrayList<>();
 
-                    for(String key:restaurantMenuItemsMap.keySet()){
+                    for (String key : restaurantMenuItemsMap.keySet()) {
                         restaurantOrderedTasks.add(
-                        restaurantOrderedRef.document(key).set(restaurantMenuItemsMap.get(key)));
+                                restaurantOrderedRef.document(key).set(restaurantMenuItemsMap.get(key)));
                     }
 
                     Tasks.whenAllComplete(restaurantOrderedTasks).addOnSuccessListener(new OnSuccessListener<List<Task<?>>>() {
                         @Override
                         public void onSuccess(List<Task<?>> tasks) {
-                            model = new DeliveryModel(currentDelivery,DeliveryLocationMapActivity.this);
+                            model = new DeliveryModel(currentDelivery, DeliveryLocationMapActivity.this);
                             model.addObserver(DeliveryLocationMapActivity.this);
-                            model.requestDelivery(addressMap,cartItemList);
+                            model.requestDelivery(addressMap, cartItemList);
                         }
                     });
 
@@ -305,7 +312,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
     private void markCurrentPosition() {
 
-        Log.d("ttt","markCurrentPosition");
+        Log.d("ttt", "markCurrentPosition");
 
         final String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
 
@@ -316,7 +323,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
             requestPermissions(permissions, REQUEST_LOCATION_PERMISSION);
 
-        } else if(currentMapMarker == null){
+        } else if (currentMapMarker == null) {
 
             map.setMyLocationEnabled(true);
             map.getUiSettings().setMyLocationButtonEnabled(true);
@@ -325,7 +332,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
         }
 
     }
-
 
     @SuppressLint("MissingPermission")
     @Override
@@ -353,32 +359,31 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
     }
 
     private void showProgressDialog() {
-        Log.d("ttt","showProgressDialog");
+        Log.d("ttt", "showProgressDialog");
 
-        if(progressDialogFragment == null){
+        if (progressDialogFragment == null) {
             progressDialogFragment = new ProgressDialogFragment();
         }
 
-        progressDialogFragment.show(getSupportFragmentManager(),"progress");
+        progressDialogFragment.show(getSupportFragmentManager(), "progress");
     }
-
 
     private void initializeLocationRequester() {
 
-        Log.d("ttt","initializeLocationRequester");
+        Log.d("ttt", "initializeLocationRequester");
 
         showProgressDialog();
 
-        locationRequester = new LocationRequester(this,this);
+        locationRequester = new LocationRequester(this, this);
         locationRequester.getCurrentLocation();
 
     }
 
-    private void markLocation(LatLng latLng){
+    private void markLocation(LatLng latLng) {
 
-        GeocoderUtil.getLocationAddress(this,latLng,this);
+        GeocoderUtil.getLocationAddress(this, latLng, this);
 
-        if((int)deliveryLocationConfirmBtn.getTag() == BUTTON_INACTIVE){
+        if ((int) deliveryLocationConfirmBtn.getTag() == BUTTON_INACTIVE) {
 
             deliveryLocationConfirmBtn.setTag(BUTTON_ACTIVE);
             deliveryLocationConfirmBtn.setBackgroundResource(R.drawable.filled_button_background);
@@ -391,20 +396,19 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
         currentMapMarker = map.addMarker(new MarkerOptions().position(latLng).title("Restaurant location"));
 
-        if(currentMapMarker!=null){
+        if (currentMapMarker != null) {
             currentMapMarker.setIcon(BitmapDescriptorFactory.fromBitmap(
                     BitmapUtil.getBitmap(this, R.drawable.location_marker_icon)));
         }
 
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20.0f));
 
-        if(progressDialogFragment!=null && progressDialogFragment.isVisible()){
+        if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
             progressDialogFragment.dismiss();
             progressDialogFragment = null;
         }
 
     }
-
 
     @Override
     public void addressFetched(Map<String, Object> addressMap) {
@@ -420,7 +424,7 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
                 .setScale(1, RoundingMode.HALF_UP).floatValue();
 
 
-        deliveryLocationCoordinatesTv.setText("["+lat+" , "+lng+"]");
+        deliveryLocationCoordinatesTv.setText("[" + lat + " , " + lng + "]");
         chosenAddress = (String) addressMap.get("fullAddress");
 
         deliveryLocationAddressTv.setText(chosenAddress);
@@ -430,9 +434,9 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
         deliveryLocationAddressTv.setVisibility(View.VISIBLE);
 
         String placeName;
-        if(addressMap.containsKey("addressMap")){
+        if (addressMap.containsKey("addressMap")) {
             placeName = (String) addressMap.get("addressMap");
-        }else{
+        } else {
             placeName = "Unknown location";
         }
         deliveryLocationPlaceNameTv.setText(placeName);
@@ -455,7 +459,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -463,7 +466,6 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
             locationRequester.resumeLocationUpdates();
         }
     }
-
 
     @Override
     protected void onPause() {
@@ -473,22 +475,20 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
         }
     }
 
+    private void dismissProgressDialog() {
 
-    private void dismissProgressDialog(){
-
-        if(progressDialogFragment != null && progressDialogFragment.isVisible()){
+        if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
             progressDialogFragment.dismiss();
 
         }
     }
 
-
     @Override
     public void update(Observable o, Object arg) {
 
-        if(arg instanceof Integer){
+        if (arg instanceof Integer) {
 
-            switch ((int) arg){
+            switch ((int) arg) {
 
                 case DeliveryModel.DELIVERY_DRIVERS_NOTIFIED:
 
@@ -498,12 +498,12 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     break;
 
-                   case DeliveryModel.DELIVERY_DRIVER_ACCEPTED_DELIVERY:
+                case DeliveryModel.DELIVERY_DRIVER_ACCEPTED_DELIVERY:
 
 
                     break;
 
-                    case DeliveryModel.DRIVER_DELIVERY_REQUEST_ACCEPTED:
+                case DeliveryModel.DRIVER_DELIVERY_REQUEST_ACCEPTED:
 
 
 //                        dismissProgressDialog();
@@ -513,27 +513,26 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     break;
 
-                 case DeliveryModel.DELIVERY_STARTED:
+                case DeliveryModel.DELIVERY_STARTED:
 
-                     dismissProgressDialog();
+                    dismissProgressDialog();
 
-                     finish();
+                    finish();
 
-                        startActivity(new Intent(this, CustomerDeliveryMapActivity.class)
-                                .putExtra("delivery",currentDelivery));
+                    startActivity(new Intent(this, CustomerDeliveryMapActivity.class)
+                            .putExtra("delivery", currentDelivery));
 
                     break;
 
 
             }
 
-        }else if(arg instanceof Delivery.InProgressDelivery){
+        } else if (arg instanceof Delivery.InProgressDelivery) {
 
 
+        } else if (arg instanceof Map) {
 
-        }else if(arg instanceof Map){
-
-            final Map<Integer,Object> resultMap = (Map<Integer,Object>)arg;
+            final Map<Integer, Object> resultMap = (Map<Integer, Object>) arg;
 
             final int key = resultMap.keySet().iterator().next();
 
@@ -548,37 +547,37 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
                     break;
 
-            case DeliveryModel.DRIVER_DELIVERY_REQUEST:
+                case DeliveryModel.DRIVER_DELIVERY_REQUEST:
 
-                final String driverID = (String) resultMap.get(key);
+                    final String driverID = (String) resultMap.get(key);
 
-            dismissProgressDialog();
+                    dismissProgressDialog();
 
-            DeliveryDriverInfoFragment.newInstance(driverID,
-                    new DeliveryDriverInfoFragment.DeliveryListener() {
-                        @Override
-                        public void startDelivery() {
+                    DeliveryDriverInfoFragment.newInstance(driverID,
+                            new DeliveryDriverInfoFragment.DeliveryListener() {
+                                @Override
+                                public void startDelivery() {
 
-                            model.acceptDriverRequest();
+                                    model.acceptDriverRequest();
 
 //                            DriverDeliveryMapActivity
 
-                            Toast.makeText(DeliveryLocationMapActivity.this,
-                                    "Delivery Started", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DeliveryLocationMapActivity.this,
+                                            "Delivery Started", Toast.LENGTH_SHORT).show();
 
-                        }
+                                }
 
-                        @Override
-                        public void cancelDelivery() {
+                                @Override
+                                public void cancelDelivery() {
 
-                            model.refuseDriverRequest();
+                                    model.refuseDriverRequest();
 
-                            Toast.makeText(DeliveryLocationMapActivity.this,
-                                    "Delivery Cancelled", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DeliveryLocationMapActivity.this,
+                                            "Delivery Cancelled", Toast.LENGTH_SHORT).show();
 
 
-                        }
-                    }).show(getSupportFragmentManager(),"DeliveryDriverInfo");
+                                }
+                            }).show(getSupportFragmentManager(), "DeliveryDriverInfo");
 
                     break;
 
@@ -587,28 +586,11 @@ public class DeliveryLocationMapActivity extends AppCompatActivity implements On
 
     }
 
-    public static void main(String[] args){
-
-        final List<String> ids = new ArrayList<>();
-
-        for(int i=0;i < 25;i++){
-            ids.add("text");
-        }
-
-        for (int i = 0; i < ids.size(); i += 10) {
-
-            System.out.println("size: "+ids.subList(i, Math.min(ids.size(),i+10)).size());
-
-        }
-
-    }
-
-
     @Override
     protected void onDestroy() {
 
 
-        if(deliveryAcceptanceListener!=null){
+        if (deliveryAcceptanceListener != null) {
             deliveryAcceptanceListener.remove();
         }
         super.onDestroy();

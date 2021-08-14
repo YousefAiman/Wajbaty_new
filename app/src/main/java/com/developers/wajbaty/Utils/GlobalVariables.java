@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class GlobalVariables {
 
-//    private static GlobalVariables instance;
+    //    private static GlobalVariables instance;
     private static String currentRestaurantId;
     private static boolean wifiIsOn;
     private static Map<String, Integer> messagesNotificationMap;

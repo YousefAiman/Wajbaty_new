@@ -3,21 +3,23 @@
 
     <group android:checkableBehavior="single">
 
+
+        <item android:id="@+id/show_restaurant_action"
+            android:title="Restaurant"
+            android:enabled="true"
+            android:checked="true"
+            android:icon="@drawable/chef_hat_icon"/>
+
+        <item android:id="@+id/show_orders_action"
+            android:title="Orders"
+            android:enabled="true"
+            android:icon="@drawable/ic_orders"/>
+
     <item android:id="@+id/show_Messages_action"
         android:title="Messages"
         android:enabled="true"
         android:icon="@drawable/messages_icon"/>
 
-    <item android:id="@+id/show_restaurant_action"
-        android:title="Restaurant"
-        android:enabled="true"
-        android:checked="true"
-        android:icon="@drawable/chef_hat_icon"/>
-
-    <item android:id="@+id/show_orders_action"
-        android:title="Orders"
-        android:enabled="true"
-        android:icon="@drawable/ic_orders"/>
 
     </group>
 

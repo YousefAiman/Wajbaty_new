@@ -2,12 +2,6 @@ package com.developers.wajbaty.PartneredRestaurant.Fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,24 +9,25 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Adapters.RestaurantOrdersAdapter;
-import com.developers.wajbaty.Models.MenuItem;
 import com.developers.wajbaty.Models.RestaurantOrder;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantOrderActivity;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
 
-public class RestaurantOrdersFragment extends Fragment implements RestaurantOrdersAdapter.RestaurantsOrdersListener{
+public class RestaurantOrdersFragment extends Fragment implements RestaurantOrdersAdapter.RestaurantsOrdersListener {
 
     private static final int ORDER_PAGE_LIMIT = 10;
 
@@ -77,12 +72,12 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
         }
 
         restaurantOrders = new ArrayList<>();
-        adapter = new RestaurantOrdersAdapter(restaurantOrders,this);
+        adapter = new RestaurantOrdersAdapter(restaurantOrders, this);
 
         mainQuery = FirebaseFirestore.getInstance().collection("PartneredRestaurant")
                 .document(GlobalVariables.getCurrentRestaurantId())
                 .collection("MealsOrders")
-                .whereEqualTo("status",RestaurantOrder.TYPE_PENDING)
+                .whereEqualTo("status", RestaurantOrder.TYPE_PENDING)
                 .orderBy("orderTimeInMillis", Query.Direction.DESCENDING)
                 .limit(ORDER_PAGE_LIMIT);
 
@@ -91,7 +86,7 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view =  inflater.inflate(R.layout.fragment_restaurant_orders, container, false);
+        View view = inflater.inflate(R.layout.fragment_restaurant_orders, container, false);
 
         restaurantOrdersRv = view.findViewById(R.id.restaurantOrdersRv);
         restaurantOrdersProgressBar = view.findViewById(R.id.restaurantOrdersProgressBar);
@@ -105,14 +100,14 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Log.d("ttt","GlobalVariables.getCurrentRestaurantId(): "+GlobalVariables.getCurrentRestaurantId());
+        Log.d("ttt", "GlobalVariables.getCurrentRestaurantId(): " + GlobalVariables.getCurrentRestaurantId());
 
         getRestaurantOrders(true);
 
     }
 
 
-    private void getRestaurantOrders(boolean isInitial){
+    private void getRestaurantOrders(boolean isInitial) {
 
         showProgressBar();
 
@@ -124,10 +119,10 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
 
         currentQuery.get().addOnSuccessListener(snapshots -> {
 
-            Log.d("ttt","onsucess");
+            Log.d("ttt", "onsucess");
             if (!snapshots.isEmpty()) {
 
-                Log.d("ttt","!snapshots.isEmpty()");
+                Log.d("ttt", "!snapshots.isEmpty()");
                 lastDocSnapshot = snapshots.getDocuments().get(snapshots.size() - 1);
 
                 if (isInitial) {
@@ -135,8 +130,8 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
                 } else {
                     restaurantOrders.addAll(restaurantOrders.size() - 1, snapshots.toObjects(RestaurantOrder.class));
                 }
-            }else{
-                Log.d("ttt","snapshots.isEmpty()");
+            } else {
+                Log.d("ttt", "snapshots.isEmpty()");
             }
         }).addOnCompleteListener(task -> {
 
@@ -145,38 +140,38 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
                 if (isInitial) {
 
                     if (!restaurantOrders.isEmpty()) {
-                        Log.d("ttt","isInitial !restaurantOrders.isEmpty()");
+                        Log.d("ttt", "isInitial !restaurantOrders.isEmpty()");
                         adapter.notifyDataSetChanged();
 
                         if (restaurantOrders.size() == ORDER_PAGE_LIMIT && scrollListener == null) {
                             restaurantOrdersRv.addOnScrollListener(scrollListener = new ScrollListener());
                         }
 
-                    }else{
-                        Log.d("ttt","isInitial restaurantOrders.isEmpty()");
+                    } else {
+                        Log.d("ttt", "isInitial restaurantOrders.isEmpty()");
                     }
                 } else {
 
                     if (!task.getResult().isEmpty()) {
-                        Log.d("ttt","not initial !restaurantOrders.isEmpty()");
+                        Log.d("ttt", "not initial !restaurantOrders.isEmpty()");
                         int size = task.getResult().size();
 
                         adapter.notifyItemRangeInserted(
-                                restaurantOrders.size() - size,size);
+                                restaurantOrders.size() - size, size);
 
                         if (task.getResult().size() < ORDER_PAGE_LIMIT && scrollListener != null) {
                             restaurantOrdersRv.removeOnScrollListener(scrollListener);
                             scrollListener = null;
                         }
-                    }else{
-                        Log.d("ttt","not initial restaurantOrders.isEmpty()");
+                    } else {
+                        Log.d("ttt", "not initial restaurantOrders.isEmpty()");
                     }
                 }
             }
 
-            if(restaurantOrders.isEmpty() && restaurantOrdersEmptyTv.getVisibility() == View.GONE){
+            if (restaurantOrders.isEmpty() && restaurantOrdersEmptyTv.getVisibility() == View.GONE) {
                 restaurantOrdersEmptyTv.setVisibility(View.VISIBLE);
-            }else if(!restaurantOrders.isEmpty() && restaurantOrdersEmptyTv.getVisibility() == View.VISIBLE){
+            } else if (!restaurantOrders.isEmpty() && restaurantOrdersEmptyTv.getVisibility() == View.VISIBLE) {
                 restaurantOrdersEmptyTv.setVisibility(View.GONE);
             }
 
@@ -191,7 +186,6 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
         });
 
 
-
     }
 
 
@@ -199,7 +193,21 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
     public void onRestaurantOrderClicked(int position) {
 
         startActivity(new Intent(requireContext(), RestaurantOrderActivity.class)
-        .putExtra("restaurantOrder",restaurantOrders.get(position)));
+                .putExtra("restaurantOrder", restaurantOrders.get(position)));
+
+    }
+
+    private void hideProgressbar() {
+        if (restaurantOrdersProgressBar.getVisibility() == View.VISIBLE) {
+            restaurantOrdersProgressBar.setVisibility(View.GONE);
+        }
+    }
+
+    private void showProgressBar() {
+
+        if (restaurantOrdersProgressBar.getVisibility() == View.GONE) {
+            restaurantOrdersProgressBar.setVisibility(View.VISIBLE);
+        }
 
     }
 
@@ -217,20 +225,6 @@ public class RestaurantOrdersFragment extends Fragment implements RestaurantOrde
 
             }
         }
-    }
-
-    private void hideProgressbar(){
-        if(restaurantOrdersProgressBar.getVisibility() == View.VISIBLE){
-            restaurantOrdersProgressBar.setVisibility(View.GONE);
-        }
-    }
-
-    private void showProgressBar(){
-
-        if(restaurantOrdersProgressBar.getVisibility() == View.GONE){
-            restaurantOrdersProgressBar.setVisibility(View.VISIBLE);
-        }
-
     }
 
 

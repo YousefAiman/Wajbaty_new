@@ -2,13 +2,19 @@ package com.developers.wajbaty.Customer.Fragments;
 
 import android.Manifest;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -22,50 +28,31 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.IBinder;
-import android.os.Parcelable;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.developers.wajbaty.Adapters.NearbyRestaurantsAdapter;
 import com.developers.wajbaty.Adapters.NearbySearchAdapter;
-import com.developers.wajbaty.DeliveryDriver.Activities.DriverDeliveryMapActivity;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
-import com.developers.wajbaty.Models.MenuItem;
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.Models.RestaurantSearchResult;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantActivity;
-import com.developers.wajbaty.PartneredRestaurant.Fragments.RestaurantMenuFragment;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Services.LocationService;
 import com.developers.wajbaty.Utils.GeocoderUtil;
+import com.developers.wajbaty.Utils.LocationListenerUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
-import com.firebase.geofire.core.GeoHash;
-import com.firebase.geofire.core.GeoHashQuery;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.android.material.slider.Slider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -74,9 +61,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -86,10 +70,10 @@ public class NearbyRestaurantsFragment extends Fragment implements
         NearbyRestaurantsAdapter.NearbyRestaurantsListener,
         LocationRequester.LocationRequestAction,
         GeocoderUtil.GeocoderResultListener,
-        View.OnClickListener ,
+        View.OnClickListener,
         SearchView.OnQueryTextListener,
         NearbySearchAdapter.NearbySearchListener,
-        LocationService.LocationChangeObserver{
+        LocationService.LocationChangeObserver {
 
     //constants
     private static final double radius = 10 * 1000;
@@ -100,7 +84,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
     private GoogleMap mMap;
 
     //views
-    private RecyclerView nearbyRestaurantsRv,nearbyRestaurantsSearchRv;
+    private RecyclerView nearbyRestaurantsRv, nearbyRestaurantsSearchRv;
     private ImageView nearbyRestaurantsDirectionsIv;
     private SearchView nearbyRestaurantsSv;
     private ImageButton nearbyCurrentLocationBtn;
@@ -133,6 +117,8 @@ public class NearbyRestaurantsFragment extends Fragment implements
     private List<GeoQueryBounds> geoQueryBounds;
     private GeoLocation center;
     private ServiceConnection serviceConnection;
+
+    private Intent service;
 
 //    //directions
 //    private List<Marker> markers;
@@ -173,13 +159,13 @@ public class NearbyRestaurantsFragment extends Fragment implements
         nearbyRestaurants = new ArrayList<>();
 
 
-        layoutManager = new LinearLayoutManager(requireContext(),RecyclerView.HORIZONTAL,false);
+        layoutManager = new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false);
 
         nearbyAdapter = new NearbyRestaurantsAdapter(nearbyRestaurants,
                 this, currentLocation, requireContext(), layoutManager);
 
         searchResults = new ArrayList<>();
-        searchAdapter = new NearbySearchAdapter(searchResults,this);
+        searchAdapter = new NearbySearchAdapter(searchResults, this, requireContext());
 //        requestPermissionLauncher =
 //                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
 //                    if (isGranted) {
@@ -277,11 +263,11 @@ public class NearbyRestaurantsFragment extends Fragment implements
             mMap.setMyLocationEnabled(true);
             initializeLocationRequester();
             bindToLocationService();
-        }else{
+        } else {
             ActivityResultLauncher<String> requestPermissionLauncher =
                     registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                             granted -> {
-                                if(granted){
+                                if (granted) {
                                     mMap.setMyLocationEnabled(true);
                                     initializeLocationRequester();
                                     bindToLocationService();
@@ -333,11 +319,11 @@ public class NearbyRestaurantsFragment extends Fragment implements
     @Override
     public void reSelectRestaurant(int position) {
 
-        final LatLng restaurantLatLng =
-                new LatLng(nearbyRestaurants.get(position).getLat(),
-                        nearbyRestaurants.get(position).getLng());
+        final LatLng restaurantLatLng = new LatLng(nearbyRestaurants.get(position).getLat(),
+                nearbyRestaurants.get(position).getLng());
 
-        if (!mMap.getCameraPosition().target.equals(restaurantLatLng)) {
+        if (mMap.getCameraPosition().target.latitude != restaurantLatLng.latitude
+                || mMap.getCameraPosition().target.longitude != restaurantLatLng.longitude) {
 
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(restaurantLatLng, 20.0f));
 
@@ -378,7 +364,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
     @Override
     public void locationFetched(LatLng latLng) {
 
-        if(currentLocation == null){
+        if (currentLocation == null) {
             currentLocation = new Location("currentLocation");
             GeocoderUtil.getLocationAddress(requireContext(), latLng, this);
         }
@@ -421,7 +407,6 @@ public class NearbyRestaurantsFragment extends Fragment implements
     }
 
 
-
     @Override
     public void addressFetched(Map<String, Object> addressMap) {
 
@@ -438,7 +423,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
     private void fetchNearbyRestaurants(String countryCode) {
 
         nearbyQuery = FirebaseFirestore.getInstance().collection("PartneredRestaurant")
-                .whereEqualTo("countryCode",countryCode)
+                .whereEqualTo("countryCode", countryCode)
                 .orderBy("geohash").limit(NEARBY_PAGE_LIMIT);
 
 
@@ -468,7 +453,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
             tasks.add(query.get());
         }
 
-        if(!tasks.isEmpty()){
+        if (!tasks.isEmpty()) {
 
             Tasks.whenAllComplete(tasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
                 final int previousSize = nearbyRestaurants.size();
@@ -548,7 +533,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
                     Log.d("ttt", "failed to get geo task: " + e.getMessage());
                 }
             });
-        }else{
+        } else {
             isLoadingItems = false;
 
             dismissProgressDialog();
@@ -587,7 +572,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == nearbyRestaurantsDirectionsIv.getId()){
+        if (v.getId() == nearbyRestaurantsDirectionsIv.getId()) {
 
 //            if(currentMapMarker!=null){
 //                if(locationRequester == null){
@@ -599,11 +584,11 @@ public class NearbyRestaurantsFragment extends Fragment implements
 //                }
 //            }
 
-        }else if(v.getId() == nearbyRestaurantsSv.getId()){
+        } else if (v.getId() == nearbyRestaurantsSv.getId()) {
 
             nearbyRestaurantsSv.onActionViewExpanded();
 
-        }else if(v.getId() == nearbyCurrentLocationBtn.getId()){
+        } else if (v.getId() == nearbyCurrentLocationBtn.getId()) {
 
             zoomOnCurrentLocation();
 
@@ -616,7 +601,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
         showProgressDialog();
 
 
-        if(!searchResults.isEmpty()){
+        if (!searchResults.isEmpty()) {
             searchResults.clear();
             searchAdapter.notifyDataSetChanged();
         }
@@ -624,34 +609,37 @@ public class NearbyRestaurantsFragment extends Fragment implements
         query = query.toLowerCase();
 
 
-        for(int i = 0;i < nearbyRestaurants.size();i++){
+        for (int i = 0; i < nearbyRestaurants.size(); i++) {
 
             final PartneredRestaurant.NearbyPartneredRestaurant restaurant = nearbyRestaurants.get(i);
 
-            if(restaurant.getName().equalsIgnoreCase(query) ||
+            if (restaurant.getName().equalsIgnoreCase(query) ||
                     restaurant.getName().toLowerCase().contains(query) ||
-                    query.contains(restaurant.getName().toLowerCase())){
+                    query.contains(restaurant.getName().toLowerCase())) {
 
-                    final Location location = new Location(restaurant.getID());
-                    location.setLatitude(restaurant.getLat());
-                    location.setLongitude(restaurant.getLng());
+                final Location location = new Location(restaurant.getID());
+                location.setLatitude(restaurant.getLat());
+                location.setLongitude(restaurant.getLng());
 
-                    double distance = location.distanceTo(currentLocation);
-                    String distanceFormatted;
-                    if (distance >= 1000) {
-                        distanceFormatted =  Math.round(distance / 1000) + "km ";
-                    } else {
-                        distanceFormatted =  Math.round(distance) + "m ";
-                    }
+                double distance = location.distanceTo(currentLocation);
+                String distanceFormatted;
+                if (distance >= 1000) {
+                    distanceFormatted = Math.round(distance / 1000) + "km ";
+                } else {
+                    distanceFormatted = Math.round(distance) + "m ";
+                }
 
-                    RestaurantSearchResult searchResult = new RestaurantSearchResult(
-                            restaurant.getID(),
-                            restaurant.getMainImage(),
-                            restaurant.getName(),
-                            distanceFormatted
-                    );
+                RestaurantSearchResult searchResult = new RestaurantSearchResult(
+                        restaurant.getID(),
+                        restaurant.getMainImage(),
+                        restaurant.getName(),
+                        distanceFormatted,
+                        restaurant.getGeohash(),
+                        restaurant.getLat(),
+                        restaurant.getLng()
+                );
 
-                    searchResults.add(searchResult);
+                searchResults.add(searchResult);
             }
         }
 
@@ -665,9 +653,9 @@ public class NearbyRestaurantsFragment extends Fragment implements
         return false;
     }
 
-    private void searchForRestaurant(String name){
+    private void searchForRestaurant(String name) {
 
-        final List<String> splitName  = Arrays.asList(name.split(" "));
+        final List<String> splitName = Arrays.asList(name.split(" "));
 
         Query query = FirebaseFirestore.getInstance().collection("PartneredRestaurant")
                 .whereEqualTo("countryCode", addressMap.get("countryCode"))
@@ -679,7 +667,7 @@ public class NearbyRestaurantsFragment extends Fragment implements
 
         } else if (splitName.size() <= 10) {
 
-            query = query.whereArrayContainsAny("keyWords",splitName);
+            query = query.whereArrayContainsAny("keyWords", splitName);
 
         } else {
 
@@ -740,18 +728,19 @@ public class NearbyRestaurantsFragment extends Fragment implements
 //                            searchAdapter.notifyDataSetChanged();
 //                        }
 
-                        outer: for(DocumentSnapshot snapshot:driverTask.getResult()){
+                        outer:
+                        for (DocumentSnapshot snapshot : driverTask.getResult()) {
 
-                            if(!searchResults.isEmpty()){
-                                for(RestaurantSearchResult result:searchResults){
-                                    if(result.getRestaurantID().equals(snapshot.getId())){
+                            if (!searchResults.isEmpty()) {
+                                for (RestaurantSearchResult result : searchResults) {
+                                    if (result.getRestaurantID().equals(snapshot.getId())) {
                                         continue outer;
                                     }
                                 }
                             }
 
-                            final double lat= snapshot.getDouble("lat"),
-                            lng= snapshot.getDouble("lng");
+                            final double lat = snapshot.getDouble("lat"),
+                                    lng = snapshot.getDouble("lng");
 
                             final Location location = new Location(snapshot.getId());
                             location.setLatitude(lat);
@@ -760,22 +749,25 @@ public class NearbyRestaurantsFragment extends Fragment implements
                             double distance = location.distanceTo(currentLocation);
                             String distanceFormatted;
                             if (distance >= 1000) {
-                                distanceFormatted =  Math.round(distance / 1000) + "km ";
+                                distanceFormatted = Math.round(distance / 1000) + "km ";
                             } else {
-                                distanceFormatted =  Math.round(distance) + "m ";
+                                distanceFormatted = Math.round(distance) + "m ";
                             }
 
                             RestaurantSearchResult searchResult = new RestaurantSearchResult(
-                              snapshot.getId(),
+                                    snapshot.getId(),
                                     snapshot.getString("mainImage"),
                                     snapshot.getString("name"),
-                                    distanceFormatted
+                                    distanceFormatted,
+                                    snapshot.getString("geohash"),
+                                    snapshot.getDouble("lat"),
+                                    snapshot.getDouble("lng")
                             );
 
                             searchResults.add(searchResult);
                         }
 
-                        if(nearbyRestaurantsSearchRv.getVisibility() == View.GONE){
+                        if (nearbyRestaurantsSearchRv.getVisibility() == View.GONE) {
                             nearbyRestaurantsSearchRv.setVisibility(View.VISIBLE);
                         }
 
@@ -792,8 +784,8 @@ public class NearbyRestaurantsFragment extends Fragment implements
                     }
                 }
 
-                if(!searchResults.isEmpty()){
-                    if(nearbyRestaurantsSearchRv.getVisibility() == View.GONE){
+                if (!searchResults.isEmpty()) {
+                    if (nearbyRestaurantsSearchRv.getVisibility() == View.GONE) {
                         nearbyRestaurantsSearchRv.setVisibility(View.VISIBLE);
                     }
                     searchAdapter.notifyDataSetChanged();
@@ -805,8 +797,8 @@ public class NearbyRestaurantsFragment extends Fragment implements
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                if(!searchResults.isEmpty()){
-                    if(nearbyRestaurantsSearchRv.getVisibility() == View.GONE){
+                if (!searchResults.isEmpty()) {
+                    if (nearbyRestaurantsSearchRv.getVisibility() == View.GONE) {
                         nearbyRestaurantsSearchRv.setVisibility(View.VISIBLE);
                     }
                     searchAdapter.notifyDataSetChanged();
@@ -820,15 +812,15 @@ public class NearbyRestaurantsFragment extends Fragment implements
 
     }
 
-    private void zoomOnCurrentLocation(){
+    private void zoomOnCurrentLocation() {
 
-        if(currentLocation != null){
+        if (currentLocation != null) {
 
             LatLng currentLatLng =
                     new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
 
 
-            if(!mMap.getCameraPosition().target.equals(currentLatLng)){
+            if (!mMap.getCameraPosition().target.equals(currentLatLng)) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18.0f));
             }
         }
@@ -839,60 +831,85 @@ public class NearbyRestaurantsFragment extends Fragment implements
 
         hideSearchList();
 
-        if(position < searchResults.size()){
+        if (position < searchResults.size()) {
             RestaurantSearchResult searchResult = searchResults.get(position);
-            for(PartneredRestaurant.NearbyPartneredRestaurant restaurant: nearbyRestaurants){
-                if(restaurant.getID().equals(searchResult.getRestaurantID())){
-
-
-
+            for (int i = 0; i < nearbyRestaurants.size(); i++) {
+                PartneredRestaurant.NearbyPartneredRestaurant restaurant = nearbyRestaurants.get(i);
+                if (restaurant.getID().equals(searchResult.getRestaurantID())) {
+                    selectRestaurant(i);
+                    nearbyRestaurantsRv.scrollToPosition(i);
                     return;
                 }
             }
+
+            PartneredRestaurant.NearbyPartneredRestaurant nearbyPartneredRestaurant =
+                    new PartneredRestaurant.NearbyPartneredRestaurant(
+                            searchResult.getRestaurantID(),
+                            searchResult.getRestaurantName(),
+                            searchResult.getRestaurantImageURL(),
+                            searchResult.getGeohash(),
+                            searchResult.getLat(),
+                            searchResult.getLng()
+                    );
+
+            nearbyRestaurants.add(nearbyPartneredRestaurant);
+            nearbyAdapter.notifyItemInserted(nearbyRestaurants.size() - 1);
+            nearbyRestaurantsRv.scrollToPosition(nearbyRestaurants.size() - 1);
+
         }
+
 
     }
 
-    private void hideSearchList(){
-        if(nearbyRestaurantsSearchRv.getVisibility() == View.VISIBLE){
+    private void hideSearchList() {
+        if (nearbyRestaurantsSearchRv.getVisibility() == View.VISIBLE) {
             nearbyRestaurantsSearchRv.setVisibility(View.GONE);
         }
 
-        if(!searchResults.isEmpty()){
+        if (!searchResults.isEmpty()) {
             searchResults.clear();
             searchAdapter.notifyDataSetChanged();
         }
     }
 
-    private void bindToLocationService(){
+    private void bindToLocationService() {
 
-        Intent service = new Intent(requireContext(), LocationService.class);
-        serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
+        if (!LocationListenerUtil.isLocationServiceRunning(requireContext())) {
 
-                Log.d("ttt","onServiceConnected");
-                LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
-                LocationService locationService = locationBinder.getService();
-                locationService.addObserver(NearbyRestaurantsFragment.this);
+            service = new Intent(requireContext(), LocationService.class);
+            serviceConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
 
-            }
+                    Log.d("ttt", "onServiceConnected");
+                    LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
+                    LocationService locationService = locationBinder.getService();
+                    locationService.addObserver(NearbyRestaurantsFragment.this);
 
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.d("ttt","onServiceDisconnected");
-            }
-        };
+                }
 
-        requireContext().bindService(service,serviceConnection , Context.BIND_AUTO_CREATE);
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    Log.d("ttt", "onServiceDisconnected");
+                }
+            };
+
+            requireContext().bindService(service, serviceConnection, 0);
+        }
+
 
     }
 
-    private void unBindService(){
-        if(serviceConnection != null){
+    private void unBindService() {
+        if (serviceConnection != null) {
             requireContext().unbindService(serviceConnection);
             serviceConnection = null;
         }
+
+        if (service != null) {
+            requireContext().stopService(service);
+        }
+
     }
 
     @Override
@@ -905,7 +922,34 @@ public class NearbyRestaurantsFragment extends Fragment implements
 //                location.getLongitude())));
 
 
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (locationRequester != null) {
+            locationRequester.resumeLocationUpdates();
+        }
+
+        if (serviceConnection == null) {
+            bindToLocationService();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unBindService();
+
+        if (locationRequester != null) {
+            locationRequester.stopLocationUpdates();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        unBindService();
+        super.onDestroy();
     }
 
     private class ScrollListener extends RecyclerView.OnScrollListener {
@@ -921,34 +965,5 @@ public class NearbyRestaurantsFragment extends Fragment implements
 
             }
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (locationRequester != null) {
-            locationRequester.resumeLocationUpdates();
-        }
-
-        if(serviceConnection == null){
-            bindToLocationService();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        unBindService();
-
-        if (locationRequester != null) {
-            locationRequester.stopLocationUpdates();
-        }
-    }
-
-
-    @Override
-    public void onDestroy() {
-        unBindService();
-        super.onDestroy();
     }
 }

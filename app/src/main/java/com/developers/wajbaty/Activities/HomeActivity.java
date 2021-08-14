@@ -1,22 +1,5 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.view.GravityCompat;
-import androidx.core.view.MenuItemCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,14 +20,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
+
 import com.developers.wajbaty.BuildConfig;
 import com.developers.wajbaty.Customer.Activities.CartActivity;
 import com.developers.wajbaty.Customer.Activities.CustomerDeliveryMapActivity;
 import com.developers.wajbaty.Customer.Activities.CustomerProfileActivity;
-import com.developers.wajbaty.Customer.Activities.DeliveryLocationMapActivity;
 import com.developers.wajbaty.Customer.Activities.FavoriteActivity;
 import com.developers.wajbaty.Customer.Fragments.DeliveryDriverInfoFragment;
-import com.developers.wajbaty.Customer.Fragments.DeliveryDriverRatingFragment;
 import com.developers.wajbaty.Customer.Fragments.HomeFragment;
 import com.developers.wajbaty.Customer.Fragments.MenuItemsFragment;
 import com.developers.wajbaty.Customer.Fragments.NearbyRestaurantsFragment;
@@ -63,21 +54,16 @@ import com.developers.wajbaty.Services.MyFirebaseMessaging;
 import com.developers.wajbaty.Utils.BadgeUtil;
 import com.developers.wajbaty.Utils.GlobalVariables;
 import com.developers.wajbaty.Utils.LocationListenerUtil;
-import com.developers.wajbaty.Utils.LocationRequester;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.badge.BadgeDrawable;
-import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -86,7 +72,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -100,14 +85,8 @@ import java.util.Observer;
 public class HomeActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener,
         NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener,
-//        LocationListenerUtil.LocationChangeObserver ,
-        LocationService.LocationChangeObserver,
-        Toolbar.OnMenuItemClickListener {
+        LocationService.LocationChangeObserver {
 
-    private static final int
-            REQUEST_CHECK_SETTINGS = 100,
-            REQUEST_LOCATION_PERMISSION = 10,
-            MIN_UPDATE_DISTANCE = 10;
 
     private Map<String, Object> addressMap;
     private long userType;
@@ -121,7 +100,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     private NavigationView homeNavigationView;
     private Button navigationLogoutBtn;
     private ImageView headerUserImageIv;
-    private TextView headerUsernameTv,notificationBadgeTv;
+    private TextView headerUsernameTv, notificationBadgeTv;
 
     // driver location
     private Location currentLocation;
@@ -129,35 +108,42 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     private DocumentReference userRef;
     private DocumentReference currentDriverDeliveryRef;
     private ListenerRegistration userSnapshotListener;
-//    private boolean requestingLocationUpdates;
-//    private LocationRequest locationRequest;
-//    private LocationCallback locationCallback;
 
     private Intent service;
 
     private ServiceConnection serviceConnection;
 
     private List<ListenerRegistration> snapshotListeners;
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Log.d("startupTime", "end time: " + System.currentTimeMillis());
+
         final Intent intent = getIntent();
 
-        if(intent!=null){
+        if (intent != null) {
 
             if (intent.hasExtra("addressMap")) {
                 addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
             }
 
             if (intent.hasExtra("userType")) {
-                userType = getIntent().getIntExtra("userType",0);
-                Log.d("ttt","userType: "+userType);
+                userType = getIntent().getIntExtra("userType", 0);
+                Log.d("ttt", "userType: " + userType);
 
             }
 
-        }else{
+        } else {
             finish();
             return;
         }
@@ -181,28 +167,29 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         if (userType == User.TYPE_CUSTOMER) {
 
 //            homeToolbar.inflateMenu(R.menu.customer_home_menu);
-            homeToolbar.setOnMenuItemClickListener(this);
-            replaceFragment(HomeFragment.newInstance(addressMap),"HomeFragment");
+            replaceFragment(HomeFragment.newInstance(addressMap), "HomeFragment");
             homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
 
             userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                    if(documentSnapshot.exists()){
+                    if (documentSnapshot.exists()) {
 
-                        if(documentSnapshot.contains("imageURL")){
+                        if (documentSnapshot.contains("imageURL")) {
                             String imageUrl = documentSnapshot.getString("imageURL");
 
-                            if(imageUrl!=null && !imageUrl.isEmpty()){
-                                Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
+                            if (imageUrl != null && !imageUrl.isEmpty()) {
+
+                                loadHeaderUserImage(imageUrl);
+
                             }
                         }
 
-                        if(documentSnapshot.contains("name")){
+                        if (documentSnapshot.contains("name")) {
                             String name = documentSnapshot.getString("name");
 
-                            if(name!=null && !name.isEmpty()){
+                            if (name != null && !name.isEmpty()) {
                                 headerUsernameTv.setText(name);
                             }
                         }
@@ -255,54 +242,56 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         } else if (userType == User.TYPE_DELIVERY) {
 
             userSnapshotListener = userRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-               private boolean isInitial = true;
-               private long currentStatus;
+                private boolean isInitial = true;
+                private long currentStatus;
+
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                    if(value!=null){
+                    if (value != null) {
 
-                        if(value.contains("currentDeliveryID")){
+                        if (value.contains("currentDeliveryID")) {
 
                             String currentDeliveryId = value.getString("currentDeliveryID");
 
-                            if(currentDeliveryId!=null && !currentDeliveryId.isEmpty()){
+                            if (currentDeliveryId != null && !currentDeliveryId.isEmpty()) {
                                 currentDriverDeliveryRef = FirebaseFirestore.getInstance()
-                                .collection("Deliveries").document(currentDeliveryId);
+                                        .collection("Deliveries").document(currentDeliveryId);
 
-                            }else{
+                            } else {
                                 currentDriverDeliveryRef = null;
                             }
 
-                        }else{
+                        } else {
 
                             currentDriverDeliveryRef = null;
 
                         }
 
-                        if(isInitial){
+                        if (isInitial) {
 
-                            if(value.contains("imageURL")){
+                            if (value.contains("imageURL")) {
                                 String imageUrl = value.getString("imageURL");
 
-                                if(imageUrl!=null && !imageUrl.isEmpty()){
-                                    Picasso.get().load(imageUrl).fit().centerCrop().into(headerUserImageIv);
+                                if (imageUrl != null && !imageUrl.isEmpty()) {
+
+                                    loadHeaderUserImage(imageUrl);
                                 }
                             }
-                            if(value.contains("name")){
+                            if (value.contains("name")) {
                                 String name = value.getString("name");
 
-                                if(name!=null && !name.isEmpty()){
+                                if (name != null && !name.isEmpty()) {
                                     headerUsernameTv.setText(name);
                                 }
                             }
 
-                            if(value.contains("status")){
+                            if (value.contains("status")) {
                                 currentStatus = value.getLong("status");
 
 
-                                if(currentStatus == DeliveryDriver.STATUS_AVAILABLE ||
-                                        currentStatus == DeliveryDriver.STATUS_DELIVERING){
+                                if (currentStatus == DeliveryDriver.STATUS_AVAILABLE ||
+                                        currentStatus == DeliveryDriver.STATUS_DELIVERING) {
                                     startLocationService();
                                 }
 //                                else if(status == DeliveryDriver.STATUS_UNAVAILABLE){
@@ -311,20 +300,20 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                             }
 
                             isInitial = false;
-                        }else{
+                        } else {
 
-                            if(value.contains("status")){
+                            if (value.contains("status")) {
                                 long status = value.getLong("status");
 
-                                if((status == DeliveryDriver.STATUS_AVAILABLE &&
-                                        currentStatus!= DeliveryDriver.STATUS_AVAILABLE)
+                                if ((status == DeliveryDriver.STATUS_AVAILABLE &&
+                                        currentStatus != DeliveryDriver.STATUS_AVAILABLE)
                                         || (status == DeliveryDriver.STATUS_DELIVERING &&
-                                        currentStatus != DeliveryDriver.STATUS_DELIVERING)){
+                                        currentStatus != DeliveryDriver.STATUS_DELIVERING)) {
 
                                     startLocationService();
 
-                                } else if(status == DeliveryDriver.STATUS_UNAVAILABLE
-                                        && currentStatus!= DeliveryDriver.STATUS_UNAVAILABLE){
+                                } else if (status == DeliveryDriver.STATUS_UNAVAILABLE
+                                        && currentStatus != DeliveryDriver.STATUS_UNAVAILABLE) {
                                     stopService();
                                 }
                                 currentStatus = status;
@@ -341,24 +330,36 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 //            checkAndRequestPermissions();
 
             homeBottomNavigationView.setSelectedItemId(R.id.show_deliveries_action);
-            replaceFragment(DriverDeliveriesFragment.newInstance(addressMap),"DriverDeliveriesFragment");
+            replaceFragment(DriverDeliveriesFragment.newInstance(addressMap), "DriverDeliveriesFragment");
 
 
-        }else{
+        } else {
 
             FirebaseFirestore.getInstance().collection("PartneredRestaurant")
                     .document(GlobalVariables.getCurrentRestaurantId())
                     .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot snapshot) {
-                    if(snapshot.exists()){
-                        Picasso.get().load(snapshot.getString("mainImage")).fit().centerCrop().into(headerUserImageIv);
+                    if (snapshot.exists()) {
+
+                        loadHeaderUserImage(snapshot.getString("mainImage"));
+
                         headerUsernameTv.setText(snapshot.getString("name"));
                     }
                 }
             });
 
         }
+
+    }
+
+    private void loadHeaderUserImage(String imageUrl) {
+
+        final CircularProgressDrawable progressDrawable = new CircularProgressDrawable(HomeActivity.this);
+        progressDrawable.setColorSchemeColors(getResources().getColor(R.color.orange));
+        progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+
+        Picasso.get().load(imageUrl).fit().centerCrop().placeholder(progressDrawable).into(headerUserImageIv);
 
     }
 
@@ -377,7 +378,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         headerUsernameTv = headerView.findViewById(R.id.headerUsernameTv);
 
 
-
 //        new int[homeBottomNavigationView];
 //
 //        BottomNavigationMenuView bottomNavigationViews = (BottomNavigationMenuView) homeBottomNavigationView[];
@@ -394,7 +394,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         int bottomMenu;
         int sideMenu;
 
-        int userTypeInt = ((Long)userType).intValue();
+        int userTypeInt = ((Long) userType).intValue();
         switch (userTypeInt) {
 
             default:
@@ -420,78 +420,19 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         homeNavigationView.inflateMenu(sideMenu);
 
-        notificationBadgeTv = (TextView)LayoutInflater.from(this).inflate(R.layout.badge_counter_layout,null);
+        notificationBadgeTv = (TextView) LayoutInflater.from(this).inflate(R.layout.badge_counter_layout, null);
         homeNavigationView.getMenu().findItem(R.id.show_notifications_action).setActionView(notificationBadgeTv);
 
 
-
     }
 
-    private void replaceFragment(Fragment fragment,String tag) {
+    private void replaceFragment(Fragment fragment, String tag) {
 
         getSupportFragmentManager().beginTransaction()
-                .replace(homeFrameLayout.getId(), fragment,tag).commit();
+                .replace(homeFrameLayout.getId(), fragment, tag).commit();
 
     }
 
-
-
-    private void checkAndRequestPermissions(){
-
-        boolean permissionsGranted;
-
-        @SuppressLint("InlinedApi") final String[] permissions = {
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        };
-
-
-        if (LocationRequester.areLocationPermissionsEnabled(this)) {
-
-//            LocationListenerUtil.getInstance().addLocationChangeObserver(this);
-            LocationListenerUtil.getInstance().startListening(this);
-
-
-//            checkLocationSettings();
-
-        } else {
-
-
-            ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-                    new ActivityResultCallback<Map<String, Boolean>>() {
-                        @Override
-                        public void onActivityResult(Map<String, Boolean> result) {
-
-                            boolean allAccepted = true;
-
-                            for (String permission : result.keySet()) {
-                                if (!result.get(permission)) {
-                                    allAccepted = false;
-                                    break;
-                                }
-                            }
-
-                            if (allAccepted) {
-//                                LocationListenerUtil.getInstance().addLocationChangeObserver(HomeActivity.this);
-                                LocationListenerUtil.getInstance().startListening(HomeActivity.this);
-                            }
-                        }
-                    });
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-
-                requestPermissionLauncher.launch(permissions);
-
-            }else{
-
-                requestPermissionLauncher.launch(new String[]{permissions[0],permissions[1]});
-
-            }
-
-        }
-
-    }
 
     private void setClickListeners() {
 
@@ -514,7 +455,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         } else if (itemId == R.id.show_Messages_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Messages_action) {
-                replaceFragment(new MessagesFragment(),"MessagesFragment");
+                replaceFragment(new MessagesFragment(), "MessagesFragment");
             }
 
             return true;
@@ -531,10 +472,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
         else if (itemId == R.id.show_home_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_home_action) {
-                replaceFragment(HomeFragment.newInstance(addressMap),"HomeFragment");
+                replaceFragment(HomeFragment.newInstance(addressMap), "HomeFragment");
                 return true;
             }
-        }else if (itemId == R.id.show_Menu_items_action) {
+        } else if (itemId == R.id.show_Menu_items_action) {
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_Menu_items_action) {
 
@@ -555,14 +496,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 if (addressMap.containsKey("adminArea")) {
                     region = (String) addressMap.get("adminArea");
                 } else if (addressMap.containsKey("region")) {
-                    region = (String)addressMap.get("region");
+                    region = (String) addressMap.get("region");
                 } else if (addressMap.containsKey("county")) {
-                    region = (String)addressMap.get("county");
+                    region = (String) addressMap.get("county");
                 } else if (addressMap.containsKey("city")) {
                     region = (String) addressMap.get("city");
                 }
 
-                replaceFragment(MenuItemsFragment.newInstance(region),"MenuItemsFragment");
+                replaceFragment(MenuItemsFragment.newInstance(region), "MenuItemsFragment");
 
                 return true;
             }
@@ -570,14 +511,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
 
             if (homeBottomNavigationView.getSelectedItemId() != R.id.show_map_action) {
-                replaceFragment(NearbyRestaurantsFragment.newInstance(addressMap),"NearbyRestaurantsFragment");
+                replaceFragment(NearbyRestaurantsFragment.newInstance(addressMap), "NearbyRestaurantsFragment");
                 return true;
             }
         } else if (itemId == R.id.show_deliveries_action) {
 
             if (userType == User.TYPE_DELIVERY && homeBottomNavigationView.getSelectedItemId() != R.id.show_deliveries_action) {
 
-                replaceFragment(DriverDeliveriesFragment.newInstance(addressMap),"DriverDeliveriesFragment");
+                replaceFragment(DriverDeliveriesFragment.newInstance(addressMap), "DriverDeliveriesFragment");
 
             }
 
@@ -587,8 +528,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             return true;
         } else if (itemId == R.id.show_orders_action) {
 
-            if(homeBottomNavigationView.getSelectedItemId() != R.id.show_orders_action){
-                replaceFragment(RestaurantOrdersFragment.newInstance("fdas","asda"),"ordersFragment");
+            if (homeBottomNavigationView.getSelectedItemId() != R.id.show_orders_action) {
+                replaceFragment(RestaurantOrdersFragment.newInstance("fdas", "asda"), "ordersFragment");
             }
 
             return true;
@@ -620,17 +561,20 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             startActivity(new Intent(this, NotificationsActivity.class));
 
             return true;
-        } else if (itemId == R.id.show_settings_action) {
-
-            return true;
-        } else if (itemId == R.id.show_about_us_action) {
+        }
+//        else if (itemId == R.id.show_settings_action) {
+//
+//            return true;
+//        }
+        else if (itemId == R.id.show_about_us_action) {
             closeDrawer();
             startActivity(new Intent(this, AboutUsActivity.class));
             return true;
-        } else if (itemId == R.id.show_privacy_policy_action) {
-
-            return true;
         }
+//        else if (itemId == R.id.show_privacy_policy_action) {
+//
+//            return true;
+//        }
 
         return false;
     }
@@ -649,19 +593,19 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             try {
                 stopService(new Intent(this, MyFirebaseMessaging.class));
 
-            }catch (SecurityException | IllegalStateException e){
-                if(e.getMessage()!=null){
-                    Log.d("ttt","can't stop serivce: "+e.getMessage());
+            } catch (SecurityException | IllegalStateException e) {
+                if (e.getMessage() != null) {
+                    Log.d("ttt", "can't stop serivce: " + e.getMessage());
                 }
             }
 
-            if(Build.VERSION.SDK_INT < 26 ){
+            if (Build.VERSION.SDK_INT < 26) {
                 BadgeUtil.clearBadge(this);
             }
 
             stopService();
 
-            startActivity(new Intent(this,WelcomeActivity.class)
+            startActivity(new Intent(this, WelcomeActivity.class)
                     .putExtra("addressMap", (Serializable) addressMap));
 
             finish();
@@ -687,28 +631,27 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
             final List<Fragment> fragmentList = getSupportFragmentManager().getFragments();
             String lastFragTag = null;
 
-            if(!fragmentList.isEmpty()){
-                lastFragTag =  fragmentList.get(fragmentList.size()-1).getTag();
+            if (!fragmentList.isEmpty()) {
+                lastFragTag = fragmentList.get(fragmentList.size() - 1).getTag();
             }
 
-            if(lastFragTag != null){
+            if (lastFragTag != null) {
 
-                if(userType == User.TYPE_CUSTOMER && !lastFragTag.equals("HomeFragment")){
-                    replaceFragment(HomeFragment.newInstance(addressMap),"HomeFragment");
+                if (userType == User.TYPE_CUSTOMER && !lastFragTag.equals("HomeFragment")) {
+                    replaceFragment(HomeFragment.newInstance(addressMap), "HomeFragment");
                     homeBottomNavigationView.setSelectedItemId(R.id.show_home_action);
-                }else if(userType == User.TYPE_DELIVERY && !lastFragTag.equals("DriverDeliveriesFragment")){
-                    replaceFragment(DriverDeliveriesFragment.newInstance(addressMap),"DriverDeliveriesFragment");
+                } else if (userType == User.TYPE_DELIVERY && !lastFragTag.equals("DriverDeliveriesFragment")) {
+                    replaceFragment(DriverDeliveriesFragment.newInstance(addressMap), "DriverDeliveriesFragment");
                     homeBottomNavigationView.setSelectedItemId(R.id.show_deliveries_action);
-                }
-                else if(userType == User.TYPE_ADMIN && !lastFragTag.equals("HomeFragment")){
+                } else if (userType == User.TYPE_ADMIN && !lastFragTag.equals("HomeFragment")) {
 
 
-                }else{
+                } else {
                     super.onBackPressed();
                 }
 
 
-            }else{
+            } else {
                 super.onBackPressed();
             }
 
@@ -864,12 +807,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     @Override
     public void notifyObservers(Location location) {
 
-                Log.d("ttt","lat: "+location.getLatitude()+" lng:"+
+        Log.d("ttt", "lat: " + location.getLatitude() + " lng:" +
                 location.getLongitude());
 
 
-        if(currentLocation == null){
-            Log.d("ttt","currentLocation == null");
+        if (currentLocation == null) {
+            Log.d("ttt", "currentLocation == null");
             currentGeoHash = GeoFireUtils.getGeoHashForLocation(
                     new GeoLocation(location.getLatitude(), location.getLongitude()));
         }
@@ -886,48 +829,48 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
         userRef.update(
                 "currentGeoPoint",
-                new GeoPoint( location.getLatitude(), location.getLongitude())).addOnSuccessListener(new OnSuccessListener<Void>() {
+                new GeoPoint(location.getLatitude(), location.getLongitude())).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
 
-                Log.d("ttt","updated driver location");
+                Log.d("ttt", "updated driver location");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                Log.d("ttt",e.getMessage());
+                Log.d("ttt", e.getMessage());
 
             }
         });
 
-        if(currentDriverDeliveryRef != null){
-            currentDriverDeliveryRef.update("lat",location.getLatitude(),
-                    "lng",location.getLongitude());
+        if (currentDriverDeliveryRef != null) {
+            currentDriverDeliveryRef.update("lat", location.getLatitude(),
+                    "lng", location.getLongitude());
         }
 
         String hash = GeoFireUtils.getGeoHashForLocation(
                 new GeoLocation(location.getLatitude(), location.getLongitude()));
 
-        Log.d("ttt","currentGeoHash: "+currentGeoHash);
-        Log.d("ttt","new hash: "+hash);
+        Log.d("ttt", "currentGeoHash: " + currentGeoHash);
+        Log.d("ttt", "new hash: " + hash);
 
 
-        if(!hash.equals(currentGeoHash)){
+        if (!hash.equals(currentGeoHash)) {
 
             currentGeoHash = hash;
 
-            userRef.update("geohash",hash).addOnSuccessListener(new OnSuccessListener<Void>() {
+            userRef.update("geohash", hash).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
 
-                    Log.d("ttt","updated driver geohash");
+                    Log.d("ttt", "updated driver geohash");
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
 
-                    Log.d("ttt",e.getMessage());
+                    Log.d("ttt", e.getMessage());
 
                 }
             });
@@ -942,85 +885,23 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
     protected void onDestroy() {
         super.onDestroy();
 
-        if(userSnapshotListener !=null){
+        if (userSnapshotListener != null) {
             userSnapshotListener.remove();
         }
 
-        if(snapshotListeners!=null && !snapshotListeners.isEmpty()){
-            for(ListenerRegistration listenerRegistration:snapshotListeners){
+        if (snapshotListeners != null && !snapshotListeners.isEmpty()) {
+            for (ListenerRegistration listenerRegistration : snapshotListeners) {
                 listenerRegistration.remove();
             }
         }
 
     }
 
+    private void startLocationService() {
 
+        if (!LocationListenerUtil.isLocationServiceRunning(this)) {
 
-
-//    public void createChannel() {
-//        if (Build.VERSION.SDK_INT >= 26) {
-//
-//            NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-//
-//                NotificationChannel channel = new NotificationChannel("com.getlocationbackground",
-//                        "Location Service", NotificationManager.IMPORTANCE_NONE);
-//
-//                channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-//
-//            manager.createNotificationChannel(channel);
-//
-//            Notification.Builder builder = new Notification.Builder(this,"com.getlocationbackground");
-//            Notification notification = builder.setOngoing(true).setContentTitle("This app is using your gps")
-//                    .setCategory(Notification.CATEGORY_SERVICE).build();
-//
-//            startForegroundService()
-//
-//        }
-//    }
-
-
-    //
-
-//    @Override
-//    public void onProviderDisabled(@NonNull String provider) {
-//
-//        Log.d("ttt","provider disabled: "+provider);
-//    }
-//
-//    @Override
-//    public void onProviderEnabled(@NonNull String provider) {
-//
-//        Log.d("ttt","provider enabled: "+provider);
-//
-//    }
-//
-//    @Override
-//    public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//        Log.d("ttt","status changed for provider: "+provider + " to: "+
-//                status);
-//
-//
-//    }
-
-    private boolean isServiceRunning(Class<?> serviceClass){
-
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-
-        for(ActivityManager.RunningServiceInfo serviceInfo:manager.getRunningServices(Integer.MAX_VALUE)){
-            if(serviceInfo.getClass().getName().equals(serviceClass.getName())){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void startLocationService(){
-
-        if(!isServiceRunning(LocationService.class)){
-
-             service = new Intent(this,LocationService.class);
+            service = new Intent(this, LocationService.class);
 
             startService(service);
 
@@ -1028,7 +909,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
 
-                    Log.d("ttt","onServiceConnected");
+                    Log.d("ttt", "onServiceConnected");
                     LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
                     LocationService locationService = locationBinder.getService();
                     locationService.addObserver(HomeActivity.this);
@@ -1037,74 +918,146 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    Log.d("ttt","onServiceDisconnected");
+                    Log.d("ttt", "onServiceDisconnected");
                 }
             };
 
-            bindService(service,serviceConnection ,0);
+            bindService(service, serviceConnection, 0);
 
         }
     }
 
-    private void stopService(){
+    private void stopService() {
 
 //        if(locationService!=null){
 //            locationService.stopForeground(true);
 //        }
 
-        if(serviceConnection!=null){
+        if (serviceConnection != null) {
             unbindService(serviceConnection);
             serviceConnection = null;
         }
 
-        if(service!=null){
+        if (service != null) {
             stopService(service);
         }
     }
 
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
+    private void listenToNotifications() {
 
-        if(item.getItemId() == R.id.search_action){
+        if (snapshotListeners == null)
+            snapshotListeners = new ArrayList<>();
+
+        snapshotListeners.add(userRef.collection("Notifications")
+                .whereEqualTo("seen", false)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    private int notificationCount = 0, messageNotificationCount = 0;
+                    private BadgeDrawable messageBadgeDrawable;
+
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (value == null)
+                            return;
+
+                        for (DocumentChange dc : value.getDocumentChanges()) {
+
+                            int type = 0;
+
+                            DocumentSnapshot documentSnapshot = dc.getDocument();
+                            if (documentSnapshot.contains("type")) {
+                                Long longType = documentSnapshot.getLong("type");
+                                if (longType != null) {
+                                    type = longType.intValue();
+                                }
+                            }
+
+                            switch (dc.getType()) {
+                                case ADDED:
+                                    notificationCount++;
+
+                                    if (type == Notification.TYPE_MESSAGE)
+                                        messageNotificationCount++;
+
+                                    break;
+                                case REMOVED:
+                                    notificationCount--;
+
+                                    if (type == Notification.TYPE_MESSAGE)
+                                        messageNotificationCount--;
+
+                                    break;
+                            }
 
 
+                            if (notificationCount > 0) {
 
-            return true;
-        }
+                                if (notificationBadgeTv.getVisibility() == View.INVISIBLE) {
+                                    notificationBadgeTv.setVisibility(View.VISIBLE);
+                                }
 
-        return false;
+                                notificationBadgeTv.setText(String.valueOf(notificationCount));
+
+                            } else {
+                                if (notificationBadgeTv.getVisibility() == View.VISIBLE) {
+                                    notificationBadgeTv.setVisibility(View.INVISIBLE);
+                                }
+                            }
+
+                            if (messageNotificationCount > 0) {
+
+                                if (messageBadgeDrawable == null) {
+                                    messageBadgeDrawable = homeBottomNavigationView.getOrCreateBadge(R.id.show_Messages_action);
+                                    messageBadgeDrawable.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.orange, null));
+                                }
+
+                                if (!messageBadgeDrawable.isVisible()) {
+                                    messageBadgeDrawable.setVisible(true);
+                                }
+                                messageBadgeDrawable.setNumber(messageNotificationCount);
+                            } else {
+                                if (messageBadgeDrawable != null && messageBadgeDrawable.isVisible()) {
+                                    messageBadgeDrawable.setVisible(false);
+                                }
+                            }
+//                            badgeDrawable.setVisible(count != 0);
+//                            badgeDrawable.setNumber(count);
+                        }
+
+                    }
+                }));
+
     }
 
-    public class DeliveryDriverRequestReceiver extends BroadcastReceiver{
+    public class DeliveryDriverRequestReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Log.d("ttt","DeliveryDriverRequestReceiver received");
+            Log.d("ttt", "DeliveryDriverRequestReceiver received");
 
-            if(intent.hasExtra("driverID") && intent.hasExtra("delivery")){
+            if (intent.hasExtra("driverID") && intent.hasExtra("delivery")) {
 
                 final String driverID = intent.getStringExtra("driverID");
-               final Delivery delivery = (Delivery) intent.getSerializableExtra("delivery");
+                final Delivery delivery = (Delivery) intent.getSerializableExtra("delivery");
 
-                if(driverID == null || driverID.isEmpty())
+                if (driverID == null || driverID.isEmpty())
                     return;
 
-                DeliveryModel model = new DeliveryModel(delivery,context);
+                DeliveryModel model = new DeliveryModel(delivery, context);
                 model.addObserver(new Observer() {
                     @Override
                     public void update(Observable o, Object arg) {
 
-                        if(arg instanceof Integer){
+                        if (arg instanceof Integer) {
 
-                            int result = (int)arg;
+                            int result = (int) arg;
 
-                            switch (result){
+                            switch (result) {
 
                                 case DeliveryModel.DELIVERY_STARTED:
 
-                                startActivity(new Intent(HomeActivity.this, CustomerDeliveryMapActivity.class)
-                                    .putExtra("delivery",delivery));
+                                    startActivity(new Intent(HomeActivity.this, CustomerDeliveryMapActivity.class)
+                                            .putExtra("delivery", delivery));
 
                                     break;
 
@@ -1113,6 +1066,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
 
                     }
                 });
+
+                if (getSupportFragmentManager().isDestroyed())
+                    return;
 
                 DeliveryDriverInfoFragment.newInstance(driverID,
                         new DeliveryDriverInfoFragment.DeliveryListener() {
@@ -1137,97 +1093,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationBarView
                                         "Delivery Cancelled", Toast.LENGTH_SHORT).show();
 
                             }
-                        }).show(getSupportFragmentManager(),"DeliveryDriverInfo");
+                        }).show(getSupportFragmentManager(), "DeliveryDriverInfo");
             }
 
 
-            Log.d("ttt","delivery driver request received from receiver");
+            Log.d("ttt", "delivery driver request received from receiver");
 
         }
-    }
-
-    private void listenToNotifications(){
-
-        if(snapshotListeners == null)
-            snapshotListeners = new ArrayList<>();
-
-        snapshotListeners.add(userRef.collection("Notifications")
-                .whereEqualTo("seen",false)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    private int notificationCount = 0,messageNotificationCount = 0;
-                    private BadgeDrawable messageBadgeDrawable;
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                        if (value == null)
-                            return;
-
-                        for (DocumentChange dc : value.getDocumentChanges()) {
-
-                            int type = 0;
-
-                            DocumentSnapshot documentSnapshot = dc.getDocument();
-                            if(documentSnapshot.contains("type")){
-                                Long longType=  documentSnapshot.getLong("type");
-                                if(longType!=null){
-                                    type = longType.intValue();
-                                }
-                            }
-
-                            switch (dc.getType()) {
-                                case ADDED:
-                                    notificationCount++;
-
-                                    if(type == Notification.TYPE_MESSAGE)
-                                        messageNotificationCount++;
-
-                                    break;
-                                case REMOVED:
-                                    notificationCount--;
-
-                                    if(type == Notification.TYPE_MESSAGE)
-                                        messageNotificationCount--;
-
-                                    break;
-                            }
-
-
-                            if(notificationCount > 0){
-
-                                if(notificationBadgeTv.getVisibility() == View.INVISIBLE){
-                                    notificationBadgeTv.setVisibility(View.VISIBLE);
-                                }
-
-                                notificationBadgeTv.setText(String.valueOf(notificationCount));
-
-                            }else{
-                                if(notificationBadgeTv.getVisibility() == View.VISIBLE){
-                                    notificationBadgeTv.setVisibility(View.INVISIBLE);
-                                }
-                            }
-
-                            if(messageNotificationCount > 0){
-
-                                if(messageBadgeDrawable == null){
-                                    messageBadgeDrawable = homeBottomNavigationView.getOrCreateBadge(R.id.show_Messages_action);
-                                    messageBadgeDrawable.setBackgroundColor(ResourcesCompat.getColor(getResources(),R.color.orange,null));
-                                }
-
-                                if(!messageBadgeDrawable.isVisible()){
-                                    messageBadgeDrawable.setVisible(true);
-                                }
-                                messageBadgeDrawable.setNumber(messageNotificationCount);
-                            }else{
-                                if(messageBadgeDrawable!=null && messageBadgeDrawable.isVisible()){
-                                    messageBadgeDrawable.setVisible(false);
-                                }
-                            }
-//                            badgeDrawable.setVisible(count != 0);
-//                            badgeDrawable.setNumber(count);
-                        }
-
-                    }
-                }));
-
     }
 
 

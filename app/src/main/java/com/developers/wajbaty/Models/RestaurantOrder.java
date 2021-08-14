@@ -3,11 +3,10 @@ package com.developers.wajbaty.Models;
 import com.google.firebase.firestore.Exclude;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class RestaurantOrder implements Serializable {
 
-    public static final int TYPE_PENDING = 1,TYPE_DONE = 2,TYPE_CANCELLED = 3;
+    public static final int TYPE_PENDING = 1, TYPE_DONE = 2, TYPE_CANCELLED = 3;
 
     private String ID;
     private long orderTimeInMillis;
@@ -17,14 +16,15 @@ public class RestaurantOrder implements Serializable {
     private String currency;
     private int itemCount;
 
-    @Exclude private String driverName;
+    @Exclude
+    private String driverName;
 
 
     public RestaurantOrder() {
     }
 
     public RestaurantOrder(String ID, long orderTimeInMillis, String driverID, int status,
-                           float totalCost,String currency,int itemCount) {
+                           float totalCost, String currency, int itemCount) {
         this.ID = ID;
         this.orderTimeInMillis = orderTimeInMillis;
         this.driverID = driverID;

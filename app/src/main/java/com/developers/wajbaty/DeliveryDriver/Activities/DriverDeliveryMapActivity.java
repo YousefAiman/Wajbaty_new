@@ -1,33 +1,14 @@
 package com.developers.wajbaty.DeliveryDriver.Activities;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -38,12 +19,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.developers.wajbaty.Activities.HomeActivity;
-import com.developers.wajbaty.Activities.MainActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Activities.MessagingActivity;
 import com.developers.wajbaty.Adapters.DeliveryCourseAdapter;
-import com.developers.wajbaty.Customer.Activities.CustomerDeliveryMapActivity;
-import com.developers.wajbaty.DeliveryDriver.Fragments.DriverDeliveriesFragment;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.Delivery;
 import com.developers.wajbaty.Models.DeliveryCourse;
@@ -51,14 +37,7 @@ import com.developers.wajbaty.Models.DeliveryDriver;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Services.LocationService;
 import com.developers.wajbaty.Utils.DirectionsUtil;
-import com.developers.wajbaty.Utils.LocationListenerUtil;
 import com.developers.wajbaty.Utils.LocationRequester;
-import com.firebase.geofire.GeoFireUtils;
-import com.firebase.geofire.GeoLocation;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -81,23 +60,19 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMapReadyCallback,
-        View.OnClickListener , DeliveryCourseAdapter.DeliverCourseListener,
+        View.OnClickListener, DeliveryCourseAdapter.DeliverCourseListener,
 //        LocationListenerUtil.LocationChangeObserver ,
         LocationRequester.LocationRequestAction,
         LocationService.LocationChangeObserver,
         DirectionsUtil.DirectionsListeners,
-        GoogleMap.OnMapClickListener
-{
+        GoogleMap.OnMapClickListener {
 
     //location
     private static final int MIN_CHECKING_DISTANCE = 5;
@@ -116,9 +91,9 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     private ArrayList<DeliveryCourse> allDeliveryCourses;
 
     //views
-    private ImageButton driverDeliveryBackIB,driverDeliveryCurrentLocationIB,driverDeliveryMessageIB;
+    private ImageButton driverDeliveryBackIB, driverDeliveryCurrentLocationIB, driverDeliveryMessageIB;
     private RecyclerView driverDeliveryCourseRv;
-    private Button driverDeliveryItemsBtn,driverDeliveryConfirmBtn;
+    private Button driverDeliveryItemsBtn, driverDeliveryConfirmBtn;
     private ImageView driverDeliveryCourseArrowIv;
     private LinearLayout driverDeliveryLayout;
 
@@ -141,7 +116,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.driverDeliveryMap);
 
-        if(mapFragment == null){
+        if (mapFragment == null) {
             finish();
             return;
         }
@@ -156,21 +131,21 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
     }
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         final Intent intent = getIntent();
-        if(intent!=null && intent.hasExtra("delivery")){
+        if (intent != null && intent.hasExtra("delivery")) {
             delivery = (Delivery) intent.getSerializableExtra("delivery");
 
-            if(intent.hasExtra("currentLocation")){
+            if (intent.hasExtra("currentLocation")) {
 //                LatLng latLng = (LatLng) intent.getSerializableExtra("currentLatLng");
 
                 currentLocation = (Location) intent.getParcelableExtra("currentLocation");
-                Log.d("ttt","currentLocation: "+currentLocation.getLatitude() +","+currentLocation.getLongitude());
-            }else{
+                Log.d("ttt", "currentLocation: " + currentLocation.getLatitude() + "," + currentLocation.getLongitude());
+            } else {
                 requestLocation();
             }
-        }else{
+        } else {
             finish();
             return;
         }
@@ -180,7 +155,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
         allDeliveryCourses = new ArrayList<>();
         deliveryCourses = new ArrayList<>();
-        adapter = new DeliveryCourseAdapter(deliveryCourses,this);
+        adapter = new DeliveryCourseAdapter(deliveryCourses, this);
 
     }
 
@@ -221,20 +196,20 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                 == PackageManager.PERMISSION_GRANTED) {
             map.setMyLocationEnabled(true);
 
-        }else{
+        } else {
 
             ActivityResultLauncher<String> requestPermissionLauncher =
                     registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                             granted -> {
-                        if(granted){
-                            map.setMyLocationEnabled(true);
-                        }
+                                if (granted) {
+                                    map.setMyLocationEnabled(true);
+                                }
                             });
 
-                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
-        if(currentLocation!=null){
+        if (currentLocation != null) {
 
 //            LatLng latLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
 //            driverMarker = map.addMarker(new MarkerOptions().position(latLng).title("My Location")
@@ -322,17 +297,17 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 //        }
 //    }
 
-    private void requestLocation(){
+    private void requestLocation() {
 
-        if(locationRequester == null){
-            locationRequester = new LocationRequester(this,this);
+        if (locationRequester == null) {
+            locationRequester = new LocationRequester(this, this);
         }
 
         locationRequester.getCurrentLocation();
 
     }
 
-    private void setUpListeners(){
+    private void setUpListeners() {
 
         driverDeliveryBackIB.setOnClickListener(this);
         driverDeliveryItemsBtn.setOnClickListener(this);
@@ -343,7 +318,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         driverDeliveryCourseArrowIv.setOnClickListener(this);
     }
 
-    private void fetchCourse(){
+    private void fetchCourse() {
 
         allDeliveryCourses.add(new DeliveryCourse(
                 delivery.getDriverID(),
@@ -373,21 +348,21 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                     final LatLng[] wayPoints = new LatLng[snapshots.size()];
 
                     int index = 0;
-                    for(DocumentSnapshot restaurantSnap:snapshots.getDocuments()){
+                    for (DocumentSnapshot restaurantSnap : snapshots.getDocuments()) {
                         final int finalIndex = index;
                         restaurantTasks.add(restaurantRef.document(restaurantSnap.getId()).get()
                                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                     @Override
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                                        if(documentSnapshot.exists()){
+                                        if (documentSnapshot.exists()) {
 
                                             double lat = documentSnapshot.getDouble("lat"),
                                                     lng = documentSnapshot.getDouble("lng");
 
-                                            wayPoints[finalIndex] = new LatLng(lat,lng);
+                                            wayPoints[finalIndex] = new LatLng(lat, lng);
 
-                                            Log.d("ttt","course lat: "+lat+" , lng: "+lng);
+                                            Log.d("ttt", "course lat: " + lat + " , lng: " + lng);
 
                                             final String name = documentSnapshot.getString("name");
                                             Location restaurantLocation = new Location(name);
@@ -398,9 +373,9 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                                             DeliveryCourse deliveryCourse;
 
-                                            if(!orderPickedUp && currentTargetDestinationLocation == null){
+                                            if (!orderPickedUp && currentTargetDestinationLocation == null) {
 
-                                                driverDeliveryConfirmBtn.setText("Confirm pickup from "+name);
+                                                driverDeliveryConfirmBtn.setText("Confirm pickup from " + name);
                                                 deliveryCourse = new DeliveryCourse(
                                                         restaurantSnap.getId(),
                                                         name,
@@ -411,7 +386,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                                                 currentDeliveryCourse = deliveryCourse;
                                                 currentTargetDestinationLocation = restaurantLocation;
-                                            }else{
+                                            } else {
                                                 deliveryCourse = new DeliveryCourse(
                                                         restaurantSnap.getId(),
                                                         name,
@@ -424,10 +399,10 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                                             allDeliveryCourses.add(deliveryCourse);
 
-                                            addMarker(name,restaurantLocation);
+                                            addMarker(name, restaurantLocation);
 
-                                            Log.d("ttt","restaurantLocation: "+restaurantLocation.getLatitude()
-                                                    +", "+restaurantLocation.getLongitude());
+                                            Log.d("ttt", "restaurantLocation: " + restaurantLocation.getLatitude()
+                                                    + ", " + restaurantLocation.getLongitude());
                                         }
 
                                     }
@@ -446,13 +421,13 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                             DeliveryCourse deliveryCourse;
 
-                            if(currentTargetDestinationLocation == null){
+                            if (currentTargetDestinationLocation == null) {
 
                                 driverDeliveryConfirmBtn.setText("Confirm order delivered");
 
                                 deliveryCourse = new DeliveryCourse(
                                         delivery.getID()
-                                        ,"Delivery Location",
+                                        , "Delivery Location",
                                         deliveryLocation,
                                         0,
                                         false,
@@ -460,7 +435,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                                 currentDeliveryCourse = deliveryCourse;
                                 currentTargetDestinationLocation = deliveryLocation;
-                            }else{
+                            } else {
 
                                 deliveryCourse = new DeliveryCourse(
                                         delivery.getID(),
@@ -474,46 +449,46 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
                             allDeliveryCourses.add(deliveryCourse);
 
-                            addMarker("Delivery Location",deliveryLocation);
+                            addMarker("Delivery Location", deliveryLocation);
 
                             deliveryCourses.addAll(allDeliveryCourses);
 
                             adapter.notifyDataSetChanged();
 
-                            final LatLng startLatLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                            final LatLng destinationLatLng = new LatLng(delivery.getLat(),delivery.getLng());
+                            final LatLng startLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                            final LatLng destinationLatLng = new LatLng(delivery.getLat(), delivery.getLng());
 
-//                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
-//                                    .getDirections(DriverDeliveryMapActivity.this
-//                                    ,startLatLng,wayPoints,destinationLatLng);
-//                deliveryRef.collection("Directions")
-//                        .document("Directions")
-//                        .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-//
-//                        if(documentSnapshot.exists()){
-//                            Log.d("DirectionsApi","gotten result from firestore");
-//                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
-//                                    .getDirections(DriverDeliveryMapActivity.this,
-//                                            documentSnapshot.getString("DirectionsJsonObject"));
-//
-//                        }else{
-//                            Log.d("DirectionsApi","gotten result from string");
-//                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
-//                                    .getDirections(DriverDeliveryMapActivity.this
-//                                    ,startLatLng,wayPoints,destinationLatLng);
-//                        }
-//                    }
-//                }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.d("DirectionsApi","gotten result from string");
-//                        new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
-//                                .getDirections(DriverDeliveryMapActivity.this
-//                                ,startLatLng,wayPoints,destinationLatLng);
-//                    }
-//                });
+                            new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
+                                    .getDirections(DriverDeliveryMapActivity.this
+                                            , startLatLng, wayPoints, destinationLatLng);
+                            deliveryRef.collection("Directions")
+                                    .document("Directions")
+                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                                    if (documentSnapshot.exists()) {
+                                        Log.d("DirectionsApi", "gotten result from firestore");
+                                        new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
+                                                .getDirections(DriverDeliveryMapActivity.this,
+                                                        documentSnapshot.getString("DirectionsJsonObject"));
+
+                                    } else {
+                                        Log.d("DirectionsApi", "gotten result from string");
+                                        new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
+                                                .getDirections(DriverDeliveryMapActivity.this
+                                                        , startLatLng, wayPoints, destinationLatLng);
+                                    }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d("DirectionsApi", "gotten result from string");
+                                    new DirectionsUtil(DriverDeliveryMapActivity.this, deliveryRef)
+                                            .getDirections(DriverDeliveryMapActivity.this
+                                                    , startLatLng, wayPoints, destinationLatLng);
+                                }
+                            });
                         }
                     });
 
@@ -523,9 +498,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
             }
         });
 
-        }
-
-
+    }
 
 
     @Override
@@ -537,13 +510,13 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                 location.getLongitude())));
 
 
-        if(location.distanceTo(currentTargetDestinationLocation) <= MIN_CHECKING_DISTANCE &&
-                !driverDeliveryConfirmBtn.isClickable()){
+        if (location.distanceTo(currentTargetDestinationLocation) <= MIN_CHECKING_DISTANCE &&
+                !driverDeliveryConfirmBtn.isClickable()) {
 
             driverDeliveryConfirmBtn.setClickable(true);
             driverDeliveryConfirmBtn.setBackgroundResource(R.drawable.filled_button_background);
 
-        }else if(driverDeliveryConfirmBtn.isClickable()){
+        } else if (driverDeliveryConfirmBtn.isClickable()) {
             driverDeliveryConfirmBtn.setClickable(false);
             driverDeliveryConfirmBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
         }
@@ -564,84 +537,84 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == driverDeliveryBackIB.getId()){
+        if (v.getId() == driverDeliveryBackIB.getId()) {
 
             finish();
 
-        }else if(v.getId() == driverDeliveryItemsBtn.getId()){
+        } else if (v.getId() == driverDeliveryItemsBtn.getId()) {
 
-            startActivity(new Intent(this,DeliveryInfoActivity.class)
-                    .putExtra("isForShow",true)
-            .putExtra("delivery",delivery));
+            startActivity(new Intent(this, DeliveryInfoActivity.class)
+                    .putExtra("isForShow", true)
+                    .putExtra("delivery", delivery));
 
-        }else if(v.getId() == driverDeliveryCurrentLocationIB.getId()){
+        } else if (v.getId() == driverDeliveryCurrentLocationIB.getId()) {
 
-        zoomOnCurrentLocation();
+            zoomOnCurrentLocation();
 
-        }else if(v.getId() == driverDeliveryConfirmBtn.getId()){
+        } else if (v.getId() == driverDeliveryConfirmBtn.getId()) {
 
-            if(currentTargetDestinationLocation!=null){
+            if (currentTargetDestinationLocation != null) {
 
-                if(currentDeliveryCourse.getLocationID().equals(delivery.getID())){
+                if (currentDeliveryCourse.getLocationID().equals(delivery.getID())) {
 
                     ProgressDialogFragment progressDialogFragment = new ProgressDialogFragment();
                     progressDialogFragment.setTitle("Waiting user confirmation");
                     progressDialogFragment.setMessage("Please wait!");
-                    progressDialogFragment.show(getSupportFragmentManager(),"progress");
+                    progressDialogFragment.show(getSupportFragmentManager(), "progress");
 
-                    deliveryRef.update("status",Delivery.STATUS_WAITING_USER_APPROVAL)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-
-                          deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    deliveryRef.update("status", Delivery.STATUS_WAITING_USER_APPROVAL)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
-                                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                public void onSuccess(Void aVoid) {
 
-                                    if(value!=null){
-                                        if(value.contains("status")){
-                                            long status = value.getLong("status");
-                                            if(status == Delivery.STATUS_DELIVERED){
+                                    deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                                                FirebaseFirestore.getInstance().collection("Users")
-                                                        .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                                        .update("status", DeliveryDriver.STATUS_AVAILABLE,
-                                                                "currentDeliveryID", null)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
+                                            if (value != null) {
+                                                if (value.contains("status")) {
+                                                    long status = value.getLong("status");
+                                                    if (status == Delivery.STATUS_DELIVERED) {
+
+                                                        FirebaseFirestore.getInstance().collection("Users")
+                                                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                                .update("status", DeliveryDriver.STATUS_AVAILABLE,
+                                                                        "currentDeliveryID", null)
+                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    @Override
+                                                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                                                        progressDialogFragment.dismiss();
+                                                                        Toast.makeText(DriverDeliveryMapActivity.this,
+                                                                                "Delivery ended! good job", Toast.LENGTH_SHORT).show();
+
+                                                                        finish();
+
+
+                                                                    }
+                                                                });
+
+                                                    } else if (status == Delivery.STATUS_USER_DENIED_APPROVAL) {
 
                                                         progressDialogFragment.dismiss();
+
                                                         Toast.makeText(DriverDeliveryMapActivity.this,
-                                                                "Delivery ended! good job", Toast.LENGTH_SHORT).show();
+                                                                "User denied confirming delivery!" +
+                                                                        " Delivery the users delivery and try again!",
+                                                                Toast.LENGTH_LONG).show();
 
-                                                        finish();
-
+                                                        deliveryRef.update("status", Delivery.STATUS_ACCEPTED);
 
                                                     }
-                                                });
-
-                                            }else if(status == Delivery.STATUS_USER_DENIED_APPROVAL){
-
-                                                progressDialogFragment.dismiss();
-
-                                                Toast.makeText(DriverDeliveryMapActivity.this,
-                                                        "User denied confirming delivery!" +
-                                                                " Delivery the users delivery and try again!",
-                                                        Toast.LENGTH_LONG).show();
-
-                                                deliveryRef.update("status",Delivery.STATUS_ACCEPTED);
-
+                                                }
                                             }
+
                                         }
-                                    }
+                                    });
+
 
                                 }
-                            });
-
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
+                            }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             progressDialogFragment.dismiss();
@@ -652,16 +625,16 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                     });
 
 
-                }else{
+                } else {
 
                     restaurantsOrderedRef.document(currentDeliveryCourse.getLocationID())
-                            .update("orderPickedUp",true)
+                            .update("orderPickedUp", true)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
 
-                                    String message = "Pick up from restaurant "+currentDeliveryCourse.getLocationName()
-                                            +" confirmed";
+                                    String message = "Pick up from restaurant " + currentDeliveryCourse.getLocationName()
+                                            + " confirmed";
 
                                     int index = allDeliveryCourses.indexOf(currentDeliveryCourse);
 
@@ -669,39 +642,39 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                                     currentDeliveryCourse.setActive(false);
                                     adapter.notifyItemChanged(index);
 
-                                    if(index == allDeliveryCourses.size()-2){
+                                    if (index == allDeliveryCourses.size() - 2) {
 
                                         message = message.concat(" !Please proceed to the delivery location!");
 
 
-                                        currentDeliveryCourse = allDeliveryCourses.get(allDeliveryCourses.size()-1);
+                                        currentDeliveryCourse = allDeliveryCourses.get(allDeliveryCourses.size() - 1);
                                         currentTargetDestinationLocation = currentDeliveryCourse.getLocation();
                                         driverDeliveryConfirmBtn.setText("Confirm order delivered");
                                         currentDeliveryCourse.setActive(true);
                                         currentDeliveryCourse.setWasPassed(false);
                                         currentLocation = currentDeliveryCourse.getLocation();
-                                        adapter.notifyItemChanged(allDeliveryCourses.size()-1);
+                                        adapter.notifyItemChanged(allDeliveryCourses.size() - 1);
 
 
-                                    }else{
+                                    } else {
 
-                                        message = message.concat(" !Please pick up next items from "+
+                                        message = message.concat(" !Please pick up next items from " +
                                                 currentDeliveryCourse.getLocationName());
 
-                                        if(index+1 < allDeliveryCourses.size()){
+                                        if (index + 1 < allDeliveryCourses.size()) {
 
-                                            currentDeliveryCourse = allDeliveryCourses.get(index+1);
+                                            currentDeliveryCourse = allDeliveryCourses.get(index + 1);
                                             currentTargetDestinationLocation = currentDeliveryCourse.getLocation();
-                                            driverDeliveryConfirmBtn.setText("Confirm pickup from "+currentDeliveryCourse.getLocationName());
+                                            driverDeliveryConfirmBtn.setText("Confirm pickup from " + currentDeliveryCourse.getLocationName());
 
                                             currentDeliveryCourse.setActive(true);
                                             currentDeliveryCourse.setWasPassed(false);
                                             currentLocation = currentDeliveryCourse.getLocation();
-                                            adapter.notifyItemChanged(index+1);
+                                            adapter.notifyItemChanged(index + 1);
 
                                         }
                                     }
-                                    Toast.makeText(DriverDeliveryMapActivity.this,message
+                                    Toast.makeText(DriverDeliveryMapActivity.this, message
                                             , Toast.LENGTH_LONG).show();
 
                                 }
@@ -727,24 +700,24 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
             }
 
-        }else if(v.getId() == driverDeliveryMessageIB.getId()){
+        } else if (v.getId() == driverDeliveryMessageIB.getId()) {
 
             Intent messagingIntent = new Intent(this, MessagingActivity.class);
             messagingIntent.putExtra("messagingUserId", delivery.getRequesterID());
             messagingIntent.putExtra("intendedDeliveryID", delivery.getID());
             startActivity(messagingIntent);
 
-        }else if(v.getId() == driverDeliveryCourseArrowIv.getId()){
+        } else if (v.getId() == driverDeliveryCourseArrowIv.getId()) {
 
-            if(driverDeliveryCourseRv.getVisibility() == View.GONE){
+            if (driverDeliveryCourseRv.getVisibility() == View.GONE) {
 
                 driverDeliveryCourseRv.setVisibility(View.VISIBLE);
                 driverDeliveryCourseArrowIv.setRotation(90);
 
 
-            }else{
+            } else {
 
-                if(driverDeliveryCourseArrowIv.getRotation() == 90){
+                if (driverDeliveryCourseArrowIv.getRotation() == 90) {
 
                     driverDeliveryCourseArrowIv.setRotation(-90);
 
@@ -752,11 +725,11 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                         @Override
                         public void run() {
 
-                            for(int i=0;i<deliveryCourses.size();i++){
+                            for (int i = 0; i < deliveryCourses.size(); i++) {
 
-                                if(!deliveryCourses.get(i).isWasPassed()){
+                                if (!deliveryCourses.get(i).isWasPassed()) {
 
-                                    Log.d("ttt","found active at: "+i);
+                                    Log.d("ttt", "found active at: " + i);
 
 //
 //                                if(i+1 >= deliveryCourses.size()){
@@ -765,7 +738,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 ////                            deliveryCourses.remove();
 //
 //                                }else
-                                    if(i-1 >= 0){
+                                    if (i - 1 >= 0) {
 
                                         DeliveryCourse previousActive = deliveryCourses.get(i - 1);
                                         DeliveryCourse currentActive = deliveryCourses.get(i);
@@ -796,8 +769,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
                     }).start();
 
 
-
-                }else{
+                } else {
 
                     driverDeliveryCourseArrowIv.setRotation(90);
                     deliveryCourses.clear();
@@ -808,34 +780,33 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
             }
 
 
-
         }
 
     }
 
-    private void zoomOnCurrentLocation(){
+    private void zoomOnCurrentLocation() {
 
-        if(currentLocation != null){
+        if (currentLocation != null) {
 
             LatLng currentLatLng =
                     new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
 
 
-            if(!map.getCameraPosition().target.equals(currentLatLng)){
+            if (!map.getCameraPosition().target.equals(currentLatLng)) {
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18.0f));
             }
         }
     }
 
-    private void addMarker(String name,Location location){
+    private void addMarker(String name, Location location) {
 
-        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-        if(markerMap == null){
+        if (markerMap == null) {
             markerMap = new HashMap<>();
         }
 
-        markerMap.put(name,map.addMarker(new MarkerOptions().position(latLng).title(name)
+        markerMap.put(name, map.addMarker(new MarkerOptions().position(latLng).title(name)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))));
 
     }
@@ -844,7 +815,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
         Drawable vectorDrawable = ContextCompat.getDrawable(this, R.drawable.scooter_marker_icon);
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-        vectorDrawable.setBounds(0,0,canvas.getWidth(),canvas.getHeight());
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
@@ -853,13 +824,13 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     @Override
     public void locationFetched(LatLng latLng) {
 
-        if(currentLocation == null){
+        if (currentLocation == null) {
 
             currentLocation = new Location("currentLocation");
             currentLocation.setLatitude(latLng.latitude);
             currentLocation.setLongitude(latLng.longitude);
 
-            if(deliveryCourses.isEmpty()){
+            if (deliveryCourses.isEmpty()) {
                 fetchCourse();
             }
 
@@ -869,33 +840,33 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
 
     }
 
-    private void bindToLocationService(){
+    private void bindToLocationService() {
 
-    Intent service = new Intent(this,LocationService.class);
+        Intent service = new Intent(this, LocationService.class);
 
-    serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
 
-            Log.d("ttt","onServiceConnected");
-            LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
-            LocationService locationService = locationBinder.getService();
-            locationService.addObserver(DriverDeliveryMapActivity.this);
+                Log.d("ttt", "onServiceConnected");
+                LocationService.LocationBinder locationBinder = (LocationService.LocationBinder) service;
+                LocationService locationService = locationBinder.getService();
+                locationService.addObserver(DriverDeliveryMapActivity.this);
 
-        }
+            }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d("ttt","onServiceDisconnected");
-        }
-    };
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d("ttt", "onServiceDisconnected");
+            }
+        };
 
-    bindService(service,serviceConnection ,0);
+        bindService(service, serviceConnection, 0);
 
-}
+    }
 
-    private void unBindService(){
-        if(serviceConnection!=null){
+    private void unBindService() {
+        if (serviceConnection != null) {
             unbindService(serviceConnection);
             serviceConnection = null;
         }
@@ -911,7 +882,7 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     @Override
     public void onPolyLineFetched(PolylineOptions polylineOptions) {
 
-        if(polylineOptions != null && map != null){
+        if (polylineOptions != null && map != null) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -926,10 +897,10 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
 
-        if(driverDeliveryCourseRv.getVisibility() == View.VISIBLE){
+        if (driverDeliveryCourseRv.getVisibility() == View.VISIBLE) {
             driverDeliveryCourseRv.setVisibility(View.GONE);
 
-            if(driverDeliveryCourseArrowIv.getRotation() == 90) {
+            if (driverDeliveryCourseArrowIv.getRotation() == 90) {
                 driverDeliveryCourseArrowIv.setRotation(-90);
             }
 
@@ -940,16 +911,16 @@ public class DriverDeliveryMapActivity extends AppCompatActivity implements OnMa
     @Override
     public void onDeliveryCourseClicked(int position) {
 
-        if(deliveryCourses.size() > position){
+        if (deliveryCourses.size() > position) {
 
-            if(markerMap.containsKey(deliveryCourses.get(position).getLocationName())){
+            if (markerMap.containsKey(deliveryCourses.get(position).getLocationName())) {
 
                 Marker marker = markerMap.get(deliveryCourses.get(position).getLocationName());
-                if(marker!=null){
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
-                        if(marker.isVisible()){
-                            marker.showInfoWindow();
-                        }
+                if (marker != null) {
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
+                    if (marker.isVisible()) {
+                        marker.showInfoWindow();
+                    }
                 }
             }
 

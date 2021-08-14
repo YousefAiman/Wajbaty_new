@@ -1,4 +1,5 @@
 package com.developers.wajbaty.Models;
+
 import com.google.firebase.firestore.Exclude;
 
 import java.io.Serializable;
@@ -10,15 +11,19 @@ public class CartItem implements Serializable {
     private long timeAdded;
     private String restaurantID;
 
-    @Exclude private String name;
-    @Exclude private String imageUrl;
-    @Exclude private float price;
-    @Exclude private String currency;
+    @Exclude
+    private String name;
+    @Exclude
+    private String imageUrl;
+    @Exclude
+    private float price;
+    @Exclude
+    private String currency;
 
     public CartItem() {
     }
 
-    public CartItem(String itemId, int count, long timeAdded,String restaurantID) {
+    public CartItem(String itemId, int count, long timeAdded, String restaurantID) {
         this.itemId = itemId;
         this.count = count;
         this.timeAdded = timeAdded;

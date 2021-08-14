@@ -1,19 +1,8 @@
 package com.developers.wajbaty.PartneredRestaurant.Fragments;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.widget.NestedScrollView;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
-
 import android.text.Html;
 import android.text.util.Linkify;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +10,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import com.developers.wajbaty.Adapters.AlbumAdapter;
 import com.developers.wajbaty.Adapters.ImagePagerAdapter;
@@ -34,16 +31,15 @@ import java.util.Locale;
 import java.util.Map;
 
 
-public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.AlbumClickListener{
+public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.AlbumClickListener {
 
     private final PartneredRestaurant restaurant;
-    private ImagePagerAdapter imagePagerAdapter;
     private final int status;
-
+    private ImagePagerAdapter imagePagerAdapter;
     //views
     private ViewPager viewPager;
-    private LinearLayout dotsLinear,contactInfoLl,SocialMediaLl;
-    private TextView addressTv,statusTv,serviceOptionsTv,scheduleTv,aboutTv,additionalServicesTv;
+    private LinearLayout dotsLinear, contactInfoLl, SocialMediaLl;
+    private TextView addressTv, statusTv, serviceOptionsTv, scheduleTv, aboutTv, additionalServicesTv;
     private RecyclerView restaurantAlbumRv;
 
     //album
@@ -52,7 +48,7 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
     private float density;
     private int lightBlack;
 
-    public RestaurantInfoFragment(PartneredRestaurant restaurant,int status) {
+    public RestaurantInfoFragment(PartneredRestaurant restaurant, int status) {
         this.restaurant = restaurant;
         this.status = status;
     }
@@ -61,12 +57,12 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(restaurant.getBannerImages()!=null && !restaurant.getBannerImages().isEmpty()){
-            imagePagerAdapter = new ImagePagerAdapter(restaurant.getBannerImages(),R.layout.card_item_image_page,0.8f);
+        if (restaurant.getBannerImages() != null && !restaurant.getBannerImages().isEmpty()) {
+            imagePagerAdapter = new ImagePagerAdapter(restaurant.getBannerImages(), R.layout.card_item_image_page, 0.8f, requireContext());
         }
 
-        if(restaurant.getAlbumImages()!=null && !restaurant.getAlbumImages().isEmpty()){
-            albumAdapter = new AlbumAdapter(restaurant.getAlbumImages(),this);
+        if (restaurant.getAlbumImages() != null && !restaurant.getAlbumImages().isEmpty()) {
+            albumAdapter = new AlbumAdapter(restaurant.getAlbumImages(), this, requireContext());
         }
 
         density = getResources().getDisplayMetrics().density;
@@ -82,7 +78,7 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_restaurant_info, container, false);
+        View view = inflater.inflate(R.layout.fragment_restaurant_info, container, false);
 
 //        ((NestedScrollView)view.findViewById(R.id.restaurantNestedScrollView)).setNestedScrollingEnabled(true);
 
@@ -98,26 +94,25 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
         additionalServicesTv = view.findViewById(R.id.additionalServicesTv);
         restaurantAlbumRv = view.findViewById(R.id.restaurantAlbumRv);
 
-        if(imagePagerAdapter!=null){
+        if (imagePagerAdapter != null) {
 
             viewPager.setAdapter(imagePagerAdapter);
 
             createPagerDotsSlider();
 
-        }else{
+        } else {
 
             view.findViewById(R.id.albumNestedHost).setVisibility(View.GONE);
             viewPager.setVisibility(View.GONE);
             dotsLinear.setVisibility(View.GONE);
         }
 
-        if(albumAdapter!=null){
+        if (albumAdapter != null) {
             restaurantAlbumRv.setAdapter(albumAdapter);
-        }else{
+        } else {
             restaurantAlbumRv.setVisibility(View.GONE);
             view.findViewById(R.id.albumNestedHost).setVisibility(View.GONE);
         }
-
 
 
 //        viewPager.setOnTouchListener(new View.OnTouchListener() {
@@ -145,11 +140,10 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
 //        });
 
 
-
         return view;
     }
 
-    private void createPagerDotsSlider(){
+    private void createPagerDotsSlider() {
 
         viewPager.setPageMargin((int) (20 * getResources().getDisplayMetrics().density));
 
@@ -218,12 +212,12 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
         fillInfo();
     }
 
-    private void fillInfo(){
+    private void fillInfo() {
 
         addressTv.setText(restaurant.getFullAddress());
 
         String statusText;
-        switch (status){
+        switch (status) {
 
             case PartneredRestaurant.STATUS_CLOSED:
 
@@ -231,21 +225,21 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
 
                 break;
 
-             case PartneredRestaurant.STATUS_OPEN:
+            case PartneredRestaurant.STATUS_OPEN:
 
-                 statusText = "Restaurant is currently open";
+                statusText = "Restaurant is currently open";
 
                 break;
 
-             case PartneredRestaurant.STATUS_SHUTDOWN:
+            case PartneredRestaurant.STATUS_SHUTDOWN:
 
-                 statusText = "This Restaurant is shutdown";
+                statusText = "This Restaurant is shutdown";
 
                 break;
 
             default:
 
-                 statusText = "Unknown Restaurant Status";
+                statusText = "Unknown Restaurant Status";
 
                 break;
 
@@ -255,28 +249,28 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
 
         String serviceOptionsFull = "";
 
-        if(restaurant.getServiceOptions().size() > 1){
-            for(int i=0;i<restaurant.getServiceOptions().size()-1;i++){
-                serviceOptionsFull = serviceOptionsFull.concat(restaurant.getServiceOptions().get(i) +", ");
+        if (restaurant.getServiceOptions().size() > 1) {
+            for (int i = 0; i < restaurant.getServiceOptions().size() - 1; i++) {
+                serviceOptionsFull = serviceOptionsFull.concat(restaurant.getServiceOptions().get(i) + ", ");
             }
         }
 
-        serviceOptionsFull = serviceOptionsFull.concat(restaurant.getServiceOptions().get(restaurant.getServiceOptions().size()-1));
+        serviceOptionsFull = serviceOptionsFull.concat(restaurant.getServiceOptions().get(restaurant.getServiceOptions().size() - 1));
 
         serviceOptionsTv.setText(serviceOptionsFull);
 
 
-        if(restaurant.getSchedule()!=null){
+        if (restaurant.getSchedule() != null) {
 
             final String[] scheduleFullText = {""};
 
 
-           final Thread scheduleThread =  new Thread(new Runnable() {
+            final Thread scheduleThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
 
-            final SimpleDateFormat hourMinuteFormat =
-                    new SimpleDateFormat("h:mm a", Locale.getDefault());
+                    final SimpleDateFormat hourMinuteFormat =
+                            new SimpleDateFormat("h:mm a", Locale.getDefault());
 //            final long currentTime = System.currentTimeMillis();
 //
 //            final Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -289,49 +283,49 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
 //            calendar.set(year,month,day,0,0,0);
 //            final long elapsedTimeOfDay = currentTime - calendar.getTimeInMillis();
 
-            for(String key :restaurant.getSchedule().keySet()){
+                    for (String key : restaurant.getSchedule().keySet()) {
 
-                final Map<String,Object> dayMap = restaurant.getSchedule().get(key);
+                        final Map<String, Object> dayMap = restaurant.getSchedule().get(key);
 
-                if(dayMap.containsKey("isClosed") && (boolean)dayMap.get("isClosed")){
+                        if (dayMap.containsKey("isClosed") && (boolean) dayMap.get("isClosed")) {
 
-                    scheduleFullText[0] = scheduleFullText[0].concat(key +" " + "closed");
+                            scheduleFullText[0] = scheduleFullText[0].concat(key + " " + "closed");
 
-                }else{
+                        } else {
 
-                    if(dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_START)) &&
-                            dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_END))) {
+                            if (dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_START)) &&
+                                    dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_END))) {
 
-                        final long firstStart
-                                = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.FIRST_START));
+                                final long firstStart
+                                        = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.FIRST_START));
 
-                        final long firstEnd
-                                = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.FIRST_END));
+                                final long firstEnd
+                                        = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.FIRST_END));
 
-                        scheduleFullText[0] = scheduleFullText[0].concat(key.substring(key.indexOf("-")+1) +" " +
-                                hourMinuteFormat.format(firstStart) +" - "+hourMinuteFormat.format(firstEnd));
+                                scheduleFullText[0] = scheduleFullText[0].concat(key.substring(key.indexOf("-") + 1) + " " +
+                                        hourMinuteFormat.format(firstStart) + " - " + hourMinuteFormat.format(firstEnd));
+
+                            }
+
+                            if (dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_START)) &&
+                                    dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_END))) {
+
+                                final long secondStart
+                                        = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.SECOND_START));
+
+                                final long secondEnd
+                                        = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.SECOND_END));
+
+                                scheduleFullText[0] = scheduleFullText[0].concat(" & " +
+                                        hourMinuteFormat.format(secondStart) + " - " + hourMinuteFormat.format(secondEnd));
+
+                            }
+                        }
+
+
+                        scheduleFullText[0] = scheduleFullText[0].concat("\n");
 
                     }
-
-                    if(dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_START)) &&
-                            dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_END))) {
-
-                        final long secondStart
-                                = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.SECOND_START));
-
-                        final long secondEnd
-                                = (long) dayMap.get(String.valueOf(WorkingScheduleAdapter.SECOND_END));
-
-                        scheduleFullText[0] = scheduleFullText[0].concat(" & "+
-                                hourMinuteFormat.format(secondStart) +" - "+hourMinuteFormat.format(secondEnd));
-
-                    }
-                }
-
-
-                scheduleFullText[0] = scheduleFullText[0].concat("\n");
-
-            }
 
 
 //                    final String finalScheduleFullText = scheduleFullText;
@@ -351,12 +345,12 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
                 scheduleThread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 scheduleTv.setText(scheduleFullText[0]);
             }
 
 
-        }else{
+        } else {
 
             scheduleTv.setText("Restaurant hasn't added a schedule yet!");
 
@@ -364,91 +358,91 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
 
         aboutTv.setText(restaurant.getDescription());
 
-        if(restaurant.getContactInformation()!=null){
-            fillLayoutFromMap(contactInfoLl,(Map)restaurant.getContactInformation());
-        }else{
+        if (restaurant.getContactInformation() != null) {
+            fillLayoutFromMap(contactInfoLl, (Map) restaurant.getContactInformation());
+        } else {
             getView().findViewById(R.id.contactInfoNameTv).setVisibility(View.GONE);
             getView().findViewById(R.id.contactInfoSeperator).setVisibility(View.GONE);
             contactInfoLl.setVisibility(View.GONE);
         }
 
 
-        if(restaurant.getSocialMediaLinks()!=null){
-            fillLayoutFromMap(SocialMediaLl,(Map)restaurant.getSocialMediaLinks());
-        }else{
+        if (restaurant.getSocialMediaLinks() != null) {
+            fillLayoutFromMap(SocialMediaLl, (Map) restaurant.getSocialMediaLinks());
+        } else {
             getView().findViewById(R.id.socialMediaNameTv).setVisibility(View.GONE);
             getView().findViewById(R.id.socialMediaSeperator).setVisibility(View.GONE);
-             SocialMediaLl.setVisibility(View.GONE);
+            SocialMediaLl.setVisibility(View.GONE);
 
         }
 
 
-         if(restaurant.getAdditionalServices()!=null){
-             for(String service:restaurant.getAdditionalServices()){
-                 additionalServicesTv.setText("- "+service+"\n");
-             }
-         }else{
+        if (restaurant.getAdditionalServices() != null) {
+            for (String service : restaurant.getAdditionalServices()) {
+                additionalServicesTv.setText("- " + service + "\n");
+            }
+        } else {
 
-             getView().findViewById(R.id.additionalServicesNameTv).setVisibility(View.GONE);
-             getView().findViewById(R.id.additionalServicesSeperator).setVisibility(View.GONE);
-             additionalServicesTv.setVisibility(View.GONE);
-         }
+            getView().findViewById(R.id.additionalServicesNameTv).setVisibility(View.GONE);
+            getView().findViewById(R.id.additionalServicesSeperator).setVisibility(View.GONE);
+            additionalServicesTv.setVisibility(View.GONE);
+        }
 
     }
 
 
-    private void fillLayoutFromMap(LinearLayout linearLayout,Map<String,String> map){
+    private void fillLayoutFromMap(LinearLayout linearLayout, Map<String, String> map) {
 
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-            if(lightBlack == 0){
-                lightBlack = ResourcesCompat.getColor(getResources(),R.color.light_black,null);
-            }
-
-            LinearLayout.LayoutParams params = null;
-
-
-            if(map.size() > 1){
-                params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-            }
-
-
-            for(String key: map.keySet()){
-
-                final TextView tv = new TextView(requireContext());
-                tv.setTextColor(lightBlack);
-                tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
-                tv.setLinkTextColor(ResourcesCompat.getColor(getResources(),R.color.light_blue_600,null));
-                tv.setClickable(true);
-                tv.setFocusable(true);
-                tv.setAutoLinkMask(Linkify.ALL);
-
-                tv.setText(Html.fromHtml("<font color='#FF8000'> " + key + ": </font>" +
-                        map.get(key)));
-
-                if(params!=null){
-                    params.setMargins((int) (4 * density), 0, (int) (4 * density), 0);
-                    final LinearLayout.LayoutParams finalParams = params;
-                    linearLayout.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            linearLayout.addView(tv, finalParams);
-
-                        }
-                    });
-                }else{
-                    linearLayout.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            linearLayout.addView(tv);
-                        }
-                    });
-
+                if (lightBlack == 0) {
+                    lightBlack = ResourcesCompat.getColor(getResources(), R.color.light_black, null);
                 }
-            }
+
+                LinearLayout.LayoutParams params = null;
+
+
+                if (map.size() > 1) {
+                    params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                }
+
+
+                for (String key : map.keySet()) {
+
+                    final TextView tv = new TextView(requireContext());
+                    tv.setTextColor(lightBlack);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                    tv.setLinkTextColor(ResourcesCompat.getColor(getResources(), R.color.light_blue_600, null));
+                    tv.setClickable(true);
+                    tv.setFocusable(true);
+                    tv.setAutoLinkMask(Linkify.ALL);
+
+                    tv.setText(Html.fromHtml("<font color='#FF8000'> " + key + ": </font>" +
+                            map.get(key)));
+
+                    if (params != null) {
+                        params.setMargins((int) (4 * density), 0, (int) (4 * density), 0);
+                        final LinearLayout.LayoutParams finalParams = params;
+                        linearLayout.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                linearLayout.addView(tv, finalParams);
+
+                            }
+                        });
+                    } else {
+                        linearLayout.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                linearLayout.addView(tv);
+                            }
+                        });
+
+                    }
+                }
 
             }
         }).start();
@@ -459,7 +453,7 @@ public class RestaurantInfoFragment extends Fragment implements AlbumAdapter.Alb
     public void onImageClicked(int position) {
 
         FullScreenImagesUtil.showImageFullScreen(requireContext(),
-                restaurant.getAlbumImages().get(position),null);
+                restaurant.getAlbumImages().get(position), null);
 
     }
 }

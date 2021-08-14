@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,11 +40,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RestaurantLocationActivity extends AppCompatActivity
-        implements OnMapReadyCallback, GoogleMap.OnMapClickListener, View.OnClickListener ,
-        LocationRequester.LocationRequestAction,SearchView.OnQueryTextListener,
+        implements OnMapReadyCallback, GoogleMap.OnMapClickListener, View.OnClickListener,
+        LocationRequester.LocationRequestAction, SearchView.OnQueryTextListener,
         GeocoderUtil.GeocoderResultListener,
         PlaceSearchAdapter.PlaceSearchListener,
-        PlacesUtil.PlaceResultListener{
+        PlacesUtil.PlaceResultListener {
 
     private static final int REQUEST_LOCATION_PERMISSION = 10;
 
@@ -67,7 +66,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
     private PlacesUtil placesUtil;
 
-    private Map<String,PlaceSearchResult> placeResultMap;
+    private Map<String, PlaceSearchResult> placeResultMap;
     private int selectedSearchRestaurant = -1;
 
     @Override
@@ -89,13 +88,13 @@ public class RestaurantLocationActivity extends AppCompatActivity
             @Override
             public boolean onClose() {
 
-                Log.d("ttt","closed search view");
+                Log.d("ttt", "closed search view");
 
-                if(mapLocateSearchRv.getVisibility() == View.VISIBLE){
+                if (mapLocateSearchRv.getVisibility() == View.VISIBLE) {
                     mapLocateSearchRv.setVisibility(View.GONE);
                 }
 
-                if(!searchResults.isEmpty()){
+                if (!searchResults.isEmpty()) {
                     searchResults.clear();
                     searchAdapter.notifyDataSetChanged();
                 }
@@ -109,7 +108,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
 
         searchResults = new ArrayList<>();
-        searchAdapter = new PlaceSearchAdapter(searchResults,this);
+        searchAdapter = new PlaceSearchAdapter(searchResults, this);
 
         mapLocateSearchRv.setAdapter(searchAdapter);
 
@@ -130,7 +129,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
         fillSearchSuggestionsAdapter();
 
-        Log.d("ttt","onCreate");
+        Log.d("ttt", "onCreate");
 
     }
 
@@ -142,37 +141,37 @@ public class RestaurantLocationActivity extends AppCompatActivity
         markCurrentPosition();
         mMap.setOnMapClickListener(this);
 
-        Log.d("ttt","onMapReady");
+        Log.d("ttt", "onMapReady");
     }
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
 
-        markLocation(latLng,"Restaurant location");
+        markLocation(latLng, "Restaurant location");
     }
 
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == confirmLocationBtn.getId()){
+        if (v.getId() == confirmLocationBtn.getId()) {
 
-            if(progressDialogFragment == null){
+            if (progressDialogFragment == null) {
                 showProgressDialog();
-            }else{
-                progressDialogFragment.show(getSupportFragmentManager(),"progressDialog");
+            } else {
+                progressDialogFragment.show(getSupportFragmentManager(), "progressDialog");
             }
 
-            GeocoderUtil.getLocationAddress(this,currentMapMarker.getPosition(),this);
+            GeocoderUtil.getLocationAddress(this, currentMapMarker.getPosition(), this);
 
-            Log.d("ttt","current location is: "+currentMapMarker.getPosition());
+            Log.d("ttt", "current location is: " + currentMapMarker.getPosition());
 
-        }else if(v.getId() == currentLocationIV.getId()){
+        } else if (v.getId() == currentLocationIV.getId()) {
 
-            if(locationRequester == null){
+            if (locationRequester == null) {
 
                 initializeLocationRequester();
 
-            }else{
+            } else {
 
                 locationRequester.getCurrentLocation();
 
@@ -185,7 +184,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
     private void markCurrentPosition() {
 
-        Log.d("ttt","markCurrentPosition");
+        Log.d("ttt", "markCurrentPosition");
 
         final String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
 
@@ -196,7 +195,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
             requestPermissions(permissions, REQUEST_LOCATION_PERMISSION);
 
-        } else if(currentMapMarker == null){
+        } else if (currentMapMarker == null) {
 
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
@@ -226,7 +225,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-                markLocation(new LatLng(-34, 151),"Restaurant location");
+                markLocation(new LatLng(-34, 151), "Restaurant location");
 
             }
         }
@@ -234,28 +233,28 @@ public class RestaurantLocationActivity extends AppCompatActivity
     }
 
     private void showProgressDialog() {
-        Log.d("ttt","showProgressDialog");
+        Log.d("ttt", "showProgressDialog");
 
         progressDialogFragment = new ProgressDialogFragment();
-        progressDialogFragment.show(getSupportFragmentManager(),"progress");
+        progressDialogFragment.show(getSupportFragmentManager(), "progress");
     }
 
 
     private void initializeLocationRequester() {
 
-        Log.d("ttt","initializeLocationRequester");
+        Log.d("ttt", "initializeLocationRequester");
 
-        if(progressDialogFragment == null){
+        if (progressDialogFragment == null) {
 
             showProgressDialog();
 
-        }else{
+        } else {
 
-            progressDialogFragment.show(getSupportFragmentManager(),"progressDialog");
+            progressDialogFragment.show(getSupportFragmentManager(), "progressDialog");
 
         }
 
-        locationRequester = new LocationRequester(this,this);
+        locationRequester = new LocationRequester(this, this);
         locationRequester.getCurrentLocation();
 
     }
@@ -280,21 +279,21 @@ public class RestaurantLocationActivity extends AppCompatActivity
 //    }
 
 
-    private void markLocation(LatLng latLng,String name){
+    private void markLocation(LatLng latLng, String name) {
         if (currentMapMarker != null)
             currentMapMarker.remove();
 
 
         currentMapMarker = mMap.addMarker(new MarkerOptions().position(latLng).title(name));
 
-        if(currentMapMarker!=null){
+        if (currentMapMarker != null) {
             currentMapMarker.setIcon(BitmapDescriptorFactory.fromBitmap(
                     BitmapUtil.getBitmap(this, R.drawable.location_marker_icon)));
         }
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20.0f));
 
-        if(progressDialogFragment!=null && progressDialogFragment.isVisible()){
+        if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
             progressDialogFragment.dismiss();
             progressDialogFragment = null;
         }
@@ -319,8 +318,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
     }
 
 
-
-    private void fillSearchSuggestionsAdapter(){
+    private void fillSearchSuggestionsAdapter() {
 
 //        Places.initialize(this, "AIzaSyBIWrMT4apMKnRNdm1kZwfOtqyTZG-eBUw");
 //
@@ -367,28 +365,28 @@ public class RestaurantLocationActivity extends AppCompatActivity
     @Override
     public void locationFetched(LatLng latLng) {
 
-        markLocation(latLng,"Restaurant location");
+        markLocation(latLng, "Restaurant location");
 
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
 
-        if(!searchResults.isEmpty()){
+        if (!searchResults.isEmpty()) {
             searchResults.clear();
             searchAdapter.notifyDataSetChanged();
         }
 
-        if(placeResultMap != null){
+        if (placeResultMap != null) {
 
             final String placeSearchName = query.toLowerCase();
 
-            for(String placeName:placeResultMap.keySet()){
+            for (String placeName : placeResultMap.keySet()) {
 
                 placeName = placeName.toLowerCase();
 
-                if(placeName.equals(placeSearchName) || placeName.contains(placeSearchName)
-                        || placeSearchName.contains(placeName)){
+                if (placeName.equals(placeSearchName) || placeName.contains(placeSearchName)
+                        || placeSearchName.contains(placeName)) {
                     searchResults.add(placeResultMap.get(placeName));
                 }
 
@@ -397,19 +395,19 @@ public class RestaurantLocationActivity extends AppCompatActivity
         }
 
 
-        if(!searchResults.isEmpty()){
+        if (!searchResults.isEmpty()) {
 
-            if(mapLocateSearchRv.getVisibility() ==View.GONE){
+            if (mapLocateSearchRv.getVisibility() == View.GONE) {
                 mapLocateSearchRv.setVisibility(View.VISIBLE);
             }
             searchAdapter.notifyDataSetChanged();
 
-        }else{
+        } else {
             showProgressDialog();
 
 
-            if(placesUtil == null)
-                placesUtil = new PlacesUtil(this,this);
+            if (placesUtil == null)
+                placesUtil = new PlacesUtil(this, this);
 
             placesUtil.searchForRestaurant(query);
 
@@ -427,27 +425,27 @@ public class RestaurantLocationActivity extends AppCompatActivity
     @Override
     public void addressFetched(Map<String, Object> addressMap) {
 
-        Log.d("ttt","addressFetched");
+        Log.d("ttt", "addressFetched");
 
         dismissProgressDialog();
 
-            final Intent intent = new Intent(this,RestaurantMediaFillingActivity.class);
-            intent.putExtra("addressMap", (Serializable) addressMap);
+        final Intent intent = new Intent(this, RestaurantMediaFillingActivity.class);
+        intent.putExtra("addressMap", (Serializable) addressMap);
 
-            if(!searchResults.isEmpty() && selectedSearchRestaurant > -1 && selectedSearchRestaurant < searchResults.size()){
+        if (!searchResults.isEmpty() && selectedSearchRestaurant > -1 && selectedSearchRestaurant < searchResults.size()) {
 
-                final PlaceSearchResult searchResult = searchResults.get(selectedSearchRestaurant);
+            final PlaceSearchResult searchResult = searchResults.get(selectedSearchRestaurant);
 
-                if(searchResult.getLat() == currentMapMarker.getPosition().latitude &&
-                        searchResult.getLng() == currentMapMarker.getPosition().longitude){
+            if (searchResult.getLat() == currentMapMarker.getPosition().latitude &&
+                    searchResult.getLng() == currentMapMarker.getPosition().longitude) {
 
-                    intent.putExtra("restaurantName", searchResult.getName());
-                    intent.putExtra("restaurantImageURL", searchResult.getImageURL());
-                }
+                intent.putExtra("restaurantName", searchResult.getName());
+                intent.putExtra("restaurantImageURL", searchResult.getImageURL());
             }
+        }
 
-            startActivity(intent);
-            finish();
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -459,16 +457,16 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
         dismissProgressDialog();
 
-        if(errorMessage!=null){
+        if (errorMessage != null) {
 
-            Log.d("ttt",errorMessage);
+            Log.d("ttt", errorMessage);
 
         }
 
     }
 
-    private void dismissProgressDialog(){
-        if(progressDialogFragment!=null){
+    private void dismissProgressDialog() {
+        if (progressDialogFragment != null) {
             progressDialogFragment.dismiss();
 
         }
@@ -479,10 +477,10 @@ public class RestaurantLocationActivity extends AppCompatActivity
 
         selectedSearchRestaurant = position;
 
-        final PlaceSearchResult searchResult= searchResults.get(position);
+        final PlaceSearchResult searchResult = searchResults.get(position);
 
         mapLocateSearchRv.setVisibility(View.GONE);
-        markLocation(new LatLng(searchResult.getLat(),searchResult.getLng()),searchResult.getName());
+        markLocation(new LatLng(searchResult.getLat(), searchResult.getLng()), searchResult.getName());
 
 
     }
@@ -490,24 +488,24 @@ public class RestaurantLocationActivity extends AppCompatActivity
     @Override
     public void onPlacesFound(ArrayList<PlaceSearchResult> placeSearchResults) {
 
-        if(placeResultMap ==null)
+        if (placeResultMap == null)
             placeResultMap = new HashMap<>();
 
-        for(PlaceSearchResult placeSearchResult:placeSearchResults){
+        for (PlaceSearchResult placeSearchResult : placeSearchResults) {
 
             boolean found = false;
-            for(String placeName:placeResultMap.keySet()){
+            for (String placeName : placeResultMap.keySet()) {
 
                 placeName = placeName.toLowerCase();
 
-                if(placeName.equalsIgnoreCase(placeSearchResult.getName())){
+                if (placeName.equalsIgnoreCase(placeSearchResult.getName())) {
                     found = true;
                     break;
                 }
             }
 
-            if(!found){
-                placeResultMap.put(placeSearchResult.getName().toLowerCase(),placeSearchResult);
+            if (!found) {
+                placeResultMap.put(placeSearchResult.getName().toLowerCase(), placeSearchResult);
             }
 
         }
@@ -523,7 +521,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
         searchResults.addAll(placeSearchResults);
         searchAdapter.notifyDataSetChanged();
 
-        if(mapLocateSearchRv.getVisibility() == View.GONE){
+        if (mapLocateSearchRv.getVisibility() == View.GONE) {
             mapLocateSearchRv.setVisibility(View.VISIBLE);
         }
     }
@@ -534,7 +532,7 @@ public class RestaurantLocationActivity extends AppCompatActivity
         Toast.makeText(this,
                 "An error occurred while search for restaurant! " +
                         "Please try again", Toast.LENGTH_SHORT).show();
-        Log.d("RestuarantLocation",errorMessage);
+        Log.d("RestuarantLocation", errorMessage);
 
     }
 }

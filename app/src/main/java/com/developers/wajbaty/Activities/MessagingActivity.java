@@ -1,12 +1,5 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -23,6 +16,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.developers.wajbaty.Adapters.MessageTextMapAdapter;
 import com.developers.wajbaty.Models.MessageMap;
@@ -60,7 +60,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MessagingActivity extends AppCompatActivity
-        implements MessageTextMapAdapter.DeleteMessageListener, View.OnLayoutChangeListener{
+        implements MessageTextMapAdapter.DeleteMessageListener, View.OnLayoutChangeListener {
 
     private final static int DOCUMENT_MESSAGE_LIMIT = 15;
 
@@ -86,7 +86,7 @@ public class MessagingActivity extends AppCompatActivity
     private DocumentReference currentUserRef;
     private SharedPreferences sharedPreferences;
     private ProgressDialog progressDialog;
-    private String currentUsername,currentImageURL;
+    private String currentUsername, currentImageURL;
     private CloudMessagingNotificationsSender.Data data;
     private NotificationManager notificationManager;
 
@@ -124,7 +124,7 @@ public class MessagingActivity extends AppCompatActivity
     }
 
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 //        currentUserId = "7J6eWOO6ggVROicvqbZNikahj9Q2";
@@ -184,9 +184,9 @@ public class MessagingActivity extends AppCompatActivity
             @Override
             public void onItemsAdded(@NonNull RecyclerView recyclerView, int positionStart, int itemCount) {
 
-                Log.d("ttt","positionStart: "+positionStart);
+                Log.d("ttt", "positionStart: " + positionStart);
 
-                if(itemCount == 1){
+                if (itemCount == 1) {
                     messageRv.post(() -> scrollToPosition(messageMaps.size() - 1));
                 }
 
@@ -203,7 +203,7 @@ public class MessagingActivity extends AppCompatActivity
 
     }
 
-    private void getViews(){
+    private void getViews() {
 
 
         final Toolbar messagesToolBar = findViewById(R.id.messagesToolBar);
@@ -225,7 +225,7 @@ public class MessagingActivity extends AppCompatActivity
     }
 
 
-    private void populateViews(){
+    private void populateViews() {
 
         userRef.document(messagingUserId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
@@ -243,14 +243,14 @@ public class MessagingActivity extends AppCompatActivity
         currentUserRef.update("ActivelyMessaging", messagingUserId);
 
         currentUserRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//            boolean isInitial = true;
+            //            boolean isInitial = true;
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                if(value!=null){
+                if (value != null) {
 
                     currentUserName = value.getString("name");
-                    currentImageURL =value.getString("imageURL");
+                    currentImageURL = value.getString("imageURL");
 
 //                    if(isInitial){
 //                        isInitial = false;
@@ -263,7 +263,7 @@ public class MessagingActivity extends AppCompatActivity
         });
     }
 
-    private void addListeners(){
+    private void addListeners() {
 
 //        messagingUserNameTv.setOnClickListener(v -> showProfile());
 //        messagingUserIv.setOnClickListener(v -> showProfile());
@@ -279,13 +279,13 @@ public class MessagingActivity extends AppCompatActivity
         boolean currentUidIsFirst = currentUserId.toUpperCase()
                 .compareTo(messagingUserId.toUpperCase()) < 0;
         String id;
-        if(currentUidIsFirst){
-            id = currentUserId +"-"+ messagingUserId +"-"+ intendedDeliveryID;
-        }else{
-            id = messagingUserId +"-"+ currentUserId +"-"+ intendedDeliveryID;
+        if (currentUidIsFirst) {
+            id = currentUserId + "-" + messagingUserId + "-" + intendedDeliveryID;
+        } else {
+            id = messagingUserId + "-" + currentUserId + "-" + intendedDeliveryID;
         }
 
-        Log.d("ttt","messaing doc id: "+id);
+        Log.d("ttt", "messaing doc id: " + id);
 
         messagingChildRef =
                 FirebaseDatabase.getInstance().getReference().child("PrivateMessages").child(id);
@@ -299,11 +299,11 @@ public class MessagingActivity extends AppCompatActivity
             @Override
             public void onSuccess(DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     addUserDeleteEventListener();
                     getInitialMessages();
 
-                }else{
+                } else {
                     messagesProgressBar.setVisibility(View.GONE);
                     sendMessageBtn.setOnClickListener(new FirstMessageClickListener());
                 }
@@ -386,13 +386,12 @@ public class MessagingActivity extends AppCompatActivity
     }
 
 
-
     void sendCloudNotification(String message) {
         Log.d("ttt", "sending cloud notificaiton");
         if (data == null) {
             data = new CloudMessagingNotificationsSender.Data(
                     currentUserId,
-                    "New message from: "+currentUserName,
+                    "New message from: " + currentUserName,
                     message,
                     currentImageURL,
                     intendedDeliveryID,
@@ -408,19 +407,18 @@ public class MessagingActivity extends AppCompatActivity
     }
 
 
-
     @Override
     public void onLayoutChange(View view, int i, int i1, int i2, int bottom, int i4,
                                int i5, int i6, int oldBottom) {
         Log.d("ttt", "onLayoutChange: " + "bottom: " + bottom + " | oldBottom: " + oldBottom);
         if (oldBottom != 0) {
 
-            Log.d("ttt",oldBottom +" - "+ bottom);
+            Log.d("ttt", oldBottom + " - " + bottom);
             if (oldBottom > bottom) {
                 messageRv.post(new Runnable() {
                     @Override
                     public void run() {
-                        messageRv.scrollToPosition(messageMaps.size()-1);
+                        messageRv.scrollToPosition(messageMaps.size() - 1);
                     }
                 });
             }
@@ -458,19 +456,18 @@ public class MessagingActivity extends AppCompatActivity
             currentUserRef.update("ActivelyMessaging", null);
 
 
-
         if (messagingChildRef != null) {
-            Log.d("ttt","messagingChildRef != null");
-            if(currentUserRef!=null){
-                Log.d("ttt","currentUserRef!=null");
+            Log.d("ttt", "messagingChildRef != null");
+            if (currentUserRef != null) {
+                Log.d("ttt", "currentUserRef!=null");
 
                 final String notificationPath = messagingUserId + "_" +
                         CloudMessagingNotificationsSender.Data.TYPE_MESSAGE + "_" + intendedDeliveryID;
 
-                Log.d("ttt","notificationPath: "+notificationPath);
+                Log.d("ttt", "notificationPath: " + notificationPath);
 
                 currentUserRef.collection("Notifications")
-                        .document(notificationPath).update("seen",true);
+                        .document(notificationPath).update("seen", true);
 
             }
 
@@ -482,7 +479,7 @@ public class MessagingActivity extends AppCompatActivity
 
             if (lastKey != null && !lastKey.isEmpty()) {
 
-                messagingFirestoreRef.update(currentUserId + ":LastSeenMessage",Integer.parseInt(lastKey) + 1);
+                messagingFirestoreRef.update(currentUserId + ":LastSeenMessage", Integer.parseInt(lastKey) + 1);
 
             }
 
@@ -503,162 +500,12 @@ public class MessagingActivity extends AppCompatActivity
         }
     }
 
-    class FirstMessageClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-
-            final String message = messageEd.getText().toString().trim();
-            if (!message.equals("")) {
-//                if (WifiUtil.checkWifiConnection(view.getContext())) {
-                    messageEd.setText("");
-                    sendMessageBtn.setClickable(false);
-
-                    final Map<String, Object> firestoreMessagingMap = new HashMap<>();
-                    final List<String> users = new ArrayList<>();
-                    users.add(currentUserId);
-                    users.add(messagingUserId);
-
-                    firestoreMessagingMap.put("users", users);
-
-                    final MessageMap messageMap =
-                        new MessageMap(message, System.currentTimeMillis(), currentUserId);
-
-                    firestoreMessagingMap.put("lastMessage", messageMap);
-                    firestoreMessagingMap.put("lastMessageTimeInMillis", messageMap.getTime());
-                    firestoreMessagingMap.put("isDeletedFor:" + currentUserId, false);
-                    firestoreMessagingMap.put("isDeletedFor:" + messagingUserId, false);
-                    firestoreMessagingMap.put("intendedDeliveryID", intendedDeliveryID);
-                    firestoreMessagingMap.put("messagesCount",1);
-                    firestoreMessagingMap.put("destinationID", intendedDeliveryID);
-                    firestoreMessagingMap.put(currentUserId + ":LastSeenMessage", 0);
-                    firestoreMessagingMap.put(messagingUserId + ":LastSeenMessage", 0);
-
-
-                    final HashMap<String, MessageMap> messages = new HashMap<>();
-                    messages.put("0", messageMap);
-
-                messagingFirestoreRef
-                            .set(firestoreMessagingMap)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-
-                                    if(task.isSuccessful()){
-
-                                        messagingChildRef.child("Messages").setValue(messages).addOnSuccessListener(v -> {
-
-                                            messageMaps.add(messageMap);
-                                            messageTextMapAdapter.notifyDataSetChanged();
-                                            firstKey = "0";
-                                            lastKey = "0";
-
-                                            addUserDeleteEventListener();
-                                            addListenerForNewMessages();
-                                            addDeleteFieldListener();
-                                            checkUserActivityAndSendNotifications(messageMap.getContent());
-
-
-                                            sendMessageBtn.setOnClickListener(new MessageSenderClickListener());
-                                            sendMessageBtn.setClickable(true);
-
-
-                                        })
-                                                .addOnFailureListener(e -> {
-                                            Toast.makeText(MessagingActivity.this, "failed",
-                                                    Toast.LENGTH_SHORT).show();
-                                            sendMessageBtn.setClickable(true);
-                                        });
-
-                                    }
-
-                                }
-                            });
-
-//                }
-            } else {
-                Toast.makeText(view.getContext(),
-                        "لا يمكنك ارسال رسالة فارغة! ", Toast.LENGTH_SHORT).show();
-            }
-
-
-        }
-    }
-
-
-    class MessageSenderClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-
-            final String message = messageEd.getText().toString().trim();
-            if (!message.equals("")) {
-//                if (WifiUtil.checkWifiConnection(view.getContext())) {
-                    messageEd.setText("");
-                    sendMessageBtn.setClickable(false);
-
-                    MessageMap messageMap = new MessageMap(
-                            message,
-                            System.currentTimeMillis(),
-                            currentUserId
-                    );
-
-                    messagingChildRef.child("Messages")
-                            .child(String.valueOf(Integer.parseInt(lastKey) + 1))
-                            .setValue(messageMap).addOnSuccessListener(aVoid -> {
-
-                        messagingFirestoreRef.update("lastMessage",messageMap,
-                                "messagesCount", FieldValue.increment(1),
-                                "lastMessageTimeInMillis",messageMap.getTime())
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        checkUserActivityAndSendNotifications(messageMap.getContent());
-                                        sendMessageBtn.setClickable(true);
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-
-                                messagingChildRef.child("Messages")
-                                        .child(String.valueOf(Integer.parseInt(lastKey) + 1))
-                                        .removeValue()
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                Toast.makeText(MessagingActivity.this,
-                                                        "failed", Toast.LENGTH_SHORT).show();
-                                                sendMessageBtn.setClickable(true);
-
-                                            }
-                                        });
-                            }
-                        });
-
-                    }).addOnFailureListener(e -> {
-
-                        Toast.makeText(MessagingActivity.this,
-                                "failed", Toast.LENGTH_SHORT).show();
-                        sendMessageBtn.setClickable(true);
-
-                    });
-
-//                }
-            } else {
-                Toast.makeText(view.getContext(),
-                        "لا يمكنك ارسال رسالة فارغة! ", Toast.LENGTH_SHORT).show();
-            }
-
-
-        }
-    }
-
     void getInitialMessages() {
 
         messagingChildRef
                 .child("Messages")
                 .orderByKey()
-              .limitToLast(DOCUMENT_MESSAGE_LIMIT)
+                .limitToLast(DOCUMENT_MESSAGE_LIMIT)
                 .get().addOnSuccessListener(snapshot -> {
 
             Log.d("realTimeActivity", "children count: " + snapshot.getChildrenCount());
@@ -685,7 +532,7 @@ public class MessagingActivity extends AppCompatActivity
 
                 messagesProgressBar.setVisibility(View.INVISIBLE);
 
-                messagingFirestoreRef.update(currentUserId + ":LastSeenMessage",Integer.parseInt(lastKey) + 1);
+                messagingFirestoreRef.update(currentUserId + ":LastSeenMessage", Integer.parseInt(lastKey) + 1);
 
                 Log.d("realTimeActivity", "size from initial: " + messageMaps.size());
 
@@ -845,16 +692,15 @@ public class MessagingActivity extends AppCompatActivity
         sendCloudNotification(message);
     }
 
-
     void addUserDeleteEventListener() {
 
         messagingFirestoreRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                if(value!=null){
+                if (value != null) {
 
-                    if(value.contains("isDeletedFor:" + messagingUserId) && value.getBoolean("isDeletedFor:" + messagingUserId)){
+                    if (value.contains("isDeletedFor:" + messagingUserId) && value.getBoolean("isDeletedFor:" + messagingUserId)) {
 
                         Log.d("realTimeActivity", "messaging user deleted this messages");
 
@@ -880,6 +726,154 @@ public class MessagingActivity extends AppCompatActivity
         messageRv.post(() -> messageRv.scrollToPosition(messageMaps.size() - 1));
     }
 
+    class FirstMessageClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+
+            final String message = messageEd.getText().toString().trim();
+            if (!message.equals("")) {
+//                if (WifiUtil.checkWifiConnection(view.getContext())) {
+                messageEd.setText("");
+                sendMessageBtn.setClickable(false);
+
+                final Map<String, Object> firestoreMessagingMap = new HashMap<>();
+                final List<String> users = new ArrayList<>();
+                users.add(currentUserId);
+                users.add(messagingUserId);
+
+                firestoreMessagingMap.put("users", users);
+
+                final MessageMap messageMap =
+                        new MessageMap(message, System.currentTimeMillis(), currentUserId);
+
+                firestoreMessagingMap.put("lastMessage", messageMap);
+                firestoreMessagingMap.put("lastMessageTimeInMillis", messageMap.getTime());
+                firestoreMessagingMap.put("isDeletedFor:" + currentUserId, false);
+                firestoreMessagingMap.put("isDeletedFor:" + messagingUserId, false);
+                firestoreMessagingMap.put("intendedDeliveryID", intendedDeliveryID);
+                firestoreMessagingMap.put("messagesCount", 1);
+                firestoreMessagingMap.put("destinationID", intendedDeliveryID);
+                firestoreMessagingMap.put(currentUserId + ":LastSeenMessage", 0);
+                firestoreMessagingMap.put(messagingUserId + ":LastSeenMessage", 0);
+
+
+                final HashMap<String, MessageMap> messages = new HashMap<>();
+                messages.put("0", messageMap);
+
+                messagingFirestoreRef
+                        .set(firestoreMessagingMap)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+
+                                if (task.isSuccessful()) {
+
+                                    messagingChildRef.child("Messages").setValue(messages).addOnSuccessListener(v -> {
+
+                                        messageMaps.add(messageMap);
+                                        messageTextMapAdapter.notifyDataSetChanged();
+                                        firstKey = "0";
+                                        lastKey = "0";
+
+                                        addUserDeleteEventListener();
+                                        addListenerForNewMessages();
+                                        addDeleteFieldListener();
+                                        checkUserActivityAndSendNotifications(messageMap.getContent());
+
+
+                                        sendMessageBtn.setOnClickListener(new MessageSenderClickListener());
+                                        sendMessageBtn.setClickable(true);
+
+
+                                    })
+                                            .addOnFailureListener(e -> {
+                                                Toast.makeText(MessagingActivity.this, "failed",
+                                                        Toast.LENGTH_SHORT).show();
+                                                sendMessageBtn.setClickable(true);
+                                            });
+
+                                }
+
+                            }
+                        });
+
+//                }
+            } else {
+                Toast.makeText(view.getContext(),
+                        "لا يمكنك ارسال رسالة فارغة! ", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }
+    }
+
+    class MessageSenderClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+
+            final String message = messageEd.getText().toString().trim();
+            if (!message.equals("")) {
+//                if (WifiUtil.checkWifiConnection(view.getContext())) {
+                messageEd.setText("");
+                sendMessageBtn.setClickable(false);
+
+                MessageMap messageMap = new MessageMap(
+                        message,
+                        System.currentTimeMillis(),
+                        currentUserId
+                );
+
+                messagingChildRef.child("Messages")
+                        .child(String.valueOf(Integer.parseInt(lastKey) + 1))
+                        .setValue(messageMap).addOnSuccessListener(aVoid -> {
+
+                    messagingFirestoreRef.update("lastMessage", messageMap,
+                            "messagesCount", FieldValue.increment(1),
+                            "lastMessageTimeInMillis", messageMap.getTime())
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    checkUserActivityAndSendNotifications(messageMap.getContent());
+                                    sendMessageBtn.setClickable(true);
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                            messagingChildRef.child("Messages")
+                                    .child(String.valueOf(Integer.parseInt(lastKey) + 1))
+                                    .removeValue()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            Toast.makeText(MessagingActivity.this,
+                                                    "failed", Toast.LENGTH_SHORT).show();
+                                            sendMessageBtn.setClickable(true);
+
+                                        }
+                                    });
+                        }
+                    });
+
+                }).addOnFailureListener(e -> {
+
+                    Toast.makeText(MessagingActivity.this,
+                            "failed", Toast.LENGTH_SHORT).show();
+                    sendMessageBtn.setClickable(true);
+
+                });
+
+//                }
+            } else {
+                Toast.makeText(view.getContext(),
+                        "لا يمكنك ارسال رسالة فارغة! ", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }
+    }
 
     class OnScrollListener extends RecyclerView.OnScrollListener {
         @Override
@@ -888,8 +882,8 @@ public class MessagingActivity extends AppCompatActivity
 
             if (!isFetchingMoreMessages && !messageRv.canScrollVertically(-1)) {
 
-                    Log.d("realTimeActivity", "geeting more messages");
-                    getMoreTopMessages();
+                Log.d("realTimeActivity", "geeting more messages");
+                getMoreTopMessages();
             }
         }
 

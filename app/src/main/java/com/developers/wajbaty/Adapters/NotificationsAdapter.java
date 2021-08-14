@@ -21,17 +21,16 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.NotificationsVH>{
+public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.NotificationsVH> {
 
-    private final ArrayList<Notification> notifications;
     private static NotificationListener notificationListener;
-
+    private final ArrayList<Notification> notifications;
     private final CollectionReference customerRef;
-    private final HashMap<String,String> userImageURLsMap,userUserNamesMap;
+    private final HashMap<String, String> userImageURLsMap, userUserNamesMap;
 
-    public NotificationsAdapter(ArrayList<Notification> notifications,NotificationListener notificationListener) {
+    public NotificationsAdapter(ArrayList<Notification> notifications, NotificationListener notificationListener) {
         this.notifications = notifications;
-        NotificationsAdapter.notificationListener= notificationListener;
+        NotificationsAdapter.notificationListener = notificationListener;
 
 
         customerRef = FirebaseFirestore.getInstance().collection("Users");
@@ -40,16 +39,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     }
 
-    public interface NotificationListener{
-        void onNotificationClicked(int position);
-        void onNotificationDismissed(int position);
-    }
-
     @NonNull
     @Override
     public NotificationsVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new NotificationsVH(LayoutInflater.from(parent.getContext())
-        .inflate(R.layout.item_notification,parent,false));
+                .inflate(R.layout.item_notification, parent, false));
     }
 
     @Override
@@ -64,10 +58,40 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         return notifications.size();
     }
 
+    private void getUserInfo(String userID, ImageView userIv, TextView usernameTv) {
+
+        customerRef.document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                if (documentSnapshot.exists()) {
+
+                    final String imageURL = documentSnapshot.getString("imageURL"),
+                            username = documentSnapshot.getString("name");
+
+                    Picasso.get().load(imageURL).fit().centerCrop().into(userIv);
+                    usernameTv.setText(username);
+
+                    userImageURLsMap.put(userID, imageURL);
+                    userUserNamesMap.put(userID, username);
+
+                }
+
+            }
+        });
+
+    }
+
+    public interface NotificationListener {
+        void onNotificationClicked(int position);
+
+        void onNotificationDismissed(int position);
+    }
+
     public class NotificationsVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final ImageView notificationUserImageIv;
-        private final TextView notificationUserNameTv,notificationContentTv,notificationTimeTv;
+        private final TextView notificationUserNameTv, notificationContentTv, notificationTimeTv;
 
         public NotificationsVH(@NonNull View itemView) {
             super(itemView);
@@ -79,27 +103,27 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             itemView.setOnClickListener(this);
         }
 
-        private void bind(Notification notification){
+        private void bind(Notification notification) {
 
             final String senderID = notification.getSenderID();
 
-            if(userUserNamesMap.containsKey(senderID)){
+            if (userUserNamesMap.containsKey(senderID)) {
 
                 Picasso.get().load(userImageURLsMap.get(senderID)).fit()
                         .centerCrop().into(notificationUserImageIv);
 
                 notificationUserNameTv.setText(userUserNamesMap.get(senderID));
 
-            }else{
-                getUserInfo(senderID,notificationUserImageIv,notificationUserNameTv);
+            } else {
+                getUserInfo(senderID, notificationUserImageIv, notificationUserNameTv);
             }
 
             String content = "";
-            switch (notification.getType()){
+            switch (notification.getType()) {
 
                 case Notification.TYPE_MESSAGE:
-                    content = "New Message: "+notification.getContent();
-                break;
+                    content = "New Message: " + notification.getContent();
+                    break;
             }
 
             notificationContentTv.setText(content);
@@ -113,30 +137,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             notificationListener.onNotificationClicked(getAdapterPosition());
 
         }
-    }
-
-    private void getUserInfo(String userID,ImageView userIv,TextView usernameTv){
-
-        customerRef.document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-                if(documentSnapshot.exists()){
-
-                    final String imageURL = documentSnapshot.getString("imageURL"),
-                            username = documentSnapshot.getString("name");
-
-                    Picasso.get().load(imageURL).fit().centerCrop().into(userIv);
-                    usernameTv.setText(username);
-
-                    userImageURLsMap.put(userID,imageURL);
-                    userUserNamesMap.put(userID,username);
-
-                }
-
-            }
-        });
-
     }
 
 }

@@ -1,12 +1,6 @@
 package com.developers.wajbaty.Customer.Fragments;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +11,12 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.UserReview;
@@ -36,6 +36,25 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
 
     private String driverID;
     private DeliveryDriverRatingListener deliveryDriverRatingListener;
+    //views
+    private ImageView driverRatingImageIv;
+    private TextView driverRatingNameTv;
+    private RatingBar driverRatingRatingBar;
+    private EditText driverRatingNoteEd;
+    private Button driverRatingSubmitBtn;
+    //firebase
+    private DocumentReference driverRef;
+    public DeliveryDriverRatingFragment() {
+    }
+
+    public static DeliveryDriverRatingFragment newInstance(String driverID, DeliveryDriverRatingListener listener) {
+        DeliveryDriverRatingFragment fragment = new DeliveryDriverRatingFragment();
+        fragment.setDeliveryDriverRatingListener(listener);
+        Bundle args = new Bundle();
+        args.putString(DRIVER_ID, driverID);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public DeliveryDriverRatingListener getDeliveryDriverRatingListener() {
         return deliveryDriverRatingListener;
@@ -45,33 +64,6 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
         this.deliveryDriverRatingListener = deliveryDriverRatingListener;
     }
 
-
-    public interface DeliveryDriverRatingListener{
-        void onRatingSubmitted();
-    }
-
-    //views
-    private ImageView driverRatingImageIv;
-    private TextView driverRatingNameTv;
-    private RatingBar driverRatingRatingBar;
-    private EditText driverRatingNoteEd;
-    private Button driverRatingSubmitBtn;
-
-    //firebase
-    private DocumentReference driverRef;
-
-    public DeliveryDriverRatingFragment() {
-    }
-
-    public static DeliveryDriverRatingFragment newInstance(String driverID,DeliveryDriverRatingListener listener) {
-        DeliveryDriverRatingFragment fragment = new DeliveryDriverRatingFragment();
-        fragment.setDeliveryDriverRatingListener(listener);
-        Bundle args = new Bundle();
-        args.putString(DRIVER_ID, driverID);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,11 +71,12 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
             driverID = getArguments().getString(DRIVER_ID);
         }
 
-        if(driverID!=null){
+        if (driverID != null) {
             driverRef = FirebaseFirestore.getInstance().collection("Users")
                     .document(driverID);
         }
     }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -93,7 +86,7 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view =  inflater.inflate(R.layout.fragment_delivery_driver_rating, container, false);
+        View view = inflater.inflate(R.layout.fragment_delivery_driver_rating, container, false);
         driverRatingImageIv = view.findViewById(R.id.driverRatingImageIv);
         driverRatingNameTv = view.findViewById(R.id.driverRatingNameTv);
         driverRatingRatingBar = view.findViewById(R.id.driverRatingRatingBar);
@@ -110,12 +103,19 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
 
-                if(snapshot.exists()){
+                if (snapshot.exists()) {
 
-                    if(snapshot.contains("imageURL")){
+                    if (snapshot.contains("imageURL")) {
                         final String imageURL = snapshot.getString("imageURL");
-                        if(imageURL!=null && !imageURL.isEmpty()){
-                            Picasso.get().load(imageURL).fit().centerCrop().into(driverRatingImageIv);
+                        if (imageURL != null && !imageURL.isEmpty()) {
+
+                            final CircularProgressDrawable progressDrawable = new CircularProgressDrawable(requireContext());
+                            progressDrawable.setColorSchemeColors(ResourcesCompat.getColor(getResources(), R.color.orange, null));
+                            progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                            progressDrawable.start();
+
+                            Picasso.get().load(imageURL).fit().centerCrop()
+                                    .placeholder(progressDrawable).into(driverRatingImageIv);
                         }
                     }
                     driverRatingNameTv.setText(snapshot.getString("name"));
@@ -127,46 +127,46 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
 
-                if(driverRatingRatingBar.getRating() != 0){
+                if (driverRatingRatingBar.getRating() != 0) {
 
                     ProgressDialogFragment progressDialog = new ProgressDialogFragment();
-                    progressDialog.show(getChildFragmentManager(),"progressDialog");
+                    progressDialog.show(getChildFragmentManager(), "progressDialog");
 
                     float newRating = driverRatingRatingBar.getRating();
                     driverRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
                         public void onSuccess(DocumentSnapshot snapshot) {
 
-                            if(snapshot.exists()){
+                            if (snapshot.exists()) {
 
                                 double averageRating;
 
-                                if(snapshot.contains("rating")){
+                                if (snapshot.contains("rating")) {
                                     averageRating = snapshot.getDouble("rating");
-                                }else{
+                                } else {
                                     averageRating = 0;
                                 }
 
-                                Log.d("rating","averageRating: "+averageRating);
+                                Log.d("rating", "averageRating: " + averageRating);
                                 long totalRatings = 0;
 
                                 if (snapshot.contains("totalRatings")) {
                                     totalRatings = snapshot.getLong("totalRatings");
                                 }
-                                Log.d("rating","totalRatings: "+totalRatings);
+                                Log.d("rating", "totalRatings: " + totalRatings);
                                 double newAverageRating;
 
-                                if(totalRatings != 0 && averageRating != 0){
+                                if (totalRatings != 0 && averageRating != 0) {
                                     newAverageRating = ((totalRatings * averageRating) + newRating) / (totalRatings + 1);
-                                }else{
+                                } else {
                                     newAverageRating = newRating;
                                 }
 
-                                Log.d("rating","newAverageRating: "+newAverageRating);
+                                Log.d("rating", "newAverageRating: " + newAverageRating);
 
                                 long finalTotalRatings = totalRatings;
-                                driverRef.update("totalRatings",totalRatings + 1,
-                                                "rating",newAverageRating)
+                                driverRef.update("totalRatings", totalRatings + 1,
+                                        "rating", newAverageRating)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
@@ -174,11 +174,11 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
                                                 final String note =
                                                         driverRatingNoteEd.getText().toString().trim();
 
-                                                if(!note.isEmpty()){
+                                                if (!note.isEmpty()) {
 
                                                     final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                                                    if(user == null)
+                                                    if (user == null)
                                                         return;
 
                                                     final String currentUID = user.getUid();
@@ -192,17 +192,17 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
                                                     driverRef.collection("Reviews")
                                                             .document(currentUID).set(userReview)
                                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-                                                            progressDialog.dismiss();
-                                                            deliveryDriverRatingListener.onRatingSubmitted();
-                                                        }
-                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    progressDialog.dismiss();
+                                                                    deliveryDriverRatingListener.onRatingSubmitted();
+                                                                }
+                                                            }).addOnFailureListener(new OnFailureListener() {
                                                         @Override
                                                         public void onFailure(@NonNull Exception e) {
 
                                                             driverRef.update("totalRatings", finalTotalRatings,
-                                                                    "rating",averageRating);
+                                                                    "rating", averageRating);
 
                                                             Toast.makeText(requireContext(),
                                                                     "Rating driver failed!" +
@@ -212,7 +212,7 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
                                                         }
                                                     });
 
-                                                }else{
+                                                } else {
                                                     progressDialog.dismiss();
                                                     deliveryDriverRatingListener.onRatingSubmitted();
                                                 }
@@ -236,8 +236,7 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
                     });
 
 
-
-                }else{
+                } else {
 
                     Toast.makeText(requireContext(),
                             "Please add choose the driver's rating before submitting!",
@@ -248,5 +247,9 @@ public class DeliveryDriverRatingFragment extends DialogFragment {
             }
         });
 
+    }
+
+    public interface DeliveryDriverRatingListener {
+        void onRatingSubmitted();
     }
 }

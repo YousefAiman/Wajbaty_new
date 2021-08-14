@@ -2,7 +2,6 @@ package com.developers.wajbaty.Utils;
 
 import android.content.Context;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -16,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.developers.wajbaty.BroadcastReceivers.WifiReceiver;
-import com.developers.wajbaty.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,7 +159,7 @@ public class WifiUtil {
 
                 registerNetworkCallback(cm);
 
-                Log.d("ttt","registering ");
+                Log.d("ttt", "registering ");
                 return true;
             } else {
 

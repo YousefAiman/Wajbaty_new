@@ -1,9 +1,9 @@
 package com.developers.wajbaty.Activities;
 
+import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
-import android.os.Bundle;
 
 import com.developers.wajbaty.R;
 

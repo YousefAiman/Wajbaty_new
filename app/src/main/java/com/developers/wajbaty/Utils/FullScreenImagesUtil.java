@@ -8,6 +8,9 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.core.content.res.ResourcesCompat;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
+
 import com.developers.wajbaty.R;
 import com.squareup.picasso.Picasso;
 
@@ -27,7 +30,12 @@ public class FullScreenImagesUtil {
         imageDialog.findViewById(R.id.fullScreenCloseIv).setOnClickListener(v -> imageDialog.dismiss());
         final ImageView fullScreenIv = imageDialog.findViewById(R.id.fullScreenTv);
         if (imageUrl != null) {
-            Picasso.get().load(imageUrl).fit().centerInside().into(fullScreenIv);
+
+            final CircularProgressDrawable progressDrawable = new CircularProgressDrawable(context);
+            progressDrawable.setColorSchemeColors(ResourcesCompat.getColor(context.getResources(), R.color.orange, null));
+            progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+            progressDrawable.start();
+            Picasso.get().load(imageUrl).fit().centerInside().placeholder(progressDrawable).into(fullScreenIv);
         } else if (imageUri != null) {
             Picasso.get().load(imageUri).fit().centerInside().into(fullScreenIv);
         }

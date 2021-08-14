@@ -1,15 +1,5 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,6 +13,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 import com.developers.wajbaty.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -62,15 +61,16 @@ public class AddImageProfileActivity extends AppCompatActivity {
     Uri imageUri;
     Uri uri;
 
-    private Map<String,Object> addressMap;
+    private Map<String, Object> addressMap;
     private int userType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_image_profile);
 
         addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
-        userType = getIntent().getIntExtra("userType",0);
+        userType = getIntent().getIntExtra("userType", 0);
 
         add_Im = findViewById(R.id.add_Im);
         icon_Im = findViewById(R.id.icon_Im);
@@ -81,7 +81,7 @@ public class AddImageProfileActivity extends AppCompatActivity {
 //            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //            startActivityIfNeeded(intent, REQUEST_IMAGE_CAPTURE);
 
-            final CharSequence[] options = {"take_photo","choose_from_gallery", "cancel"};
+            final CharSequence[] options = {"take_photo", "choose_from_gallery", "cancel"};
 
             AlertDialog.Builder builder = new AlertDialog.Builder(AddImageProfileActivity.this);
             builder.setTitle("add_photo");
@@ -113,7 +113,7 @@ public class AddImageProfileActivity extends AppCompatActivity {
         TextView skip = findViewById(R.id.skip_Tv);
         skip.setOnClickListener(v -> {
             startActivity(new Intent(this, HomeActivity.class)
-                    .putExtra("userType",userType)
+                    .putExtra("userType", userType)
                     .putExtra("addressMap", (Serializable) addressMap));
         });
     }
@@ -279,7 +279,7 @@ public class AddImageProfileActivity extends AppCompatActivity {
                                                         @Override
                                                         public void onComplete(@NonNull Task<Void> task) {
                                                             startActivity(new Intent(AddImageProfileActivity.this, HomeActivity.class)
-                                                                    .putExtra("userType",userType)
+                                                                    .putExtra("userType", userType)
                                                                     .putExtra("addressMap", (Serializable) addressMap));
                                                         }
                                                     })

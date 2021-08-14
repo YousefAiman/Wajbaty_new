@@ -1,12 +1,5 @@
 package com.developers.wajbaty.PartneredRestaurant.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.NestedScrollView;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,10 +9,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Activities.MenuItemActivity;
-import com.developers.wajbaty.Adapters.CartAdapter;
 import com.developers.wajbaty.Adapters.CartInfoAdapter;
-import com.developers.wajbaty.Customer.Activities.CartActivity;
 import com.developers.wajbaty.Models.CartItem;
 import com.developers.wajbaty.Models.RestaurantOrder;
 import com.developers.wajbaty.R;
@@ -68,8 +66,8 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
     //views
     private ImageView restaurantOrderDriverUserIv;
-    private TextView restaurantOrderDriverNameTv,restaurantOrderTimeTv,restaurantOrderItemCountTv,
-            restaurantOrderTotalCostTv,restaurantOrderStatusTv;
+    private TextView restaurantOrderDriverNameTv, restaurantOrderTimeTv, restaurantOrderItemCountTv,
+            restaurantOrderTotalCostTv, restaurantOrderStatusTv;
     private RecyclerView restaurantOrderCartItemsRv;
     private Button restaurantOrderFinishedBtn;
 
@@ -88,10 +86,10 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
     }
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         final Intent intent = getIntent();
-        if(intent!=null && intent.hasExtra("restaurantOrder")){
+        if (intent != null && intent.hasExtra("restaurantOrder")) {
             restaurantOrder = (RestaurantOrder) intent.getSerializableExtra("restaurantOrder");
         }
 
@@ -99,7 +97,7 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
         menuItemRef = firestore.collection("MenuItems");
 
-        mainQuery =  firestore.collection("PartneredRestaurant")
+        mainQuery = firestore.collection("PartneredRestaurant")
                 .document(GlobalVariables.getCurrentRestaurantId())
                 .collection("MealsOrders")
                 .document(restaurantOrder.getID())
@@ -108,16 +106,16 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
                 .limit(CART_ITEM_LIMIT);
 
         cartItems = new ArrayList<>();
-        adapter = new CartInfoAdapter(cartItems,this);
+        adapter = new CartInfoAdapter(cartItems, this, this);
     }
 
-    private void getViews(){
+    private void getViews() {
 
         final NestedScrollView restaurantOrderNSV = findViewById(R.id.restaurantOrderNSV);
         restaurantOrderNSV.setNestedScrollingEnabled(false);
 
         final Toolbar restaurantOrderToolbar = findViewById(R.id.restaurantOrderToolbar);
-        restaurantOrderToolbar.setNavigationOnClickListener(v-> finish());
+        restaurantOrderToolbar.setNavigationOnClickListener(v -> finish());
 
         restaurantOrderDriverUserIv = findViewById(R.id.restaurantOrderDriverUserIv);
         restaurantOrderDriverNameTv = findViewById(R.id.restaurantOrderDriverNameTv);
@@ -132,45 +130,45 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
     }
 
 
-    private void populateViews(){
+    private void populateViews() {
 
-        if(restaurantOrder.getStatus() == RestaurantOrder.TYPE_DONE){
+        if (restaurantOrder.getStatus() == RestaurantOrder.TYPE_DONE) {
             restaurantOrderFinishedBtn.setVisibility(View.GONE);
-        }else if(restaurantOrder.getStatus() == RestaurantOrder.TYPE_PENDING){
+        } else if (restaurantOrder.getStatus() == RestaurantOrder.TYPE_PENDING) {
             restaurantOrderFinishedBtn.setOnClickListener(this);
         }
 
-        if(restaurantOrder.getDriverID() != null){
+        if (restaurantOrder.getDriverID() != null) {
 
             firestore.collection("Users").document(restaurantOrder.getDriverID())
                     .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot snapshot) {
-                    if(snapshot.exists()){
-                        if(snapshot.contains("imageUrl")){
-                            Picasso.get().load(snapshot.getString("imageUrl"))
+                    if (snapshot.exists()) {
+                        if (snapshot.contains("imageURL")) {
+                            Picasso.get().load(snapshot.getString("imageURL"))
                                     .fit().centerCrop().into(restaurantOrderDriverUserIv);
                         }
-                        if(snapshot.contains("name")){
+                        if (snapshot.contains("name")) {
                             restaurantOrderDriverNameTv.setText(snapshot.getString("name"));
                         }
                     }
                 }
             });
 
-        }else{
+        } else {
             restaurantOrderDriverNameTv.setText("No driver yet");
         }
 
 
         restaurantOrderTimeTv.setText(TimeFormatter.formatTime(restaurantOrder.getOrderTimeInMillis()));
-        restaurantOrderItemCountTv.setText("Total Items: "+restaurantOrder.getItemCount());
+        restaurantOrderItemCountTv.setText("Total Items: " + restaurantOrder.getItemCount());
         restaurantOrderTotalCostTv.setText(restaurantOrder.getTotalCost() + " " + restaurantOrder.getCurrency());
 
 
         String status = "";
 
-        switch (restaurantOrder.getStatus()){
+        switch (restaurantOrder.getStatus()) {
             case RestaurantOrder.TYPE_PENDING:
                 status = "Pending";
                 break;
@@ -188,7 +186,7 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
     }
 
 
-    private void getCartItems(boolean isInitial){
+    private void getCartItems(boolean isInitial) {
 
 //        showProgressBar();
 
@@ -205,12 +203,12 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
             if (!snapshots.isEmpty()) {
 
-                Log.d(TAG,"gotten cart items size: "+snapshots.size());
+                Log.d(TAG, "gotten cart items size: " + snapshots.size());
 
                 lastDocSnap = snapshots.getDocuments().get(snapshots.size() - 1);
 
-                for(DocumentSnapshot snap:snapshots){
-                    Log.d(TAG,"cart item id: "+snap.getId());
+                for (DocumentSnapshot snap : snapshots) {
+                    Log.d(TAG, "cart item id: " + snap.getId());
                     addedCartItemsIds.add(snap.getId());
                 }
 
@@ -220,27 +218,27 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
         }).addOnCompleteListener(task -> {
 
-            Log.d(TAG,"getting cart item complete");
+            Log.d(TAG, "getting cart item complete");
             if (task.isSuccessful() && task.getResult() != null && !addedCartItemsIds.isEmpty()) {
-                Log.d(TAG,"addedCartItemsIds.isEmpty()");
+                Log.d(TAG, "addedCartItemsIds.isEmpty()");
                 menuItemRef.whereIn("id", addedCartItemsIds)
                         .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
 
-                        Log.d(TAG,"gotten menu items: "+snapshots.size());
+                        Log.d(TAG, "gotten menu items: " + snapshots.size());
 
                         final List<DocumentSnapshot> documentSnapshots = snapshots.getDocuments();
 
-                        for(int i=0;i<snapshots.size();i++){
-                            final DocumentSnapshot snapshot  = documentSnapshots.get(i);
+                        for (int i = 0; i < snapshots.size(); i++) {
+                            final DocumentSnapshot snapshot = documentSnapshots.get(i);
 
-                            if(snapshot.contains("imageUrls")){
+                            if (snapshot.contains("imageUrls")) {
 
                                 List<String> imageUrls =
-                                        (List<String>)snapshot.get("imageUrls");
+                                        (List<String>) snapshot.get("imageUrls");
 
-                                if(imageUrls!=null && !imageUrls.isEmpty()){
+                                if (imageUrls != null && !imageUrls.isEmpty()) {
                                     addedCartItems.get(i).setImageUrl(imageUrls.get(0));
                                 }
 
@@ -248,23 +246,23 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
                             addedCartItems.get(i).setName(snapshot.getString("name"));
                             addedCartItems.get(i).setCurrency(snapshot.getString("currency"));
-                            if(snapshot.contains("discounted") && snapshot.getBoolean("discounted")
-                                    && snapshot.contains("discountMap")){
+                            if (snapshot.contains("discounted") && snapshot.getBoolean("discounted")
+                                    && snapshot.contains("discountMap")) {
 
-                                final Map<String,Object> discountMap = (Map<String, Object>) snapshot.get("discountMap");
+                                final Map<String, Object> discountMap = (Map<String, Object>) snapshot.get("discountMap");
 
-                                if(discountMap!=null && discountMap.containsKey("endsAt") && ((long)discountMap.get("endsAt")) > System.currentTimeMillis()){
+                                if (discountMap != null && discountMap.containsKey("endsAt") && ((long) discountMap.get("endsAt")) > System.currentTimeMillis()) {
                                     addedCartItems.get(i).setPrice(((Double) discountMap.get("discountedPrice")).floatValue());
-                                }else{
+                                } else {
 
-                                    snapshot.getReference().update("discounted",false,
+                                    snapshot.getReference().update("discounted", false,
                                             "discountMap", FieldValue.delete());
 
                                     addedCartItems.get(i).setPrice(((Double) Objects.requireNonNull(snapshot.get("price"))).floatValue());
 
                                 }
 
-                            }else{
+                            } else {
                                 addedCartItems.get(i).setPrice(((Double) Objects.requireNonNull(snapshot.get("price"))).floatValue());
 
                             }
@@ -284,12 +282,12 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 //                }
 
 
-                        Log.d(TAG,"gotten menu items complete: "+task.getResult().size());
+                        Log.d(TAG, "gotten menu items complete: " + task.getResult().size());
 
 
-                        if(task.isSuccessful() && !task.getResult().isEmpty()){
+                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
 
-                            Log.d(TAG,"gotten menu items not empty: "+task.getResult().size());
+                            Log.d(TAG, "gotten menu items not empty: " + task.getResult().size());
 
                             if (isInitial) {
 
@@ -308,12 +306,12 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
                                 if (!task.getResult().isEmpty()) {
 
-                                    cartItems.addAll(cartItems.size() - 1,addedCartItems);
+                                    cartItems.addAll(cartItems.size() - 1, addedCartItems);
 
                                     int size = task.getResult().size();
 
                                     adapter.notifyItemRangeInserted(
-                                            cartItems.size() - size,size);
+                                            cartItems.size() - size, size);
 
                                     if (task.getResult().size() < CART_ITEM_LIMIT && scrollListener != null) {
                                         restaurantOrderCartItemsRv.removeOnScrollListener(scrollListener);
@@ -322,10 +320,10 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
                                 }
                             }
 
-                            if(!addedCartItems.isEmpty()){
+                            if (!addedCartItems.isEmpty()) {
 
                                 final List<String> itemIds = new ArrayList<>();
-                                for(CartItem cartItem:addedCartItems){
+                                for (CartItem cartItem : addedCartItems) {
                                     itemIds.add(cartItem.getItemId());
                                 }
 
@@ -339,7 +337,7 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
                     }
                 });
 
-            }else{
+            } else {
 
                 isLoadingItems = false;
             }
@@ -348,46 +346,45 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                Log.d(TAG,"added cart items failed: "+e.getMessage());
+                Log.d(TAG, "added cart items failed: " + e.getMessage());
                 isLoadingItems = false;
             }
         });
 
 
-
     }
 
 
-    private void addCartRemoveListener(List<String> itemIds){
+    private void addCartRemoveListener(List<String> itemIds) {
 
-        if(removeListeners == null)
+        if (removeListeners == null)
             removeListeners = new ArrayList<>();
 
         removeListeners.add(
                 firestore.collection("MenuItems")
                         .whereIn("id", itemIds)
-                        .whereEqualTo("isBeingRemoved",true)
+                        .whereEqualTo("isBeingRemoved", true)
                         .addSnapshotListener(new EventListener<QuerySnapshot>() {
                             @Override
                             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                                if(value == null)
+                                if (value == null)
                                     return;
 
-                                for(DocumentChange dc:value.getDocumentChanges()){
+                                for (DocumentChange dc : value.getDocumentChanges()) {
 
                                     final String documentId = dc.getDocument().getId();
 
-                                    if(dc.getType() == DocumentChange.Type.ADDED){
+                                    if (dc.getType() == DocumentChange.Type.ADDED) {
 
 //                               final AtomicInteger position = new AtomicInteger(-1);
                                         final Thread thread = new Thread(new Runnable() {
                                             @Override
                                             public void run() {
 
-                                                for(int i=0;i<cartItems.size();i++){
+                                                for (int i = 0; i < cartItems.size(); i++) {
 
-                                                    if(cartItems.get(i).getItemId().equals(documentId)){
+                                                    if (cartItems.get(i).getItemId().equals(documentId)) {
 //                                                position.set(i);
                                                         cartItems.remove(i);
                                                         final int finalI = i;
@@ -430,7 +427,7 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
     public void showMenuItem(int position) {
 
         final Intent menuItemIntent = new Intent(this, MenuItemActivity.class);
-        menuItemIntent.putExtra("MenuItemID",cartItems.get(position).getItemId());
+        menuItemIntent.putExtra("MenuItemID", cartItems.get(position).getItemId());
         startActivity(menuItemIntent);
 
     }
@@ -438,12 +435,12 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == restaurantOrderFinishedBtn.getId()){
+        if (v.getId() == restaurantOrderFinishedBtn.getId()) {
 
             firestore.collection("PartneredRestaurant")
                     .document(GlobalVariables.getCurrentRestaurantId())
                     .collection("MealsOrders")
-                    .document(restaurantOrder.getID()).update("status",RestaurantOrder.TYPE_DONE)
+                    .document(restaurantOrder.getID()).update("status", RestaurantOrder.TYPE_DONE)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -466,6 +463,23 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (scrollListener != null && restaurantOrderCartItemsRv != null) {
+            restaurantOrderCartItemsRv.removeOnScrollListener(scrollListener);
+        }
+
+
+        if (removeListeners != null) {
+            for (ListenerRegistration listenerRegistration : removeListeners) {
+                listenerRegistration.remove();
+            }
+        }
+
+    }
+
     private class ScrollListener extends RecyclerView.OnScrollListener {
         @Override
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -478,23 +492,5 @@ public class RestaurantOrderActivity extends AppCompatActivity implements CartIn
 
             }
         }
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if (scrollListener != null && restaurantOrderCartItemsRv != null) {
-            restaurantOrderCartItemsRv.removeOnScrollListener(scrollListener);
-        }
-
-
-        if(removeListeners!=null){
-            for(ListenerRegistration listenerRegistration:removeListeners){
-                listenerRegistration.remove();
-            }
-        }
-
     }
 }

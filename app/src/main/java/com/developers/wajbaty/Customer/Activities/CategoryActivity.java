@@ -1,10 +1,5 @@
 package com.developers.wajbaty.Customer.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,10 +8,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.developers.wajbaty.Adapters.CategoriesAdapter;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Adapters.CategoryRestaurantsAdapter;
-import com.developers.wajbaty.Customer.Fragments.HomeFragment;
-import com.developers.wajbaty.Customer.Fragments.NearbyRestaurantsFragment;
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.Models.PartneredRestaurantModel;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantActivity;
@@ -37,14 +34,13 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-public class CategoryActivity extends AppCompatActivity implements CategoryRestaurantsAdapter.CategoryRestaurantsListener{
+public class CategoryActivity extends AppCompatActivity implements CategoryRestaurantsAdapter.CategoryRestaurantsListener {
 
 
     private static final int RESTAURANT_LIMIT = 10;
@@ -52,7 +48,7 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
 
 
     private String category;
-    private Map<String,Object> addressMap;
+    private Map<String, Object> addressMap;
 
     //views
     private Toolbar categoryRestaurantsToolbar;
@@ -93,13 +89,12 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
         fetchFavoriteRestaurants();
 
 
-
     }
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         final Intent intent = getIntent();
-        if(intent!=null && intent.hasExtra("category") && intent.hasExtra("addressMap")){
+        if (intent != null && intent.hasExtra("category") && intent.hasExtra("addressMap")) {
             category = intent.getStringExtra("category");
             addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
         }
@@ -109,7 +104,7 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
         restaurantSummaries = new ArrayList<>();
 
         adapter = new CategoryRestaurantsAdapter(restaurantSummaries,
-                this, likedRestaurants);
+                this, likedRestaurants, this);
 
 
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -117,13 +112,13 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
         firestore = FirebaseFirestore.getInstance();
 
         restaurantQuery = firestore.collection("PartneredRestaurant")
-                .whereEqualTo("category",category)
-                .whereEqualTo("countryCode",addressMap.get("countryCode"))
+                .whereEqualTo("category", category)
+                .whereEqualTo("countryCode", addressMap.get("countryCode"))
                 .orderBy("geohash").limit(RESTAURANT_LIMIT);
 
         final LatLng latLng = (LatLng) addressMap.get("latLng");
 
-        if(latLng!=null){
+        if (latLng != null) {
 
             GeoLocation center = new GeoLocation(latLng.latitude, latLng.longitude);
             geoQueryBounds = GeoFireUtils.getGeoHashQueryBounds(center, radius);
@@ -134,20 +129,20 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
     }
 
 
-    private void getViews(){
+    private void getViews() {
 
         categoryRestaurantsToolbar = findViewById(R.id.categoryRestaurantsToolbar);
         categoryRestaurantsResultsTv = findViewById(R.id.categoryRestaurantsResultsTv);
         categoryRestaurantsRv = findViewById(R.id.categoryRestaurantsRv);
         categoryRestaurantsProgressBar = findViewById(R.id.categoryRestaurantsProgressBar);
 
-        categoryRestaurantsToolbar.setNavigationOnClickListener(v->finish());
+        categoryRestaurantsToolbar.setNavigationOnClickListener(v -> finish());
 
         categoryRestaurantsRv.setAdapter(adapter);
     }
 
 
-    private void fetchCategoryResultSize(){
+    private void fetchCategoryResultSize() {
 
         firestore.collection("GeneralOptions").document("Categories")
                 .collection("Categories").document(category)
@@ -155,10 +150,10 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                if(documentSnapshot.exists()){
+                if (documentSnapshot.exists()) {
                     final long totalCount = documentSnapshot.getLong("count");
                     categoryRestaurantsResultsTv.setText(totalCount + (totalCount > 1 || totalCount == 0
-                            ?" Restaurants":" Restaurant"));
+                            ? " Restaurants" : " Restaurant"));
                 }
 
             }
@@ -166,14 +161,14 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
 
     }
 
-    private void fetchFavoriteRestaurants(){
+    private void fetchFavoriteRestaurants() {
 
         firestore.collection("Users").document(currentUid).collection("Favorites")
                 .document("FavoriteRestaurants").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                if(documentSnapshot.exists() && documentSnapshot.contains("FavoriteRestaurants")){
+                if (documentSnapshot.exists() && documentSnapshot.contains("FavoriteRestaurants")) {
                     likedRestaurants.addAll((List<String>) documentSnapshot.get("FavoriteRestaurants"));
                 }
 
@@ -241,7 +236,7 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
                     }
                 }
 
-                Log.d("ttt","category restaurantSummaries: "+restaurantSummaries.size());
+                Log.d("ttt", "category restaurantSummaries: " + restaurantSummaries.size());
 
                 if (isInitial) {
 
@@ -291,7 +286,6 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
     }
 
 
-
     @Override
     public void addOrRemoveFromFav(int position) {
 
@@ -307,36 +301,36 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
             @Override
             public void update(Observable o, Object arg) {
 
-                if(arg instanceof HashMap){
+                if (arg instanceof HashMap) {
 
-                    final HashMap<Integer,Object> resultMap = (HashMap<Integer,Object>)arg;
+                    final HashMap<Integer, Object> resultMap = (HashMap<Integer, Object>) arg;
 
                     final int key = resultMap.keySet().iterator().next();
                     final Object result = resultMap.get(key);
 
-                    if(key == PartneredRestaurantModel.TYPE_FAVORITE){
+                    if (key == PartneredRestaurantModel.TYPE_FAVORITE) {
 
                         categoryRestaurantsProgressBar.setVisibility(View.GONE);
 
-                        if(result instanceof Boolean && (boolean)result){
+                        if (result instanceof Boolean && (boolean) result) {
 
-                            if(isLiked){
+                            if (isLiked) {
 
                                 likedRestaurants.remove(id);
 
-                            }else{
+                            } else {
                                 likedRestaurants.add(id);
                             }
 
                             adapter.notifyItemChanged(position);
 
-                        }else if(result instanceof String){
+                        } else if (result instanceof String) {
 
                             Toast.makeText(CategoryActivity.this,
                                     "Adding to favorite failed! Please try again",
                                     Toast.LENGTH_LONG).show();
 
-                            Log.d("categoryAcitivty","failed to fav restautant: "+ result);
+                            Log.d("categoryAcitivty", "failed to fav restautant: " + result);
                         }
 
                     }
@@ -353,8 +347,8 @@ public class CategoryActivity extends AppCompatActivity implements CategoryResta
     public void showRestaurant(int position) {
 
         startActivity(new Intent(this, RestaurantActivity.class)
-                .putExtra("ID",restaurantSummaries.get(position).getID())
-                .putExtra("currency", (String)  addressMap.get("currency")));
+                .putExtra("ID", restaurantSummaries.get(position).getID())
+                .putExtra("currency", (String) addressMap.get("currency")));
 
     }
 

@@ -31,7 +31,21 @@
             android:textSize="18sp"
             android:textColor="@color/white"
             android:fontFamily="@font/almarai_regular"
+            app:layout_constraintBottom_toTopOf="@+id/deliveryDriverRatingNumberTv"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/deliveryDriverRatingNumberTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="5dp"
+            android:fontFamily="@font/almarai_regular"
+            android:text="0 Reviews"
+            android:textColor="@color/grey"
+            android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/deliveryDriverRatingBar"
+            app:layout_constraintEnd_toEndOf="@+id/deliveryDriverRatingBar"
             app:layout_constraintStart_toStartOf="parent" />
 
         <RatingBar

@@ -1,63 +1,40 @@
 package com.developers.wajbaty.Adapters;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.developers.wajbaty.Models.PartneredRestaurant;
 import com.developers.wajbaty.R;
-import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-import java.util.Map;
 
 public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaurantsAdapter.NearbyRestaurantItemVH> {
 
     private static final int TYPE_UN_SELECTED = 1, TYPE_SELECTED = 2;
-    private final ArrayList<PartneredRestaurant.NearbyPartneredRestaurant> nearbyRestaurants;
     private static NearbyRestaurantsListener nearbyRestaurantsListener;
     private static Location currentLocation;
-//    private final RecyclerView.LayoutManager layoutManager;
+    private static int orangeColor;
+    private final ArrayList<PartneredRestaurant.NearbyPartneredRestaurant> nearbyRestaurants;
+    //    private final RecyclerView.LayoutManager layoutManager;
 //    private final Context context;
     //selection
     private int lastSelected = -1;
 //    private int defaultHeight = 0;
 //    private int defaultWidth = 0;
 //    private final int extraHeight;
-
-    public interface NearbyRestaurantsListener {
-        void selectRestaurant(int position);
-        void reSelectRestaurant(int position);
-        void getRestaurantDirections(int position);
-    }
-
-    private void updatedCurrentLocation(Location currentLocation) {
-
-        NearbyRestaurantsAdapter.currentLocation = currentLocation;
-
-    }
-
-    public static void setCurrentLocation(Location currentLocation) {
-        NearbyRestaurantsAdapter.currentLocation = currentLocation;
-    }
-
 
     public NearbyRestaurantsAdapter(ArrayList<PartneredRestaurant.NearbyPartneredRestaurant> nearbyRestaurants,
                                     NearbyRestaurantsListener nearbyRestaurantsListener,
@@ -70,6 +47,37 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
 //        this.context = context;
 //        extraHeight = (int) (35 * context.getResources().getDisplayMetrics().density);
 //        this.layoutManager = layoutManager;
+    }
+
+    public static void setCurrentLocation(Location currentLocation) {
+        NearbyRestaurantsAdapter.currentLocation = currentLocation;
+    }
+
+    private static String getDistanceAway(double lat, double lng) {
+
+        if (currentLocation == null) {
+            Log.e("NearbyRestaurants", "current location is null");
+            return null;
+        }
+
+        final Location restaurantLocation = new Location("nearbyRestaurant");
+        restaurantLocation.setLatitude(lat);
+        restaurantLocation.setLongitude(lng);
+
+        double distance = currentLocation.distanceTo(restaurantLocation);
+
+        if (distance >= 1000) {
+            return Math.round(distance / 1000) + "km ";
+        } else {
+            return Math.round(distance) + "m ";
+        }
+
+    }
+
+    private void updatedCurrentLocation(Location currentLocation, Context context) {
+
+        NearbyRestaurantsAdapter.currentLocation = currentLocation;
+        orangeColor = ResourcesCompat.getColor(context.getResources(), R.color.orange, null);
     }
 
     @NonNull
@@ -98,126 +106,18 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
     public int getItemViewType(int position) {
 
 //        if (lastSelected == position)
-            return TYPE_SELECTED;
+        return TYPE_SELECTED;
 
 //        return TYPE_UN_SELECTED;
     }
 
 
-    public class NearbyRestaurantItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public interface NearbyRestaurantsListener {
+        void selectRestaurant(int position);
 
-        private final ImageView nearbyRestaurantImageIV,nearbyRestaurantDirectionsIv;
-        private final TextView nearbyRestaurantNameTv, nearbyRestaurantDistanceTv;
-        private final CardView nearbyRestaurantCardView;
+        void reSelectRestaurant(int position);
 
-        public NearbyRestaurantItemVH(@NonNull View itemView) {
-            super(itemView);
-
-            nearbyRestaurantImageIV = itemView.findViewById(R.id.nearbyRestaurantImageIV);
-            nearbyRestaurantDirectionsIv = itemView.findViewById(R.id.nearbyRestaurantDirectionsIv);
-            nearbyRestaurantNameTv = itemView.findViewById(R.id.nearbyRestaurantNameTv);
-            nearbyRestaurantDistanceTv = itemView.findViewById(R.id.nearbyRestaurantDistanceTv);
-            nearbyRestaurantCardView = itemView.findViewById(R.id.nearbyRestaurantCardView);
-
-            itemView.setOnClickListener(this);
-            nearbyRestaurantDirectionsIv.setOnClickListener(this);
-        }
-
-        private void bind(PartneredRestaurant.NearbyPartneredRestaurant nearbyRestaurant) {
-//
-
-//            ViewGroup.LayoutParams param = itemView.getLayoutParams();
-//            if (getAdapterPosition() == lastSelected) {
-//                param.width = defaultWidth + extraHeight;
-//                param.height = defaultHeight + extraHeight;
-//            } else {
-//                if (defaultWidth != 0 && defaultHeight != 0) {
-//                    param.height = defaultHeight;
-//                    param.width = defaultWidth;
-//                }
-//            }
-
-//      if(nearbyRestaurant.isSelected()){
-//        setMarginTop(nearbyRestaurantCardView,0);
-//      }else{
-//        setMarginTop(nearbyRestaurantCardView,topMargin);
-//      }
-//      if(lastSelected == getAdapterPosition()){
-//        nearbyRestaurantCardView.getLayoutParams().
-//
-//      }
-
-            Picasso.get().load(nearbyRestaurant.getMainImage()).fit().centerCrop().into(nearbyRestaurantImageIV);
-            nearbyRestaurantNameTv.setText(nearbyRestaurant.getName());
-
-            if (nearbyRestaurant.getDistanceFormatted() == null) {
-                Log.d("ttt", "nearvy adapater lat " + nearbyRestaurant.getLat() + " lng: " + nearbyRestaurant.getLng());
-
-                nearbyRestaurant.setDistanceFormatted(getDistanceAway(nearbyRestaurant.getLat(), nearbyRestaurant.getLng()));
-            }
-
-            nearbyRestaurantDistanceTv.setText(nearbyRestaurant.getDistanceFormatted());
-
-        }
-
-        @Override
-        public void onClick(View v) {
-
-            if(v.getId() == nearbyRestaurantDirectionsIv.getId()){
-
-                nearbyRestaurantsListener.getRestaurantDirections(getAdapterPosition());
-
-            }else{
-                if (lastSelected != getAdapterPosition()) {
-//        if(lastSelected != -1){
-//          nearbyRestaurants.get(lastSelected).setSelected(false);
-//        }
-
-//                int currentPosition = getAdapterPosition();
-//                selection(currentPosition, lastSelected,nearbyRestaurantNameTv);
-                    lastSelected = getAdapterPosition();
-
-//                if(lastSelected != -1){
-//
-//                    CardView oldView = (CardView) layoutManager.findViewByPosition(lastSelected);
-////                setMarginTop(oldView,extraHeight);
-//
-//                    ViewGroup.LayoutParams layoutParams = oldView.getLayoutParams();
-//                    layoutParams.height = defaultHeight;
-//                    layoutParams.width = defaultWidth;
-//                    oldView.requestLayout();
-//
-//                }
-//
-//
-//                int currentPosition = getAdapterPosition();
-////                selection(currentPosition, lastSelected, nearbyRestaurantConstraintLayout);
-//                lastSelected = getAdapterPosition();
-//
-//                CardView newView = (CardView) layoutManager.findViewByPosition(currentPosition);
-////
-//                ViewGroup.LayoutParams newLayoutParam = newView.getLayoutParams();
-//
-//                if(defaultWidth == 0){
-//                    defaultWidth = newLayoutParam.width;
-//                    defaultHeight = newLayoutParam.height;
-//                }
-//
-//                newLayoutParam.height = defaultHeight + extraHeight;
-//                newView.requestLayout();
-//
-//
-                    nearbyRestaurantsListener.selectRestaurant(lastSelected);
-
-//        nearbyRestaurants.get(lastSelected).setSelected(true);
-//        setMarginTop(nearbyRestaurantCardView,0);
-//        notifyItemChanged(lastSelected);
-
-                } else {
-                    nearbyRestaurantsListener.reSelectRestaurant(getAdapterPosition());
-                }
-            }
-        }
+        void getRestaurantDirections(int position);
     }
 //
 //    private void selection(int newPosition, int oldPosition, TextView textView) {
@@ -340,25 +240,134 @@ public class NearbyRestaurantsAdapter extends RecyclerView.Adapter<NearbyRestaur
 //
 //    }
 
-    private static String getDistanceAway(double lat, double lng) {
+    public class NearbyRestaurantItemVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        if (currentLocation == null) {
-            Log.e("NearbyRestaurants", "current location is null");
-            return null;
+        private final ImageView nearbyRestaurantImageIV, nearbyRestaurantDirectionsIv;
+        private final TextView nearbyRestaurantNameTv, nearbyRestaurantDistanceTv;
+        private final CardView nearbyRestaurantCardView;
+        private CircularProgressDrawable progressDrawable;
+
+        public NearbyRestaurantItemVH(@NonNull View itemView) {
+            super(itemView);
+
+            nearbyRestaurantImageIV = itemView.findViewById(R.id.nearbyRestaurantImageIV);
+            nearbyRestaurantDirectionsIv = itemView.findViewById(R.id.nearbyRestaurantDirectionsIv);
+            nearbyRestaurantNameTv = itemView.findViewById(R.id.nearbyRestaurantNameTv);
+            nearbyRestaurantDistanceTv = itemView.findViewById(R.id.nearbyRestaurantDistanceTv);
+            nearbyRestaurantCardView = itemView.findViewById(R.id.nearbyRestaurantCardView);
+
+            itemView.setOnClickListener(this);
+            nearbyRestaurantDirectionsIv.setOnClickListener(this);
         }
 
-        final Location restaurantLocation = new Location("nearbyRestaurant");
-        restaurantLocation.setLatitude(lat);
-        restaurantLocation.setLongitude(lng);
+        private void bind(PartneredRestaurant.NearbyPartneredRestaurant nearbyRestaurant) {
+//
 
-        double distance = currentLocation.distanceTo(restaurantLocation);
+//            ViewGroup.LayoutParams param = itemView.getLayoutParams();
+//            if (getAdapterPosition() == lastSelected) {
+//                param.width = defaultWidth + extraHeight;
+//                param.height = defaultHeight + extraHeight;
+//            } else {
+//                if (defaultWidth != 0 && defaultHeight != 0) {
+//                    param.height = defaultHeight;
+//                    param.width = defaultWidth;
+//                }
+//            }
 
-        if (distance >= 1000) {
-            return Math.round(distance / 1000) + "km ";
-        } else {
-            return Math.round(distance) + "m ";
+//      if(nearbyRestaurant.isSelected()){
+//        setMarginTop(nearbyRestaurantCardView,0);
+//      }else{
+//        setMarginTop(nearbyRestaurantCardView,topMargin);
+//      }
+//      if(lastSelected == getAdapterPosition()){
+//        nearbyRestaurantCardView.getLayoutParams().
+//
+//      }
+
+            if (progressDrawable == null) {
+                progressDrawable = new CircularProgressDrawable(itemView.getContext());
+                progressDrawable.setColorSchemeColors(orangeColor);
+                progressDrawable.setStyle(CircularProgressDrawable.LARGE);
+                progressDrawable.start();
+            }
+
+            if (!progressDrawable.isRunning()) {
+                progressDrawable.start();
+            }
+
+
+            Picasso.get().load(nearbyRestaurant.getMainImage()).fit().centerCrop()
+                    .placeholder(progressDrawable).into(nearbyRestaurantImageIV);
+            nearbyRestaurantNameTv.setText(nearbyRestaurant.getName());
+
+            if (nearbyRestaurant.getDistanceFormatted() == null) {
+                Log.d("ttt", "nearvy adapater lat " + nearbyRestaurant.getLat() + " lng: " + nearbyRestaurant.getLng());
+
+                nearbyRestaurant.setDistanceFormatted(getDistanceAway(nearbyRestaurant.getLat(), nearbyRestaurant.getLng()));
+            }
+
+            nearbyRestaurantDistanceTv.setText(nearbyRestaurant.getDistanceFormatted());
+
         }
 
+        @Override
+        public void onClick(View v) {
+
+            if (v.getId() == nearbyRestaurantDirectionsIv.getId()) {
+
+                nearbyRestaurantsListener.getRestaurantDirections(getAdapterPosition());
+
+            } else {
+                if (lastSelected != getAdapterPosition()) {
+//        if(lastSelected != -1){
+//          nearbyRestaurants.get(lastSelected).setSelected(false);
+//        }
+
+//                int currentPosition = getAdapterPosition();
+//                selection(currentPosition, lastSelected,nearbyRestaurantNameTv);
+                    lastSelected = getAdapterPosition();
+
+//                if(lastSelected != -1){
+//
+//                    CardView oldView = (CardView) layoutManager.findViewByPosition(lastSelected);
+////                setMarginTop(oldView,extraHeight);
+//
+//                    ViewGroup.LayoutParams layoutParams = oldView.getLayoutParams();
+//                    layoutParams.height = defaultHeight;
+//                    layoutParams.width = defaultWidth;
+//                    oldView.requestLayout();
+//
+//                }
+//
+//
+//                int currentPosition = getAdapterPosition();
+////                selection(currentPosition, lastSelected, nearbyRestaurantConstraintLayout);
+//                lastSelected = getAdapterPosition();
+//
+//                CardView newView = (CardView) layoutManager.findViewByPosition(currentPosition);
+////
+//                ViewGroup.LayoutParams newLayoutParam = newView.getLayoutParams();
+//
+//                if(defaultWidth == 0){
+//                    defaultWidth = newLayoutParam.width;
+//                    defaultHeight = newLayoutParam.height;
+//                }
+//
+//                newLayoutParam.height = defaultHeight + extraHeight;
+//                newView.requestLayout();
+//
+//
+                    nearbyRestaurantsListener.selectRestaurant(lastSelected);
+
+//        nearbyRestaurants.get(lastSelected).setSelected(true);
+//        setMarginTop(nearbyRestaurantCardView,0);
+//        notifyItemChanged(lastSelected);
+
+                } else {
+                    nearbyRestaurantsListener.reSelectRestaurant(getAdapterPosition());
+                }
+            }
+        }
     }
 
 }

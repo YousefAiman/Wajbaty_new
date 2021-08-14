@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.developers.wajbaty.Models.PlaceSearchResult;
-import com.developers.wajbaty.Models.RestaurantSearchResult;
 import com.developers.wajbaty.R;
 import com.squareup.picasso.Picasso;
 
@@ -18,23 +17,19 @@ import java.util.ArrayList;
 
 public class PlaceSearchAdapter extends RecyclerView.Adapter<PlaceSearchAdapter.PlaceSearchVH> {
 
-    private final ArrayList<PlaceSearchResult> searchResults;
     private static PlaceSearchListener placeSearchListener;
+    private final ArrayList<PlaceSearchResult> searchResults;
 
     public PlaceSearchAdapter(ArrayList<PlaceSearchResult> searchResults, PlaceSearchListener placeSearchListener) {
         this.searchResults = searchResults;
         PlaceSearchAdapter.placeSearchListener = placeSearchListener;
     }
 
-    public interface PlaceSearchListener{
-        void onSearchResultClicked(int position);
-    }
-
     @NonNull
     @Override
     public PlaceSearchVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new PlaceSearchVH(LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_place_search,parent,false));
+                .inflate(R.layout.item_place_search, parent, false));
     }
 
     @Override
@@ -43,11 +38,11 @@ public class PlaceSearchAdapter extends RecyclerView.Adapter<PlaceSearchAdapter.
         holder.bind(searchResults.get(position));
 
         final View searchDividerView = holder.itemView.findViewById(R.id.searchDividerView);
-        if(position == searchResults.size()-1){
-            if(searchDividerView.getVisibility() == View.VISIBLE){
+        if (position == searchResults.size() - 1) {
+            if (searchDividerView.getVisibility() == View.VISIBLE) {
                 searchDividerView.setVisibility(View.GONE);
             }
-        }else if(searchDividerView.getVisibility() == View.GONE){
+        } else if (searchDividerView.getVisibility() == View.GONE) {
             searchDividerView.setVisibility(View.VISIBLE);
         }
     }
@@ -57,10 +52,14 @@ public class PlaceSearchAdapter extends RecyclerView.Adapter<PlaceSearchAdapter.
         return searchResults.size();
     }
 
+    public interface PlaceSearchListener {
+        void onSearchResultClicked(int position);
+    }
+
     public static class PlaceSearchVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final ImageView placeSearchImageIv;
-        private final TextView placeSearchNameTv,placeSearchAddressTv;
+        private final TextView placeSearchNameTv, placeSearchAddressTv;
 
         public PlaceSearchVH(@NonNull View itemView) {
             super(itemView);
@@ -73,9 +72,9 @@ public class PlaceSearchAdapter extends RecyclerView.Adapter<PlaceSearchAdapter.
 
         }
 
-        private void bind(PlaceSearchResult searchResult){
+        private void bind(PlaceSearchResult searchResult) {
 
-            if(searchResult.getImageURL()!=null && !searchResult.getImageURL().isEmpty()){
+            if (searchResult.getImageURL() != null && !searchResult.getImageURL().isEmpty()) {
                 Picasso.get().load(searchResult.getImageURL()).fit().centerCrop().into(placeSearchImageIv);
             }
 

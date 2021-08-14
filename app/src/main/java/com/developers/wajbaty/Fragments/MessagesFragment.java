@@ -17,25 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.developers.wajbaty.Activities.MessagingActivity;
 import com.developers.wajbaty.Adapters.MessagingUserAdapter;
-import com.developers.wajbaty.Customer.Fragments.FavoriteMenuItemsFragment;
 import com.developers.wajbaty.Models.MessageMap;
 import com.developers.wajbaty.Models.UserMessage;
 import com.developers.wajbaty.R;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.common.collect.Lists;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -47,11 +35,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class MessagesFragment extends Fragment implements MessagingUserAdapter.MessagingUserListener {
 
@@ -90,9 +75,9 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
         currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userMessages = new ArrayList<>();
 
-        adapter = new MessagingUserAdapter(userMessages,this);
+        adapter = new MessagingUserAdapter(userMessages, this, requireContext());
 
-         llm = new LinearLayoutManager(getContext(),
+        llm = new LinearLayoutManager(getContext(),
                 RecyclerView.VERTICAL, false) {
             @Override
             public void onItemsRemoved(@NonNull RecyclerView recyclerView,
@@ -124,10 +109,10 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
         snapshotListeners = new ArrayList<>();
 
         mainQuery = FirebaseFirestore.getInstance().collection("PrivateMessages")
-                .whereArrayContains("users",currentUserUid)
+                .whereArrayContains("users", currentUserUid)
 //                .whereEqualTo("isDeletedFor:" + currentUserUid,false)
                 .orderBy("lastMessageTimeInMillis", Query.Direction.DESCENDING)
-                .whereLessThanOrEqualTo("lastMessageTimeInMillis",System.currentTimeMillis())
+                .whereLessThanOrEqualTo("lastMessageTimeInMillis", System.currentTimeMillis())
                 .limit(PAGINATION);
 
     }
@@ -176,137 +161,138 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
         Query currentQuery = mainQuery;
 
-        if(lastDocSnap!=null){
+        if (lastDocSnap != null) {
             currentQuery = currentQuery.startAfter(lastDocSnap);
         }
 
         snapshotListeners.add(currentQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    boolean initialSnapshots = true;
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+            boolean initialSnapshots = true;
 
-                        if(value!=null){
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                            if(initialSnapshots){
+                if (value != null) {
 
-                                final List<DocumentSnapshot> documentSnapshots = value.getDocuments();
+                    if (initialSnapshots) {
 
-                                if(!documentSnapshots.isEmpty()){
-                                    lastDocSnap = documentSnapshots.get(documentSnapshots.size()-1);
+                        final List<DocumentSnapshot> documentSnapshots = value.getDocuments();
 
-                                    for(DocumentSnapshot documentSnapshot:documentSnapshots){
+                        if (!documentSnapshots.isEmpty()) {
+                            lastDocSnap = documentSnapshots.get(documentSnapshots.size() - 1);
 
-                                        MessageMap messageMap = new MessageMap((HashMap<String, Object>)
-                                                documentSnapshot.get("lastMessage"));
+                            for (DocumentSnapshot documentSnapshot : documentSnapshots) {
 
-                                        List<String> users = (List<String>) documentSnapshot.get("users");
+                                MessageMap messageMap = new MessageMap((HashMap<String, Object>)
+                                        documentSnapshot.get("lastMessage"));
 
-                                        String uid;
-                                        if(users.get(0).equals(currentUserUid)){
-                                            uid = users.get(1);
-                                        }else{
-                                            uid = users.get(0);
-                                        }
+                                List<String> users = (List<String>) documentSnapshot.get("users");
 
-                                        userMessages.add(new UserMessage(
-                                                documentSnapshot.getString("destinationID"),
-                                                messageMap,
-                                                uid,
-                                                documentSnapshot.getLong(currentUserUid + ":LastSeenMessage"),
-                                                documentSnapshot.getLong("messagesCount")));
+                                String uid;
+                                if (users.get(0).equals(currentUserUid)) {
+                                    uid = users.get(1);
+                                } else {
+                                    uid = users.get(0);
+                                }
+
+                                userMessages.add(new UserMessage(
+                                        documentSnapshot.getString("destinationID"),
+                                        messageMap,
+                                        uid,
+                                        documentSnapshot.getLong(currentUserUid + ":LastSeenMessage"),
+                                        documentSnapshot.getLong("messagesCount")));
+                            }
+
+                            if (!userMessages.isEmpty()) {
+
+                                if (isInitial) {
+
+                                    adapter.notifyDataSetChanged();
+
+                                    if (userMessages.size() == PAGINATION && scrollListener == null) {
+                                        chatsRv.addOnScrollListener(scrollListener = new ScrollListener());
                                     }
 
-                                    if(!userMessages.isEmpty()){
+                                } else {
 
-                                        if(isInitial){
+                                    int size = value.getDocuments().size();
 
-                                            adapter.notifyDataSetChanged();
+                                    adapter.notifyItemRangeInserted(
+                                            userMessages.size() - size, size);
 
-                                            if (userMessages.size() == PAGINATION && scrollListener == null) {
-                                                chatsRv.addOnScrollListener(scrollListener = new ScrollListener());
-                                            }
-
-                                        }else{
-
-                                            int size = value.getDocuments().size();
-
-                                            adapter.notifyItemRangeInserted(
-                                                    userMessages.size() - size,size);
-
-                                            if (size < PAGINATION && scrollListener != null) {
-                                                chatsRv.removeOnScrollListener(scrollListener);
-                                                scrollListener = null;
-                                            }
-
-                                        }
-
-                                        if(noMessagesTv.getVisibility() == View.VISIBLE){
-                                            noMessagesTv.setVisibility(View.INVISIBLE);
-                                            chatsRv.setVisibility(View.VISIBLE);
-                                        }
-
-                                    }else{
-
-                                        if(isInitial){
-
-                                            noMessagesTv.setVisibility(View.VISIBLE);
-                                            chatsRv.setVisibility(View.INVISIBLE);
-
-                                        }
-
+                                    if (size < PAGINATION && scrollListener != null) {
+                                        chatsRv.removeOnScrollListener(scrollListener);
+                                        scrollListener = null;
                                     }
 
-                                }else{
+                                }
+
+                                if (noMessagesTv.getVisibility() == View.VISIBLE) {
+                                    noMessagesTv.setVisibility(View.INVISIBLE);
+                                    chatsRv.setVisibility(View.VISIBLE);
+                                }
+
+                            } else {
+
+                                if (isInitial) {
 
                                     noMessagesTv.setVisibility(View.VISIBLE);
                                     chatsRv.setVisibility(View.INVISIBLE);
 
                                 }
-                                messagesProgressBar.setVisibility(View.GONE);
-                                initialSnapshots = false;
-                            }else{
-
-
-                                for(DocumentChange dc:value.getDocumentChanges()){
-
-                                    switch (dc.getType()){
-
-                                        case MODIFIED:
-
-
-                                            UserMessageModified(dc.getDocument());
-
-                                            break;
-
-
-                                        case REMOVED:
-
-                                            findAndRemoveUserMessage(dc.getDocument());
-
-                                            break;
-                                    }
-
-                                }
 
                             }
 
-                        }else{
-                            messagesProgressBar.setVisibility(View.GONE);
+                        } else {
+
+                            noMessagesTv.setVisibility(View.VISIBLE);
+                            chatsRv.setVisibility(View.INVISIBLE);
+
+                        }
+                        messagesProgressBar.setVisibility(View.GONE);
+                        initialSnapshots = false;
+                    } else {
+
+
+                        for (DocumentChange dc : value.getDocumentChanges()) {
+
+                            switch (dc.getType()) {
+
+                                case MODIFIED:
+
+
+                                    UserMessageModified(dc.getDocument());
+
+                                    break;
+
+
+                                case REMOVED:
+
+                                    findAndRemoveUserMessage(dc.getDocument());
+
+                                    break;
+                            }
+
                         }
 
                     }
-                }));
+
+                } else {
+                    messagesProgressBar.setVisibility(View.GONE);
+                }
+
+            }
+        }));
 
     }
 
-    private void listenForNewMessages(){
+    private void listenForNewMessages() {
 
         Query newMessagesQuery =
                 FirebaseFirestore.getInstance().collection("PrivateMessages")
-                .whereArrayContains("users",currentUserUid)
+                        .whereArrayContains("users", currentUserUid)
 //                .whereEqualTo("isDeletedFor:" + currentUserUid,false)
-                .orderBy("lastMessageTimeInMillis")
-                .whereGreaterThan("lastMessageTimeInMillis",System.currentTimeMillis());
+                        .orderBy("lastMessageTimeInMillis")
+                        .whereGreaterThan("lastMessageTimeInMillis", System.currentTimeMillis());
 
         snapshotListeners.add(
                 newMessagesQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -314,24 +300,24 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException error) {
 
-                        if(value!=null){
+                        if (value != null) {
 
-                            for(DocumentChange dc:value.getDocumentChanges()){
+                            for (DocumentChange dc : value.getDocumentChanges()) {
 
                                 DocumentSnapshot snapshot = dc.getDocument();
 
-                                switch (dc.getType()){
+                                switch (dc.getType()) {
 
                                     case ADDED:
 
-                                        Log.d("ttt","type added message");
+                                        Log.d("ttt", "type added message");
                                         List<String> users = (List<String>) snapshot.get("users");
 
                                         String uid;
 
-                                        if(users.get(0).equals(currentUserUid)){
+                                        if (users.get(0).equals(currentUserUid)) {
                                             uid = users.get(1);
-                                        }else{
+                                        } else {
                                             uid = users.get(0);
                                         }
 
@@ -351,8 +337,8 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
                                         String destionatinId = snapshot.getString("destinationID");
 
-                                        for(UserMessage userMessage:userMessages){
-                                            if(userMessage.getChattingDestinationId().equals(destionatinId)){
+                                        for (UserMessage userMessage : userMessages) {
+                                            if (userMessage.getChattingDestinationId().equals(destionatinId)) {
                                                 return;
                                             }
                                         }
@@ -362,7 +348,7 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                                                 snapshot.get("lastMessage"));
 
 
-                                        userMessages.add(0,new UserMessage(
+                                        userMessages.add(0, new UserMessage(
                                                 snapshot.getString("destinationID"),
                                                 messageMap,
                                                 uid,
@@ -371,7 +357,7 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
                                         adapter.notifyItemInserted(0);
 
-                                        if(noMessagesTv.getVisibility() == View.VISIBLE){
+                                        if (noMessagesTv.getVisibility() == View.VISIBLE) {
                                             noMessagesTv.setVisibility(View.GONE);
                                             chatsRv.setVisibility(View.VISIBLE);
                                         }
@@ -724,9 +710,9 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
     }
 
-    private void findAndRemoveUserMessage(DocumentSnapshot documentSnapshot){
+    private void findAndRemoveUserMessage(DocumentSnapshot documentSnapshot) {
 
-        for(int i=0;i<userMessages.size();i++) {
+        for (int i = 0; i < userMessages.size(); i++) {
 
             UserMessage userMessage = userMessages.get(i);
 
@@ -742,38 +728,38 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
     }
 
-    private void UserMessageModified(DocumentSnapshot changedSnapshot){
+    private void UserMessageModified(DocumentSnapshot changedSnapshot) {
 
-        for(int i=0;i<userMessages.size();i++){
+        for (int i = 0; i < userMessages.size(); i++) {
 
             UserMessage userMessage = userMessages.get(i);
 
-            if(userMessage.getChattingDestinationId().equals(changedSnapshot.getString("destinationID"))){
+            if (userMessage.getChattingDestinationId().equals(changedSnapshot.getString("destinationID"))) {
 
                 MessageMap oldMessageMap = userMessage.getChattingLatestMessageMap();
 
                 MessageMap newMessageMap = new MessageMap((HashMap<String, Object>) changedSnapshot.get("lastMessage"));
 
-                if(newMessageMap.getDeleted()){
+                if (newMessageMap.getDeleted()) {
 
                     oldMessageMap.setDeleted(true);
                     adapter.notifyItemChanged(i);
 
-                }else{
+                } else {
 
-                    long lastSeen  = changedSnapshot.getLong(currentUserUid + ":LastSeenMessage");
+                    long lastSeen = changedSnapshot.getLong(currentUserUid + ":LastSeenMessage");
 
-                    if(changedSnapshot.getLong("lastMessageTimeInMillis") >
-                            oldMessageMap.getTime()){
+                    if (changedSnapshot.getLong("lastMessageTimeInMillis") >
+                            oldMessageMap.getTime()) {
 
                         userMessage.setChattingLatestMessageMap(newMessageMap);
                         userMessage.setLastMessageRead(lastSeen);
-                        userMessage.setMessagesCount(userMessage.getMessagesCount()+1);
+                        userMessage.setMessagesCount(userMessage.getMessagesCount() + 1);
 
                         adapter.notifyItemChanged(i);
-                    }else{
+                    } else {
 
-                        if(lastSeen > userMessage.getLastMessageRead()){
+                        if (lastSeen > userMessage.getLastMessageRead()) {
                             userMessage.setLastMessageRead(lastSeen);
                             adapter.notifyItemChanged(i);
                         }
@@ -788,6 +774,17 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (!snapshotListeners.isEmpty()) {
+            for (ListenerRegistration listenerRegistration : snapshotListeners) {
+                listenerRegistration.remove();
+            }
+        }
+    }
+
     private class ScrollListener extends RecyclerView.OnScrollListener {
         @Override
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -799,17 +796,6 @@ public class MessagesFragment extends Fragment implements MessagingUserAdapter.M
                 Log.d("ttt", "is at bottom");
                 getRealTimeMessagingUsers(false);
 
-            }
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        if(!snapshotListeners.isEmpty()){
-            for(ListenerRegistration listenerRegistration:snapshotListeners){
-                listenerRegistration.remove();
             }
         }
     }

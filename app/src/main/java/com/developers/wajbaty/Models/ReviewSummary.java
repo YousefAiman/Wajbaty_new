@@ -7,7 +7,7 @@ import java.util.Objects;
 public class ReviewSummary implements Serializable {
 
     private float averageRating;
-    private HashMap<String,Long> ratingsMap;
+    private HashMap<String, Long> ratingsMap;
     private int totalReviews;
 
     public ReviewSummary() {
@@ -19,7 +19,7 @@ public class ReviewSummary implements Serializable {
         this.totalReviews = totalReviews;
     }
 
-    public ReviewSummary(HashMap<String,Object> reviewSummaryMap){
+    public ReviewSummary(HashMap<String, Object> reviewSummaryMap) {
 
         this.averageRating = ((Double) Objects.requireNonNull(reviewSummaryMap.get("averageRating"))).floatValue();
         this.ratingsMap = (HashMap<String, Long>) reviewSummaryMap.get("ratingsMap");

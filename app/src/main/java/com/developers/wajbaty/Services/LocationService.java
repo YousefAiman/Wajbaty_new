@@ -18,7 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
-import com.developers.wajbaty.BroadcastReceivers.BackgroundServiceReceiver;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
@@ -36,31 +35,20 @@ public class LocationService extends Service {
 
     private FusedLocationProviderClient client;
     private LocationCallback locationCallback;
-    public interface LocationChangeObserver{
-        void notifyObservers(Location location);
-    }
 
-    public class LocationBinder extends Binder{
+    public void addObserver(LocationChangeObserver observer) {
 
-        public LocationService getService() {
-            return LocationService.this;
-        }
-    }
-
-
-    public void addObserver(LocationChangeObserver observer){
-
-        if(observers == null)
+        if (observers == null)
             observers = new ArrayList<>();
 
-        if(!observers.contains(observer)){
+        if (!observers.contains(observer)) {
             observers.add(observer);
         }
     }
 
-    public void removeObserver(LocationChangeObserver observer){
+    public void removeObserver(LocationChangeObserver observer) {
 
-        if(observers != null){
+        if (observers != null) {
             observers.remove(observer);
         }
 
@@ -70,10 +58,10 @@ public class LocationService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             createChannel();
-        }else{
-            startForeground(1,new Notification());
+        } else {
+            startForeground(1, new Notification());
         }
 
         requestLocationUpdates();
@@ -85,24 +73,21 @@ public class LocationService extends Service {
         return binder;
     }
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
 
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
 
 
-        Log.d("ttt","service getting destroyed");
-        if(client!=null && locationCallback != null){
+        Log.d("ttt", "service getting destroyed");
+        if (client != null && locationCallback != null) {
 
-            Log.d("ttt","client.removeLocationUpdates(locationCallback)");
+            Log.d("ttt", "client.removeLocationUpdates(locationCallback)");
             client.removeLocationUpdates(locationCallback);
         }
 //        Intent broadCastIntent = new Intent();
@@ -112,8 +97,7 @@ public class LocationService extends Service {
 
     }
 
-
-    private void requestLocationUpdates(){
+    private void requestLocationUpdates() {
 
         LocationRequest locationRequest = LocationRequest.create().
                 setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -126,21 +110,21 @@ public class LocationService extends Service {
 //        client.removeLocationUpdates()
 
 
-        if(ContextCompat.checkSelfPermission(this,permission) == PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
 
-            client.requestLocationUpdates(locationRequest,locationCallback = new LocationCallback() {
+            client.requestLocationUpdates(locationRequest, locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(@NonNull LocationResult locationResult) {
 
                     final Location location = locationResult.getLastLocation();
 
-                    if(observers!=null){
-                        for(LocationChangeObserver observer:observers){
+                    if (observers != null) {
+                        for (LocationChangeObserver observer : observers) {
                             observer.notifyObservers(location);
                         }
                     }
-                    Log.d("ttt","location service latlng: "+location.getLatitude()+
-                            ","+location.getLongitude());
+                    Log.d("ttt", "location service latlng: " + location.getLatitude() +
+                            "," + location.getLongitude());
 
 //                        currentLatLng = new LatLng(location.getLatitude(),location.getLongitude());
 
@@ -151,12 +135,39 @@ public class LocationService extends Service {
                 public void onLocationAvailability(@NonNull LocationAvailability locationAvailability) {
                     super.onLocationAvailability(locationAvailability);
                 }
-            },null);
+            }, null);
 
 
         }
 
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    public void createChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            NotificationChannel channel = new NotificationChannel("com.getlocationbackground",
+                    "Location Service", NotificationManager.IMPORTANCE_NONE);
+
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+            manager.createNotificationChannel(channel);
+
+            Notification.Builder builder = new Notification.Builder(this, "com.getlocationbackground");
+            Notification notification = builder.setOngoing(true).setContentTitle("This app is using your gps")
+                    .setCategory(Notification.CATEGORY_SERVICE).build();
+
+            startForeground(2, notification);
+
+        }
+    }
+
+
+    public interface LocationChangeObserver {
+        void notifyObservers(Location location);
     }
 
 
@@ -174,25 +185,10 @@ public class LocationService extends Service {
 //
 //    }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    public void createChannel() {
-        if (Build.VERSION.SDK_INT >= 26) {
+    public class LocationBinder extends Binder {
 
-            NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-
-            NotificationChannel channel = new NotificationChannel("com.getlocationbackground",
-                    "Location Service", NotificationManager.IMPORTANCE_NONE);
-
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-
-            manager.createNotificationChannel(channel);
-
-            Notification.Builder builder = new Notification.Builder(this,"com.getlocationbackground");
-            Notification notification = builder.setOngoing(true).setContentTitle("This app is using your gps")
-                    .setCategory(Notification.CATEGORY_SERVICE).build();
-
-            startForeground(2,notification);
-
+        public LocationService getService() {
+            return LocationService.this;
         }
     }
 }

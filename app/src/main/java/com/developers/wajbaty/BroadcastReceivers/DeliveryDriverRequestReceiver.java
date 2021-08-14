@@ -10,6 +10,5 @@ public class DeliveryDriverRequestReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
 
-
     }
 }

@@ -1,17 +1,12 @@
 package com.developers.wajbaty.Models;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.maps.model.LatLng;
@@ -31,8 +26,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,24 +33,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Observer;
 import java.util.UUID;
 
 public class PartneredRestaurantModel extends Observable {
 
-    public static final int TYPE_FAVORITE = 1,RESTAURANT_ID_CODE = 2;
+    public static final int TYPE_FAVORITE = 1, RESTAURANT_ID_CODE = 2;
 
     private String restaurantId;
 
-    public  PartneredRestaurantModel(String restaurantId){
+    public PartneredRestaurantModel(String restaurantId) {
         this.restaurantId = restaurantId;
     }
 
-    public PartneredRestaurantModel(){
+    public PartneredRestaurantModel() {
     }
 
 
-    public void addRestaurantToFirebase(boolean skipped, Intent intent, LinkedHashMap<String,Map<String,Object>> scheduleMap){
+    public void addRestaurantToFirebase(boolean skipped, Intent intent, LinkedHashMap<String, Map<String, Object>> scheduleMap) {
 
         final String restaurantId = UUID.randomUUID().toString();
 
@@ -68,7 +60,7 @@ public class PartneredRestaurantModel extends Observable {
                         //.document(FirebaseAuth.getInstance().getCurrentUser().getUid());
                         .document(restaurantId);
 
-        final Map<String,Object> firestoreRestaurantMap = new HashMap<>();
+        final Map<String, Object> firestoreRestaurantMap = new HashMap<>();
 
         firestoreRestaurantMap.put("ID", restaurantId);
 
@@ -78,11 +70,11 @@ public class PartneredRestaurantModel extends Observable {
         firestoreRestaurantMap.put("ownerUid", currentUid);
         firestoreRestaurantMap.put("averageRating", 0f);
 
-        final Map<String,Object> addressMap = (Map<String, Object>) intent.getSerializableExtra("addressMap");
+        final Map<String, Object> addressMap = (Map<String, Object>) intent.getSerializableExtra("addressMap");
 
         final LatLng latLng = (LatLng) addressMap.get("latLng");
 
-        if(latLng != null){
+        if (latLng != null) {
             final String hash = GeoFireUtils.getGeoHashForLocation(
                     new GeoLocation(latLng.latitude, latLng.longitude));
 
@@ -108,7 +100,7 @@ public class PartneredRestaurantModel extends Observable {
         final List<Task<Uri>> uriTasks = new ArrayList<>();
 
 
-        if(imagesBundle.containsKey("mainImage")){
+        if (imagesBundle.containsKey("mainImage")) {
 
             final UploadTask uploadTask =
                     storageReference.child("Restaurant_Main_Image").putFile(imagesBundle.getParcelable("mainImage"));
@@ -130,40 +122,40 @@ public class PartneredRestaurantModel extends Observable {
             uploadTasks.add(uploadTask);
 
 
-        }else if(imagesBundle.containsKey("mainImageURL")){
+        } else if (imagesBundle.containsKey("mainImageURL")) {
             firestoreRestaurantMap.put("mainImage", imagesBundle.getString("mainImageURL"));
         }
 
         final List<String> bannerImages = new ArrayList<>();
 
-        if(imagesBundle.containsKey("bannerImages")){
+        if (imagesBundle.containsKey("bannerImages")) {
 
             final List<Uri> uriImages = imagesBundle.getParcelableArrayList("bannerImages");
 
 
-            final StorageReference bannerRef =  storageReference.child("Restaurant_Banner_Image");
+            final StorageReference bannerRef = storageReference.child("Restaurant_Banner_Image");
 
-            if(uriImages!=null && !uriImages.isEmpty()){
+            if (uriImages != null && !uriImages.isEmpty()) {
 
-                for(int i=0;i<uriImages.size();i++){
+                for (int i = 0; i < uriImages.size(); i++) {
 
                     final UploadTask bannerUploadTask =
-                            bannerRef.child("Banner_Image_"+i).putFile(uriImages.get(i));
+                            bannerRef.child("Banner_Image_" + i).putFile(uriImages.get(i));
 
                     bannerUploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            if(task.isSuccessful()){
+                            if (task.isSuccessful()) {
                                 uriTasks.add(task.getResult().getStorage().getDownloadUrl()
                                         .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri uri) {
+                                            @Override
+                                            public void onSuccess(Uri uri) {
 
-                                        Log.d("uploadRestaurant","finished getting uri");
-                                        bannerImages.add(uri.toString());
+                                                Log.d("uploadRestaurant", "finished getting uri");
+                                                bannerImages.add(uri.toString());
 
-                                    }
-                                }));
+                                            }
+                                        }));
                             }
                         }
                     });
@@ -176,27 +168,27 @@ public class PartneredRestaurantModel extends Observable {
         }
         final List<String> albumImages = new ArrayList<>();
 
-        if(imagesBundle.containsKey("albumImages")){
+        if (imagesBundle.containsKey("albumImages")) {
 
             final List<Uri> uriImages = imagesBundle.getParcelableArrayList("albumImages");
 
             final StorageReference albumRef = storageReference.child("Restaurant_Album_Image");
 
-            for(int i=0;i<uriImages.size();i++){
+            for (int i = 0; i < uriImages.size(); i++) {
 
                 final UploadTask bannerUploadTask =
-                        albumRef.child("Album_Image_"+i).putFile(uriImages.get(i));
+                        albumRef.child("Album_Image_" + i).putFile(uriImages.get(i));
 
                 bannerUploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             uriTasks.add(task.getResult().getStorage().getDownloadUrl()
                                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri uri) {
 
-                                            Log.d("uploadRestaurant","finished getting uri");
+                                            Log.d("uploadRestaurant", "finished getting uri");
                                             albumImages.add(uri.toString());
 
                                         }
@@ -215,11 +207,11 @@ public class PartneredRestaurantModel extends Observable {
         final Bundle infoBundle = intent.getBundleExtra("infoBundle");
 
         String name = infoBundle.getString("name");
-        firestoreRestaurantMap.put("name",name);
+        firestoreRestaurantMap.put("name", name);
         firestoreRestaurantMap.put("keyWords", Arrays.asList(name.toLowerCase().split(" ")));
-        firestoreRestaurantMap.put("description",infoBundle.getString("description"));
+        firestoreRestaurantMap.put("description", infoBundle.getString("description"));
         final String category = infoBundle.getString("category");
-        firestoreRestaurantMap.put("category",category);
+        firestoreRestaurantMap.put("category", category);
 
         final List<Task<Void>> tasksList = new ArrayList<>();
 
@@ -227,37 +219,37 @@ public class PartneredRestaurantModel extends Observable {
                 restaurantDocumentRef.collection("Lists");
 
 
-        final HashMap<String,List<String>> serviceOptionsMap = new HashMap<>();
-        serviceOptionsMap.put("ServiceOptions",infoBundle.getStringArrayList("selectedServiceOptions"));
+        final HashMap<String, List<String>> serviceOptionsMap = new HashMap<>();
+        serviceOptionsMap.put("ServiceOptions", infoBundle.getStringArrayList("selectedServiceOptions"));
         tasksList.add(restaurantList.document("ServiceOptions").set(serviceOptionsMap));
 
-        if(infoBundle.containsKey("selectedAdditionalServices")){
+        if (infoBundle.containsKey("selectedAdditionalServices")) {
 
-            final HashMap<String,List<String>> additionalServicesMap = new HashMap<>();
+            final HashMap<String, List<String>> additionalServicesMap = new HashMap<>();
 
-            additionalServicesMap.put("AdditionalServices",infoBundle.getStringArrayList("selectedAdditionalServices"));
+            additionalServicesMap.put("AdditionalServices", infoBundle.getStringArrayList("selectedAdditionalServices"));
 
             tasksList.add(restaurantList.document("AdditionalServices").set(additionalServicesMap));
         }
 
-        if(infoBundle.containsKey("addedContactInfoMap")){
+        if (infoBundle.containsKey("addedContactInfoMap")) {
             tasksList.add(restaurantList.document("ContactInformation")
                     .set(infoBundle.getSerializable("addedContactInfoMap")));
         }
 
-        if(infoBundle.containsKey("addedSocialMediaSitesMap")){
+        if (infoBundle.containsKey("addedSocialMediaSitesMap")) {
             tasksList.add(restaurantList.document("SocialMediaLinks")
                     .set(infoBundle.getSerializable("addedSocialMediaSitesMap")));
         }
 
-        if(!skipped){
+        if (!skipped) {
             tasksList.add(restaurantList.document("Schedule").set(scheduleMap));
         }
 
         tasksList.add(
-        firestore.collection("GeneralOptions").document("Categories")
-                .collection("Categories").document(category)
-                .update("count",FieldValue.increment(1)));
+                firestore.collection("GeneralOptions").document("Categories")
+                        .collection("Categories").document(category)
+                        .update("count", FieldValue.increment(1)));
 
 
         Tasks.whenAllComplete(uploadTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
@@ -268,11 +260,11 @@ public class PartneredRestaurantModel extends Observable {
                     @Override
                     public void onComplete(@NonNull Task<List<Task<?>>> task) {
 
-                        if(!bannerImages.isEmpty()){
+                        if (!bannerImages.isEmpty()) {
                             firestoreRestaurantMap.put("bannerImages", bannerImages);
                         }
 
-                        if(!albumImages.isEmpty()){
+                        if (!albumImages.isEmpty()) {
                             firestoreRestaurantMap.put("albumImages", albumImages);
                         }
 
@@ -287,24 +279,24 @@ public class PartneredRestaurantModel extends Observable {
 
                                 boolean allTasksSuccessful = true;
 
-                                for(Task<?> completetTasks: tasksList){
+                                for (Task<?> completetTasks : tasksList) {
 
-                                    if(!completetTasks.isSuccessful()){
+                                    if (!completetTasks.isSuccessful()) {
 
                                         allTasksSuccessful = false;
 
-                                        Log.d("uploadRestaurant","failed at "+ tasksList.indexOf(completetTasks)+": "+completetTasks.getException());
+                                        Log.d("uploadRestaurant", "failed at " + tasksList.indexOf(completetTasks) + ": " + completetTasks.getException());
 
-                                    }else{
-                                        Log.d("uploadRestaurant","is successfull: "+completetTasks.toString());
+                                    } else {
+                                        Log.d("uploadRestaurant", "is successfull: " + completetTasks.toString());
 
                                     }
 
                                 }
 
-                                HashMap<String,Object> restaurantResult = new HashMap<>();
-                                restaurantResult.put("result",allTasksSuccessful);
-                                restaurantResult.put("id",restaurantId);
+                                HashMap<String, Object> restaurantResult = new HashMap<>();
+                                restaurantResult.put("result", allTasksSuccessful);
+                                restaurantResult.put("id", restaurantId);
                                 setChanged();
                                 notifyObservers(restaurantResult);
 
@@ -312,7 +304,7 @@ public class PartneredRestaurantModel extends Observable {
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Log.d("uploadRestaurant","failed: "+e.getMessage());
+                                Log.d("uploadRestaurant", "failed: " + e.getMessage());
 
                                 setChanged();
                                 notifyObservers(e.getMessage());
@@ -327,7 +319,7 @@ public class PartneredRestaurantModel extends Observable {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d("uploadRestaurant","failed: "+e.getMessage());
+                Log.d("uploadRestaurant", "failed: " + e.getMessage());
                 setChanged();
                 notifyObservers(e.getMessage());
 
@@ -337,11 +329,10 @@ public class PartneredRestaurantModel extends Observable {
     }
 
 
+    public void favRestaurant(boolean alreadyFav) {
 
-    public void favRestaurant(boolean alreadyFav){
-
-        if(restaurantId == null)
-         return;
+        if (restaurantId == null)
+            return;
 
 
         final String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -354,22 +345,22 @@ public class PartneredRestaurantModel extends Observable {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
 
-                if(snapshot.exists()){
-                    addToFav(snapshot.getReference(),alreadyFav);
-                }else{
+                if (snapshot.exists()) {
+                    addToFav(snapshot.getReference(), alreadyFav);
+                } else {
 
-                    final HashMap<String,Object> favMap = new HashMap<>();
-                    favMap.put("FavoriteRestaurants",new ArrayList<>());
+                    final HashMap<String, Object> favMap = new HashMap<>();
+                    favMap.put("FavoriteRestaurants", new ArrayList<>());
 
                     snapshot.getReference().set(favMap).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            addToFav(snapshot.getReference(),false);
+                            addToFav(snapshot.getReference(), false);
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.d("ttt","failed to add snapshot: "+e.getMessage());
+                            Log.d("ttt", "failed to add snapshot: " + e.getMessage());
                         }
                     });
                 }
@@ -380,24 +371,24 @@ public class PartneredRestaurantModel extends Observable {
     }
 
 
-    private void addToFav(DocumentReference reference,boolean alreadyFav){
+    private void addToFav(DocumentReference reference, boolean alreadyFav) {
 
-        final HashMap<Integer,Object> resultMap = new HashMap<>();
+        final HashMap<Integer, Object> resultMap = new HashMap<>();
 
-        reference.update("FavoriteRestaurants",alreadyFav?FieldValue.arrayRemove(restaurantId):
+        reference.update("FavoriteRestaurants", alreadyFav ? FieldValue.arrayRemove(restaurantId) :
                 FieldValue.arrayUnion(restaurantId))
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
 
                         FirebaseFirestore.getInstance().collection("PartneredRestaurant")
-                                .document(restaurantId).update("favCount",FieldValue.increment(alreadyFav?-1:1))
+                                .document(restaurantId).update("favCount", FieldValue.increment(alreadyFav ? -1 : 1))
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
 
-                                        resultMap.put(TYPE_FAVORITE,true);
-                                        resultMap.put(RESTAURANT_ID_CODE,restaurantId);
+                                        resultMap.put(TYPE_FAVORITE, true);
+                                        resultMap.put(RESTAURANT_ID_CODE, restaurantId);
                                         setChanged();
                                         notifyObservers(resultMap);
 
@@ -409,7 +400,7 @@ public class PartneredRestaurantModel extends Observable {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                resultMap.put(TYPE_FAVORITE,e.getMessage());
+                resultMap.put(TYPE_FAVORITE, e.getMessage());
                 setChanged();
                 notifyObservers(resultMap);
             }

@@ -1,11 +1,6 @@
 package com.developers.wajbaty.PartneredRestaurant.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,34 +9,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.developers.wajbaty.Activities.MainActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Adapters.WorkingScheduleAdapter;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.PartneredRestaurantModel;
 import com.developers.wajbaty.R;
-import com.firebase.geofire.GeoFireUtils;
-import com.firebase.geofire.GeoLocation;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -57,7 +34,7 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
     private TextView skipTv;
 
     //adapter
-    private LinkedHashMap<String,Map<String,Object>> scheduleMap;
+    private LinkedHashMap<String, Map<String, Object>> scheduleMap;
 
     //firebase
     private ProgressDialogFragment progressDialogFragment;
@@ -76,7 +53,7 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
         restaurantModel.addObserver(this);
     }
 
-    private void getViews(){
+    private void getViews() {
 
 
         backIv = findViewById(R.id.backIv);
@@ -91,18 +68,18 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
     }
 
 
-    private void initializeScheduleAdapter(){
+    private void initializeScheduleAdapter() {
 
         scheduleMap = new LinkedHashMap<>();
-        scheduleMap.put("1-Saturday",new HashMap<>());
-        scheduleMap.put("2-Sunday",new HashMap<>());
-        scheduleMap.put("3-Monday",new HashMap<>());
-        scheduleMap.put("4-Tuesday",new HashMap<>());
-        scheduleMap.put("5-Wednesday",new HashMap<>());
-        scheduleMap.put("6-Thursday",new HashMap<>());
-        scheduleMap.put("7-Friday",new HashMap<>());
+        scheduleMap.put("1-Saturday", new HashMap<>());
+        scheduleMap.put("2-Sunday", new HashMap<>());
+        scheduleMap.put("3-Monday", new HashMap<>());
+        scheduleMap.put("4-Tuesday", new HashMap<>());
+        scheduleMap.put("5-Wednesday", new HashMap<>());
+        scheduleMap.put("6-Thursday", new HashMap<>());
+        scheduleMap.put("7-Friday", new HashMap<>());
 
-        final WorkingScheduleAdapter adapter = new WorkingScheduleAdapter(this,scheduleMap);
+        final WorkingScheduleAdapter adapter = new WorkingScheduleAdapter(this, scheduleMap);
         scheduleRv.setAdapter(adapter);
 
     }
@@ -110,9 +87,9 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == backIv.getId()){
+        if (v.getId() == backIv.getId()) {
             finish();
-        }else if(v.getId() == scheduleInputNextBtn.getId()){
+        } else if (v.getId() == scheduleInputNextBtn.getId()) {
 
 //            final SimpleDateFormat dateFormat =
 //                    new SimpleDateFormat("HH:mm",Locale.getDefault());
@@ -121,29 +98,29 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
 
             boolean atLeastOneOpen = false;
 
-            for(String key: scheduleMap.keySet()){
+            for (String key : scheduleMap.keySet()) {
 
-                Log.d(TAG,"for day: "+key);
+                Log.d(TAG, "for day: " + key);
 
-                final Map<String,Object> dayMap = scheduleMap.get(key);
+                final Map<String, Object> dayMap = scheduleMap.get(key);
 
 //                if(dayMap.containsKey("isClosed") && (boolean) dayMap.get("isClosed")){
 //                    Log.d(TAG,"is closed on: "+key);
 //                    return;
 //                }
 
-                if(!dayMap.containsKey("isClosed") || !(boolean)dayMap.get("isClosed")){
+                if (!dayMap.containsKey("isClosed") || !(boolean) dayMap.get("isClosed")) {
 
 //                    boolean atleastProvidedOneDaySchedule = false;
 
-                    if(!((dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_START))
+                    if (!((dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_START))
                             && dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.FIRST_END)))
 //                            || (dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_START))
 //                            && dayMap.containsKey(String.valueOf(WorkingScheduleAdapter.SECOND_END)))
-                            )) {
+                    )) {
 
                         Toast.makeText(this,
-                                "You need to at least add the first working shift schedule for: "+key, Toast.LENGTH_LONG).show();
+                                "You need to at least add the first working shift schedule for: " + key, Toast.LENGTH_LONG).show();
 
                         return;
                     }
@@ -203,23 +180,23 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
 //
 //                        Log.d(TAG,dayName + " -- "+ timeName + " at: "+dateFormat.format(scheduleMap.get(key)));
 //                    }
-                }
+            }
 
 //                schedule.put(dayName,timesSchedule);
-            Log.d(TAG,"------------------------------------------------------------------------");
+            Log.d(TAG, "------------------------------------------------------------------------");
 
-            if(atLeastOneOpen){
+            if (atLeastOneOpen) {
 //                Toast.makeText(this, "Adding restaruratn", Toast.LENGTH_SHORT).show();
                 showProgressDialog();
 
 //                for(int i=0;i<5;i++){
 
-                    restaurantModel.addRestaurantToFirebase(false,getIntent(),scheduleMap);
+                restaurantModel.addRestaurantToFirebase(false, getIntent(), scheduleMap);
 
 //                }
 
 //                restaurantModel.addRestaurantToFirebase(false,getIntent(),scheduleMap);
-            }else{
+            } else {
                 Toast.makeText(this,
                         "You need to at least have one working day in your schedule",
                         Toast.LENGTH_SHORT).show();
@@ -229,20 +206,20 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
 //                Log.d(TAG,key + " - "+schedule.get(key).toString());
 //
 //            }
-        }else if(v.getId() == skipTv.getId()){
+        } else if (v.getId() == skipTv.getId()) {
 
             showProgressDialog();
-            restaurantModel.addRestaurantToFirebase(false,getIntent(),scheduleMap);
+            restaurantModel.addRestaurantToFirebase(false, getIntent(), scheduleMap);
 
         }
     }
 
-    private void showProgressDialog(){
+    private void showProgressDialog() {
 
         progressDialogFragment = new ProgressDialogFragment();
         progressDialogFragment.setTitle("Creating Restaurant");
         progressDialogFragment.setMessage("Please wait");
-        progressDialogFragment.show(getSupportFragmentManager(),"progress");
+        progressDialogFragment.show(getSupportFragmentManager(), "progress");
 
     }
 
@@ -251,29 +228,29 @@ public class RestaurantScheduleActivity extends AppCompatActivity implements Vie
 
         progressDialogFragment.dismiss();
 
-        if(arg instanceof HashMap){
+        if (arg instanceof HashMap) {
 
-            final HashMap<String,Object> restaurantResult = (HashMap<String, Object>) arg;
+            final HashMap<String, Object> restaurantResult = (HashMap<String, Object>) arg;
 
-            if((Boolean) restaurantResult.get("result") && restaurantResult.containsKey("id")){
+            if ((Boolean) restaurantResult.get("result") && restaurantResult.containsKey("id")) {
 
                 final String restaurantId = (String) restaurantResult.get("id");
 
-                final Map<String,Object> addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
+                final Map<String, Object> addressMap = (Map<String, Object>) getIntent().getSerializableExtra("addressMap");
 
                 startActivity(new Intent(RestaurantScheduleActivity.this, RestaurantActivity.class)
                         .putExtra("currency", (String) addressMap.get("currency"))
-                        .putExtra("ID",restaurantId));
+                        .putExtra("ID", restaurantId));
 
 //                finish();
             }
 
-        }else if(arg instanceof String){
+        } else if (arg instanceof String) {
 
-            Toast.makeText(this,"error while uploading restaurant",
+            Toast.makeText(this, "error while uploading restaurant",
                     Toast.LENGTH_SHORT).show();
 
-            Log.d("ttt",(String) arg);
+            Log.d("ttt", (String) arg);
 
         }
 

@@ -1,20 +1,19 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 
 import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.PartneredRestaurant.Activities.RestaurantLocationActivity;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
 import com.developers.wajbaty.Utils.GlobalVariables;
-import com.google.android.gms.dynamic.IFragmentWrapper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
@@ -29,11 +28,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static android.content.ContentValues.TAG;
 
 public class VerifyAccountActivity extends AppCompatActivity {
     private static final String TAG = "VerifyAccountActivity";
@@ -50,7 +46,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
     int userType = 0;
     boolean fromSignin;
 
-    private Map<String,Object> addressMap;
+    private Map<String, Object> addressMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,19 +195,18 @@ public class VerifyAccountActivity extends AppCompatActivity {
 
                                         } else {
 
-                                            if(userType == User.TYPE_ADMIN){
+                                            if (userType == User.TYPE_ADMIN) {
                                                 GlobalVariables.setCurrentRestaurantId(userDoc.getString("myRestaurantID"));
                                             }
 
                                             startActivity(new Intent(VerifyAccountActivity.this, HomeActivity.class)
-                                                    .putExtra("userType",userType)
+                                                    .putExtra("userType", userType)
                                                     .putExtra("addressMap", (Serializable) addressMap));
                                         }
 
                                         finish();
                                     }
                                 });
-
 
 
                     } else {
@@ -251,7 +246,7 @@ public class VerifyAccountActivity extends AppCompatActivity {
                                 .addOnCompleteListener(command -> {
                                     if (userType != User.TYPE_ADMIN) {
                                         startActivity(new Intent(VerifyAccountActivity.this, AddImageProfileActivity.class)
-                                                .putExtra("userType",userType)
+                                                .putExtra("userType", userType)
                                                 .putExtra("addressMap", (Serializable) addressMap));
                                     } else {
 

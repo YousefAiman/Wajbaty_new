@@ -1,28 +1,22 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
@@ -48,7 +42,7 @@ public class SigninActivity extends AppCompatActivity {
     String fullMobile;
     boolean fromSignin;
 
-    private Map<String,Object> addressMap;
+    private Map<String, Object> addressMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,7 +150,6 @@ public class SigninActivity extends AppCompatActivity {
 
             final String defaultSpinnerChoice = EmojiUtil.countryCodeToEmoji(defaultCode)
                     + " +" + phoneNumberUtil.getCountryCodeForRegion(defaultCode);
-
 
 
             final List<String> spinnerArray = new ArrayList<>(supportedCountryCodes.size());

@@ -16,12 +16,8 @@ import java.util.ArrayList;
 
 public class RestaurantOrdersAdapter extends RecyclerView.Adapter<RestaurantOrdersAdapter.RestaurantOrdersVH> {
 
-    private final ArrayList<RestaurantOrder> restaurantOrders;
     private static RestaurantsOrdersListener restaurantsOrdersListener;
-
-    public interface RestaurantsOrdersListener{
-        void  onRestaurantOrderClicked(int position);
-    }
+    private final ArrayList<RestaurantOrder> restaurantOrders;
 
     public RestaurantOrdersAdapter(ArrayList<RestaurantOrder> restaurantOrders,
                                    RestaurantsOrdersListener restaurantsOrdersListener) {
@@ -33,7 +29,7 @@ public class RestaurantOrdersAdapter extends RecyclerView.Adapter<RestaurantOrde
     @Override
     public RestaurantOrdersVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new RestaurantOrdersVH(LayoutInflater.from(parent.getContext())
-        .inflate(R.layout.item_restaurant_order,parent,false));
+                .inflate(R.layout.item_restaurant_order, parent, false));
     }
 
     @Override
@@ -48,10 +44,14 @@ public class RestaurantOrdersAdapter extends RecyclerView.Adapter<RestaurantOrde
         return restaurantOrders.size();
     }
 
+    public interface RestaurantsOrdersListener {
+        void onRestaurantOrderClicked(int position);
+    }
+
     public static class RestaurantOrdersVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final TextView restaurantOrderTimeTv,restaurantOrderCostTv,
-                restaurantOrderDriverNameTv,restaurantOrderStatusTv;
+        private final TextView restaurantOrderTimeTv, restaurantOrderCostTv,
+                restaurantOrderDriverNameTv, restaurantOrderStatusTv;
 
         public RestaurantOrdersVH(@NonNull View itemView) {
             super(itemView);
@@ -63,7 +63,7 @@ public class RestaurantOrdersAdapter extends RecyclerView.Adapter<RestaurantOrde
             itemView.setOnClickListener(this);
         }
 
-        private void bind(RestaurantOrder restaurantOrder){
+        private void bind(RestaurantOrder restaurantOrder) {
 
             restaurantOrderTimeTv.setText(TimeFormatter.formatTime(restaurantOrder.getOrderTimeInMillis()));
             restaurantOrderCostTv.setText(restaurantOrder.getTotalCost() + " " + restaurantOrder.getCurrency());
@@ -71,7 +71,7 @@ public class RestaurantOrdersAdapter extends RecyclerView.Adapter<RestaurantOrde
 
             String status = "";
 
-            switch (restaurantOrder.getStatus()){
+            switch (restaurantOrder.getStatus()) {
 
                 case RestaurantOrder.TYPE_PENDING:
                     status = "Pending";

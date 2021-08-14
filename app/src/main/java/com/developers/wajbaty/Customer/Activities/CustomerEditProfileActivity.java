@@ -1,5 +1,8 @@
 package com.developers.wajbaty.Customer.Activities;
 
+import android.os.Bundle;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,16 +10,12 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.Toolbar;
 
-import android.os.Bundle;
-import android.widget.Toast;
-
 import com.developers.wajbaty.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,7 +41,7 @@ public class CustomerEditProfileActivity extends AppCompatActivity {
 
         firebaseFirestore = FirebaseFirestore.getInstance();
 
-       documentReference = firebaseFirestore.collection("Users").document(currentUid);
+        documentReference = firebaseFirestore.collection("Users").document(currentUid);
 
         saveBtn.setOnClickListener(v -> {
             updateProfile();
@@ -61,23 +60,23 @@ public class CustomerEditProfileActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-       documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.getResult().exists()) {
-                            String username = task.getResult().getString("name");
-                            String phone = task.getResult().getString("phoneNumber");
-                            String email = task.getResult().getString("email");
+        documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.getResult().exists()) {
+                    String username = task.getResult().getString("name");
+                    String phone = task.getResult().getString("phoneNumber");
+                    String email = task.getResult().getString("email");
 
-                            usernameEd.setText(username);
-                            phoneEd.setText(phone);
-                            emailEd.setText(email);
-                        } else {
-                            Toast.makeText(CustomerEditProfileActivity.this, "No Profile", Toast.LENGTH_SHORT).show();
-                        }
+                    usernameEd.setText(username);
+                    phoneEd.setText(phone);
+                    emailEd.setText(email);
+                } else {
+                    Toast.makeText(CustomerEditProfileActivity.this, "No Profile", Toast.LENGTH_SHORT).show();
+                }
 
-                    }
-                })
+            }
+        })
                 .addOnFailureListener(command -> {
                     Toast.makeText(this, command.getMessage(), Toast.LENGTH_SHORT).show();
                 });
@@ -93,9 +92,9 @@ public class CustomerEditProfileActivity extends AppCompatActivity {
             @Nullable
             @Override
             public Object apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                transaction.update(documentReference,"name", username);
-                transaction.update(documentReference,"phoneNumber", phone);
-                transaction.update(documentReference,"email", email);
+                transaction.update(documentReference, "name", username);
+                transaction.update(documentReference, "phoneNumber", phone);
+                transaction.update(documentReference, "email", email);
 
                 return null;
             }

@@ -1,12 +1,5 @@
 package com.developers.wajbaty.DeliveryDriver.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.NestedScrollView;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -17,7 +10,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.developers.wajbaty.Adapters.CartAdapter;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Adapters.CartInfoAdapter;
 import com.developers.wajbaty.Fragments.ProgressDialogFragment;
 import com.developers.wajbaty.Models.CartItem;
@@ -40,7 +39,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
@@ -68,8 +66,8 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
     //views
     private Toolbar cartToolbar;
     private ImageView deliveryInfoUserIv;
-    private TextView deliveryInfoUserNameTv,deliveryInfoAddressTv,deliveryInfoCoordinatesTv,
-            deliveryInfoTotalDistanceTv,deliveryInfoOrderTimeTv,deliveryInfoTotalPriceTv,
+    private TextView deliveryInfoUserNameTv, deliveryInfoAddressTv, deliveryInfoCoordinatesTv,
+            deliveryInfoTotalDistanceTv, deliveryInfoOrderTimeTv, deliveryInfoTotalPriceTv,
             deliveryInfoRestaurantCountTv;
     private RecyclerView deliveryInfoCartItemsRv;
     private Button deliveryInfoStartDeliveryBtn;
@@ -97,42 +95,42 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
         final Intent intent = getIntent();
 
-        if(intent == null){
+        if (intent == null) {
             finish();
             return;
         }
 
-        if(intent.hasExtra("isForShow")){
-            isForShow = intent.getBooleanExtra("isForShow",false);
+        if (intent.hasExtra("isForShow")) {
+            isForShow = intent.getBooleanExtra("isForShow", false);
         }
-        if(intent.hasExtra("currentLocation")){
+        if (intent.hasExtra("currentLocation")) {
             currentLocation = (Location) intent.getParcelableExtra("currentLocation");
         }
 
 
         setUpListeners();
 
-        if(intent.hasExtra("delivery")){
+        if (intent.hasExtra("delivery")) {
             delivery = (Delivery) intent.getSerializableExtra("delivery");
             deliveryRef = firestore.collection("Deliveries").document(delivery.getID());
 
-            if(!isForShow){
+            if (!isForShow) {
                 listenToDeliveryChanges();
             }
 
             populateViews();
-        }else if(intent.hasExtra("deliveryID")){
+        } else if (intent.hasExtra("deliveryID")) {
 
             firestore.collection("Deliveries").document(intent.getStringExtra("deliveryID"))
                     .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    if(documentSnapshot.exists()){
+                    if (documentSnapshot.exists()) {
 
                         delivery = documentSnapshot.toObject(Delivery.class);
                         deliveryRef = firestore.collection("Deliveries").document(documentSnapshot.getId());
 
-                        if(!isForShow){
+                        if (!isForShow) {
                             listenToDeliveryChanges();
                         }
 
@@ -146,20 +144,18 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                 }
             });
 
-        }else{
+        } else {
             finish();
             return;
         }
 
 
-
-
     }
 
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
-        if(FirebaseAuth.getInstance().getCurrentUser() == null){
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             finish();
             return;
         }
@@ -168,15 +164,14 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
 
         orderedCartItem = new ArrayList<>();
-        cartInfoAdapter = new CartInfoAdapter(orderedCartItem,this);
+        cartInfoAdapter = new CartInfoAdapter(orderedCartItem, this, this);
 
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
     }
 
 
-
-    private void getViews(){
+    private void getViews() {
 
         final NestedScrollView deliveryInfoNSV = findViewById(R.id.deliveryInfoNSV);
         deliveryInfoNSV.setNestedScrollingEnabled(false);
@@ -197,28 +192,28 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
         deliveryInfoCartItemsRv.setAdapter(cartInfoAdapter);
     }
 
-    private void setUpListeners(){
-        cartToolbar.setNavigationOnClickListener(v-> finish());
+    private void setUpListeners() {
+        cartToolbar.setNavigationOnClickListener(v -> finish());
 
-        if(!isForShow){
+        if (!isForShow) {
             deliveryInfoStartDeliveryBtn.setOnClickListener(this);
-        }else{
+        } else {
             deliveryInfoStartDeliveryBtn.setVisibility(View.GONE);
         }
     }
 
 
-    private void populateViews(){
+    private void populateViews() {
 
         firestore.collection("Users").document(delivery.getRequesterID())
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                if(documentSnapshot.exists()){
+                if (documentSnapshot.exists()) {
 
                     final String username = documentSnapshot.getString("name");
-                    cartToolbar.setTitle("Delivery for "+username);
+                    cartToolbar.setTitle("Delivery for " + username);
                     deliveryInfoUserNameTv.setText(username);
 
                     final String imageURL = documentSnapshot.getString("imageURL");
@@ -228,203 +223,202 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
             }
         });
 
-        deliveryInfoAddressTv.setText("Address: "+delivery.getAddress());
+        deliveryInfoAddressTv.setText("Address: " + delivery.getAddress());
 
-        deliveryInfoCoordinatesTv.setText("Coordinates: ["+
-                 BigDecimal.valueOf(delivery.getLat()).setScale(2, RoundingMode.DOWN) +","+
-                BigDecimal.valueOf(delivery.getLng()).setScale(2,RoundingMode.DOWN)+"]");
+        deliveryInfoCoordinatesTv.setText("Coordinates: [" +
+                BigDecimal.valueOf(delivery.getLat()).setScale(2, RoundingMode.DOWN) + "," +
+                BigDecimal.valueOf(delivery.getLng()).setScale(2, RoundingMode.DOWN) + "]");
 
         deliveryInfoOrderTimeTv.setText(TimeFormatter.formatTime(delivery.getOrderTimeInMillis()));
         deliveryInfoTotalPriceTv.setText(delivery.getTotalCost() + delivery.getCurrency());
-        deliveryInfoRestaurantCountTv.setText(delivery.getRestaurantCount()+" Restaurants");
+        deliveryInfoRestaurantCountTv.setText(delivery.getRestaurantCount() + " Restaurants");
 
         fetchCartItems();
 
     }
 
-     private void fetchCartItems(){
+    private void fetchCartItems() {
 
         final ArrayList<CartItem> cartItems = new ArrayList<>();
 
-            firestore.collection("Deliveries").document(delivery.getID())
-                    .collection("CartItems")
-                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                @Override
-                public void onSuccess(QuerySnapshot snapshots) {
+        firestore.collection("Deliveries").document(delivery.getID())
+                .collection("CartItems")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot snapshots) {
 
-                    cartItems.addAll(snapshots.toObjects(CartItem.class));
+                cartItems.addAll(snapshots.toObjects(CartItem.class));
 
-                }
-            }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+            }
+        }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
 
-                    final List<Task<DocumentSnapshot>> tasksList = new ArrayList<>();
+                final List<Task<DocumentSnapshot>> tasksList = new ArrayList<>();
 
-                    final Map<String,String> menuItemRestaurtantMap = new HashMap<>();
+                final Map<String, String> menuItemRestaurtantMap = new HashMap<>();
 
-                    final Map<String,Float> priceMap = delivery.getMenuItemPriceMap();
+                final Map<String, Float> priceMap = delivery.getMenuItemPriceMap();
 
-                    for(CartItem cartItem:cartItems){
+                for (CartItem cartItem : cartItems) {
 
-                        cartItem.setPrice(priceMap.get(cartItem.getItemId()));
+                    cartItem.setPrice(priceMap.get(cartItem.getItemId()));
 
-                        tasksList.add(firestore.collection("MenuItems").document(cartItem.getItemId())
-                                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                    @Override
-                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    tasksList.add(firestore.collection("MenuItems").document(cartItem.getItemId())
+                            .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                                        if(documentSnapshot !=null){
+                                    if (documentSnapshot != null) {
 
-                                            if(documentSnapshot.contains("imageUrls")){
+                                        if (documentSnapshot.contains("imageUrls")) {
 
-                                                List<String> imageUrls =
-                                                        (List<String>)documentSnapshot.get("imageUrls");
+                                            List<String> imageUrls =
+                                                    (List<String>) documentSnapshot.get("imageUrls");
 
-                                                if(imageUrls!=null && !imageUrls.isEmpty()){
-                                                    cartItem.setImageUrl(imageUrls.get(0));
-                                                }
-
+                                            if (imageUrls != null && !imageUrls.isEmpty()) {
+                                                cartItem.setImageUrl(imageUrls.get(0));
                                             }
 
-                                            cartItem.setName(documentSnapshot.getString("name"));
-                                            cartItem.setCurrency(documentSnapshot.getString("currency"));
-
-                                            menuItemRestaurtantMap.put(documentSnapshot.getId(),documentSnapshot.getString("restaurantId"));
-
                                         }
+
+                                        cartItem.setName(documentSnapshot.getString("name"));
+                                        cartItem.setCurrency(documentSnapshot.getString("currency"));
+
+                                        menuItemRestaurtantMap.put(documentSnapshot.getId(), documentSnapshot.getString("restaurantId"));
+
                                     }
-                                }));
-                    }
+                                }
+                            }));
+                }
 
-                    Tasks.whenAllComplete(tasksList).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
-                        @Override
-                        public void onComplete(@NonNull Task<List<Task<?>>> task) {
+                Tasks.whenAllComplete(tasksList).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<List<Task<?>>> task) {
 
-                            if(!menuItemRestaurtantMap.isEmpty()){
+                        if (!menuItemRestaurtantMap.isEmpty()) {
 
-                                final List<Task<DocumentSnapshot>> restaurantTasks = new ArrayList<>();
+                            final List<Task<DocumentSnapshot>> restaurantTasks = new ArrayList<>();
 
-                                deliveryRef.collection("RestaurantsOrdered")
-                                        .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onSuccess(QuerySnapshot snapshots) {
+                            deliveryRef.collection("RestaurantsOrdered")
+                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                @Override
+                                public void onSuccess(QuerySnapshot snapshots) {
 
-                                        if(!snapshots.isEmpty()){
+                                    if (!snapshots.isEmpty()) {
 
-                                            final CollectionReference restaruantRef = firestore.collection("PartneredRestaurant");
+                                        final CollectionReference restaruantRef = firestore.collection("PartneredRestaurant");
 
-                                            for(DocumentSnapshot snapshot:snapshots.getDocuments()){
+                                        for (DocumentSnapshot snapshot : snapshots.getDocuments()) {
 
-                                                    restaurantTasks.add(restaruantRef.document(snapshot.getId())
-                                                            .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                                                @Override
-                                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                            restaurantTasks.add(restaruantRef.document(snapshot.getId())
+                                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                        @Override
+                                                        public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                                                                    if(documentSnapshot.exists()){
+                                                            if (documentSnapshot.exists()) {
 
-                                                                        final long count = snapshot.getLong("itemCount");
+                                                                final long count = snapshot.getLong("itemCount");
 
-                                                                        orderedCartItem.add(
-                                                                                new CartItemRestaurantHeader("From "+documentSnapshot.getString("name")+
-                                                                                        " - "+ count + (count == 1?" item":" items")));
+                                                                orderedCartItem.add(
+                                                                        new CartItemRestaurantHeader("From " + documentSnapshot.getString("name") +
+                                                                                " - " + count + (count == 1 ? " item" : " items")));
 
-                                                                        for(String menuItemRestaurant:menuItemRestaurtantMap.keySet()){
+                                                                for (String menuItemRestaurant : menuItemRestaurtantMap.keySet()) {
 
-                                                                            if(menuItemRestaurtantMap.get(menuItemRestaurant).equals(snapshot.getId())){
+                                                                    if (menuItemRestaurtantMap.get(menuItemRestaurant).equals(snapshot.getId())) {
 
-                                                                                for(CartItem cartItem: cartItems){
-                                                                                    if(cartItem.getItemId().equals(menuItemRestaurant)){
-                                                                                        orderedCartItem.add(cartItem);
-                                                                                    }
-                                                                                }
-
+                                                                        for (CartItem cartItem : cartItems) {
+                                                                            if (cartItem.getItemId().equals(menuItemRestaurant)) {
+                                                                                orderedCartItem.add(cartItem);
                                                                             }
                                                                         }
+
                                                                     }
                                                                 }
-                                                            }));
-
-                                                }
-
-                                                Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<List<Task<?>>> task) {
-
-                                                        cartInfoAdapter.notifyDataSetChanged();
-
-                                                    }
-                                                });
-
+                                                            }
+                                                        }
+                                                    }));
 
                                         }
 
+                                        Tasks.whenAllComplete(restaurantTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<List<Task<?>>> task) {
+
+                                                cartInfoAdapter.notifyDataSetChanged();
+
+                                            }
+                                        });
+
+
                                     }
-                                });
 
+                                }
+                            });
 
-                            }
 
                         }
-                    });
+
+                    }
+                });
 
 
-                }
-            });
+            }
+        });
 
 
+    }
 
-
-     }
-
-     private void listenToDeliveryChanges(){
+    private void listenToDeliveryChanges() {
 
 
         deliveryRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-             boolean isInitial = true;
-             boolean driverWasAccepted = false;
-             @Override
-             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+            boolean isInitial = true;
+            boolean driverWasAccepted = false;
 
-                 if(value != null){
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                     if(value.contains("status") && value.contains("driverID")){
+                if (value != null) {
 
-                         long status = value.getLong("status");
+                    if (value.contains("status") && value.contains("driverID")) {
 
-                         if(status != Delivery.STATUS_PENDING && value.getString("driverID") !=null
-                                 && !value.getString("driverID").equals(currentUid)){
+                        long status = value.getLong("status");
 
-                             Toast.makeText(DeliveryInfoActivity.this,
-                                     "You can't start the delivery because " +
-                                             "another Driver has already started the delivery!"
-                                     , Toast.LENGTH_LONG).show();
+                        if (status != Delivery.STATUS_PENDING && value.getString("driverID") != null
+                                && !value.getString("driverID").equals(currentUid)) {
 
-                             disableStartDeliveryBtn();
+                            Toast.makeText(DeliveryInfoActivity.this,
+                                    "You can't start the delivery because " +
+                                            "another Driver has already started the delivery!"
+                                    , Toast.LENGTH_LONG).show();
 
-                             return;
-                         }
+                            disableStartDeliveryBtn();
 
-                     }
+                            return;
+                        }
 
-                     if(!isInitial){
+                    }
 
-                         if(value.contains("proposingDriverMap")){
+                    if (!isInitial) {
 
-                             HashMap<String,Object> proposingMap =
-                                     (HashMap<String, Object>) value.get("proposingDriverMap");
+                        if (value.contains("proposingDriverMap")) {
 
-                             if(proposingMap == null){
-                                 return;
-                             }
+                            HashMap<String, Object> proposingMap =
+                                    (HashMap<String, Object>) value.get("proposingDriverMap");
 
-                             if(proposingMap.containsKey("driverID")){
+                            if (proposingMap == null) {
+                                return;
+                            }
 
-                                 if(proposingMap.get("driverID") == null)
-                                     return;
+                            if (proposingMap.containsKey("driverID")) {
 
-                                 if(proposingMap.get("driverID").equals(currentUid)){
+                                if (proposingMap.get("driverID") == null)
+                                    return;
+
+                                if (proposingMap.get("driverID").equals(currentUid)) {
 //                                     if(!proposingMap.containsKey("status") || !(proposingMap.get("status") instanceof Boolean)){
 //
 //                                         hideProgressFragment();
@@ -437,114 +431,113 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 //                                         return;
 //                                     }
 
-                                     if(proposingMap.containsKey("hasDecided") &&
-                                             proposingMap.get("hasDecided") != null &&
-                                             (Boolean)proposingMap.get("hasDecided") &&
-                                             !driverWasAccepted){
-                                         driverWasAccepted = true;
+                                    if (proposingMap.containsKey("hasDecided") &&
+                                            proposingMap.get("hasDecided") != null &&
+                                            (Boolean) proposingMap.get("hasDecided") &&
+                                            !driverWasAccepted) {
+                                        driverWasAccepted = true;
 
-                                     if(proposingMap.containsKey("status") &&
-                                             proposingMap.get("status") != null &&
-                                     (Boolean) proposingMap.get("status")){
-
-
-                                         firestore.collection("Users").document(currentUid)
-                                                 .update("currentDeliveryID",delivery.getID(),
-                                                         "status", DeliveryDriver.STATUS_DELIVERING)
-                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                     @Override
-                                                     public void onSuccess(Void aVoid) {
-
-                                                         firestore.collection("Deliveries").document(delivery.getID())
-                                                                 .update("status",Delivery.STATUS_ACCEPTED,
-                                                                         "driverID", currentUid)
-                                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                                     @Override
-                                                                     public void onSuccess(Void aVoid) {
-
-                                                                         hideProgressFragment();
-
-                                                                         Intent intent = new Intent(DeliveryInfoActivity.this,DriverDeliveryMapActivity.class)
-                                                                                 .putExtra("delivery",delivery);
-
-                                                                         if(currentLocation!=null){
-                                                                                 intent.putExtra("currentLocation",currentLocation);
-                                                                         }
-
-                                                                         startActivity(intent);
-
-                                                                         finish();
-
-                                                                     }
-                                                                 }).addOnFailureListener(new OnFailureListener() {
-                                                             @Override
-                                                             public void onFailure(@NonNull Exception e) {
-
-                                                                 hideProgressFragment();
-
-                                                                 deliveryInfoStartDeliveryBtn.setClickable(true);
-
-                                                                 firestore.collection("Users").document(currentUid)
-                                                                         .update("currentDeliveryID",null);
-
-                                                             }
-                                                         });
-
-                                                     }
-                                                 }).addOnFailureListener(new OnFailureListener() {
-                                             @Override
-                                             public void onFailure(@NonNull Exception e) {
-
-                                                 hideProgressFragment();
-                                                 deliveryInfoStartDeliveryBtn.setClickable(true);
-
-                                             }
-                                         });
-
-                                     }else{
-
-                                         hideProgressFragment();
-
-                                         Toast.makeText(DeliveryInfoActivity.this,
-                                                 "User refused your delivery request", Toast.LENGTH_SHORT).show();
-
-                                     }
-
-                                     }
-
-                                 }else{
-
-                                     hideProgressFragment();
-
-                                     Toast.makeText(DeliveryInfoActivity.this,
-                                             "You can't start the delivery because " +
-                                                     "another Driver has already started the delivery!"
-                                             , Toast.LENGTH_LONG).show();
-                                 }
-
-                             }else{
-
-                                 hideProgressFragment();
-
-                                 Toast.makeText(DeliveryInfoActivity.this,
-                                         "An Error occurred while user was trying to confirm delivery!", Toast.LENGTH_SHORT).show();
-
-                             }
-                         }
-                     }
+                                        if (proposingMap.containsKey("status") &&
+                                                proposingMap.get("status") != null &&
+                                                (Boolean) proposingMap.get("status")) {
 
 
-                     isInitial = false;
-                 }
+                                            firestore.collection("Users").document(currentUid)
+                                                    .update("currentDeliveryID", delivery.getID(),
+                                                            "status", DeliveryDriver.STATUS_DELIVERING)
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
 
-             }
-         });
+                                                            firestore.collection("Deliveries").document(delivery.getID())
+                                                                    .update("status", Delivery.STATUS_ACCEPTED,
+                                                                            "driverID", currentUid)
+                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                        @Override
+                                                                        public void onSuccess(Void aVoid) {
 
-     }
+                                                                            hideProgressFragment();
+
+                                                                            Intent intent = new Intent(DeliveryInfoActivity.this, DriverDeliveryMapActivity.class)
+                                                                                    .putExtra("delivery", delivery);
+
+                                                                            if (currentLocation != null) {
+                                                                                intent.putExtra("currentLocation", currentLocation);
+                                                                            }
+
+                                                                            startActivity(intent);
+
+                                                                            finish();
+
+                                                                        }
+                                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+
+                                                                    hideProgressFragment();
+
+                                                                    deliveryInfoStartDeliveryBtn.setClickable(true);
+
+                                                                    firestore.collection("Users").document(currentUid)
+                                                                            .update("currentDeliveryID", null);
+
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+
+                                                    hideProgressFragment();
+                                                    deliveryInfoStartDeliveryBtn.setClickable(true);
+
+                                                }
+                                            });
+
+                                        } else {
+
+                                            hideProgressFragment();
+
+                                            Toast.makeText(DeliveryInfoActivity.this,
+                                                    "User refused your delivery request", Toast.LENGTH_SHORT).show();
+
+                                        }
+
+                                    }
+
+                                } else {
+
+                                    hideProgressFragment();
+
+                                    Toast.makeText(DeliveryInfoActivity.this,
+                                            "You can't start the delivery because " +
+                                                    "another Driver has already started the delivery!"
+                                            , Toast.LENGTH_LONG).show();
+                                }
+
+                            } else {
+
+                                hideProgressFragment();
+
+                                Toast.makeText(DeliveryInfoActivity.this,
+                                        "An Error occurred while user was trying to confirm delivery!", Toast.LENGTH_SHORT).show();
+
+                            }
+                        }
+                    }
+
+
+                    isInitial = false;
+                }
+
+            }
+        });
+
+    }
 
     @Override
     public void showMenuItem(int position) {
-
 
 
     }
@@ -552,7 +545,7 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == deliveryInfoStartDeliveryBtn.getId()){
+        if (v.getId() == deliveryInfoStartDeliveryBtn.getId()) {
 
             deliveryInfoStartDeliveryBtn.setClickable(false);
 
@@ -564,23 +557,23 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                 @Override
                 public void onProgressDismissed() {
                     deliveryRef.update("proposingDriverMap", FieldValue.delete())
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            deliveryInfoStartDeliveryBtn.setClickable(true);
-                        }
-                    });
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    deliveryInfoStartDeliveryBtn.setClickable(true);
+                                }
+                            });
                 }
             });
 
-            progressDialogFragment.show(getSupportFragmentManager(),"progressFragment");
+            progressDialogFragment.show(getSupportFragmentManager(), "progressFragment");
 
-            HashMap<String,Object> proposingMap = new HashMap<>();
-            proposingMap.put("driverID",currentUid);
-            proposingMap.put("status",null);
-            proposingMap.put("hasDecided",false);
+            HashMap<String, Object> proposingMap = new HashMap<>();
+            proposingMap.put("driverID", currentUid);
+            proposingMap.put("status", null);
+            proposingMap.put("hasDecided", false);
 
-            deliveryRef.update("proposingDriverMap",proposingMap)
+            deliveryRef.update("proposingDriverMap", proposingMap)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -590,15 +583,15 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
                                 @Override
                                 public void onSuccess(DocumentSnapshot snapshot) {
 
-                                    if(snapshot.exists()){
+                                    if (snapshot.exists()) {
 
                                         CloudMessagingNotificationsSender.sendNotification(
                                                 delivery.getRequesterID(),
                                                 new CloudMessagingNotificationsSender.Data(
                                                         currentUid,
-                                                        "Delivery Driver "+snapshot.getString("name"),
+                                                        "Delivery Driver " + snapshot.getString("name"),
                                                         "Driver wants to deliver your order",
-                                                        snapshot.contains("imageURL") && snapshot.getString("imageURL")!=null?snapshot.getString("imageURL"):null,
+                                                        snapshot.contains("imageURL") && snapshot.getString("imageURL") != null ? snapshot.getString("imageURL") : null,
                                                         delivery.getID(),
                                                         CloudMessagingNotificationsSender.Data.TYPE_DRIVER_PROPOSAL)
                                         );
@@ -699,34 +692,32 @@ public class DeliveryInfoActivity extends AppCompatActivity implements
 
                         }
                     })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
 
-                    Toast.makeText(DeliveryInfoActivity.this,
-                            "Failed while trying to start delivery! Please Try " +
-                                    "Again", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(DeliveryInfoActivity.this,
+                                    "Failed while trying to start delivery! Please Try " +
+                                            "Again", Toast.LENGTH_SHORT).show();
 
-                    deliveryInfoStartDeliveryBtn.setClickable(true);
-                    Log.d("ttt","failed to propose to delivery");
-                }
-            });
-
-
-
+                            deliveryInfoStartDeliveryBtn.setClickable(true);
+                            Log.d("ttt", "failed to propose to delivery");
+                        }
+                    });
 
 
         }
 
     }
 
-    private void disableStartDeliveryBtn(){
+    private void disableStartDeliveryBtn() {
         deliveryInfoStartDeliveryBtn.setClickable(false);
         deliveryInfoStartDeliveryBtn.setBackgroundResource(R.drawable.filled_button_inactive_background);
     }
-    private void hideProgressFragment(){
 
-        if(progressDialogFragment != null && progressDialogFragment.isVisible()){
+    private void hideProgressFragment() {
+
+        if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
             progressDialogFragment.dismiss();
         }
 

@@ -1,10 +1,7 @@
 package com.developers.wajbaty.Utils;
 
-import android.text.format.DateUtils;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 public class TimeFormatter {
@@ -33,14 +30,14 @@ public class TimeFormatter {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
 
-        if(calendar.get(Calendar.YEAR) != currentCalendar.get(Calendar.YEAR)){
+        if (calendar.get(Calendar.YEAR) != currentCalendar.get(Calendar.YEAR)) {
             format = MONTH_DAY_YEAR_HOUR_MINUTE;
-        }else if(calendar.get(Calendar.MONTH) != currentCalendar.get(Calendar.MONTH)
-        || calendar.get(Calendar.DAY_OF_MONTH) != currentCalendar.get(Calendar.DAY_OF_MONTH)){
+        } else if (calendar.get(Calendar.MONTH) != currentCalendar.get(Calendar.MONTH)
+                || calendar.get(Calendar.DAY_OF_MONTH) != currentCalendar.get(Calendar.DAY_OF_MONTH)) {
             format = MONTH_DAY_HOUR_MINUTE;
-        }else if(calendar.get(Calendar.DAY_OF_WEEK) != currentCalendar.get(Calendar.DAY_OF_WEEK)){
+        } else if (calendar.get(Calendar.DAY_OF_WEEK) != currentCalendar.get(Calendar.DAY_OF_WEEK)) {
             format = WEEK_DAY_HOUR_MINUTE;
-        }else {
+        } else {
             format = HOUR_MINUTE;
         }
 

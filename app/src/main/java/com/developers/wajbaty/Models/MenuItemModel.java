@@ -2,11 +2,9 @@ package com.developers.wajbaty.Models;
 
 import android.net.Uri;
 import android.util.Log;
-import android.view.Menu;
 
 import androidx.annotation.NonNull;
 
-import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -31,29 +29,27 @@ import java.util.UUID;
 
 public class MenuItemModel extends Observable {
 
-    public static final int CART_RESULT = 1,HAS_IN_CART = 2,NOT_IN_CART = 3,
-    ADD_TO_CART_SUCCESS = 4,ADD_TO_CART_FAILED = 6,REMOVE_FROM_CART_SUCCESS = 7,REMOVE_FROM_CART_FAILED = 8,
-    CHECK_FAVORED_SUCCESS = 9,CHECK_FAVORED_FAILED = 10,
-            FAVORING_SUCCESS = 11,FAVORING_FAILED = 12,UN_FAVORING_SUCCESS = 13,UN_FAVORING_FAILED = 14,
-    REMOVE_SUCCESS = 15,REMOVE_FAILED = 16;
-
+    public static final int CART_RESULT = 1, HAS_IN_CART = 2, NOT_IN_CART = 3,
+            ADD_TO_CART_SUCCESS = 4, ADD_TO_CART_FAILED = 6, REMOVE_FROM_CART_SUCCESS = 7, REMOVE_FROM_CART_FAILED = 8,
+            CHECK_FAVORED_SUCCESS = 9, CHECK_FAVORED_FAILED = 10,
+            FAVORING_SUCCESS = 11, FAVORING_FAILED = 12, UN_FAVORING_SUCCESS = 13, UN_FAVORING_FAILED = 14,
+            REMOVE_SUCCESS = 15, REMOVE_FAILED = 16;
+    public boolean hasInCart, isFavored;
     private MenuItem.MenuItemSummary menuItem;
-
-    public boolean hasInCart,isFavored;
     private FirebaseFirestore firestore;
     private CollectionReference userRef;
 
-    public void setFavored(boolean favored) {
-        isFavored = favored;
-    }
-
-    public MenuItemModel(){
+    public MenuItemModel() {
 
     }
 
-    public MenuItemModel(MenuItem.MenuItemSummary menuItem){
+    public MenuItemModel(MenuItem.MenuItemSummary menuItem) {
         this.menuItem = menuItem;
         firestore = FirebaseFirestore.getInstance();
+    }
+
+    public void setFavored(boolean favored) {
+        isFavored = favored;
     }
 
     public MenuItem.MenuItemSummary getMenuItem() {
@@ -61,8 +57,8 @@ public class MenuItemModel extends Observable {
     }
 
     public void uploadMenuItem(String name, float price, String currency, String category,
-                               List<Uri> images, ArrayList<String> ingredients,String restaurantId,
-                               String region){
+                               List<Uri> images, ArrayList<String> ingredients, String restaurantId,
+                               String region) {
 
         final String id = UUID.randomUUID().toString();
 
@@ -75,31 +71,31 @@ public class MenuItemModel extends Observable {
 
         final List<String> bannerImages = new ArrayList<>();
 
-                for(int i=0;i<images.size();i++){
+        for (int i = 0; i < images.size(); i++) {
 
-                    final UploadTask bannerUploadTask = storageReference.child(id).child("menuItemImage_"+i).putFile(images.get(i));
+            final UploadTask bannerUploadTask = storageReference.child(id).child("menuItemImage_" + i).putFile(images.get(i));
 
-                    bannerUploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            if(task.isSuccessful()){
-                                uriTasks.add(task.getResult().getStorage().getDownloadUrl()
-                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
+            bannerUploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        uriTasks.add(task.getResult().getStorage().getDownloadUrl()
+                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
                                     @Override
                                     public void onSuccess(Uri uri) {
 
-                                        Log.d("uploadRestaurant","finished getting uri");
+                                        Log.d("uploadRestaurant", "finished getting uri");
                                         bannerImages.add(uri.toString());
 
                                     }
                                 }));
-                            }
-                        }
-                    });
-
-
-                    uploadTasks.add(bannerUploadTask);
+                    }
                 }
+            });
+
+
+            uploadTasks.add(bannerUploadTask);
+        }
 
         final MenuItem.Builder builder = new MenuItem.Builder();
         builder.setID(id);
@@ -117,13 +113,13 @@ public class MenuItemModel extends Observable {
             @Override
             public void onComplete(@NonNull Task<List<Object>> task) {
 
-                Log.d("ttt","uploading success");
+                Log.d("ttt", "uploading success");
 
                 Tasks.whenAllSuccess(uriTasks).addOnCompleteListener(new OnCompleteListener<List<Object>>() {
                     @Override
                     public void onComplete(@NonNull Task<List<Object>> task) {
 
-                        Log.d("ttt","uri success");
+                        Log.d("ttt", "uri success");
 
                         builder.setImageUrls(bannerImages);
 
@@ -205,7 +201,7 @@ public class MenuItemModel extends Observable {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d("ttt","uri errorr: "+e.getMessage());
+                        Log.d("ttt", "uri errorr: " + e.getMessage());
                     }
                 });
 
@@ -214,7 +210,7 @@ public class MenuItemModel extends Observable {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                Log.d("ttt","uploading errorr: "+e.getMessage());
+                Log.d("ttt", "uploading errorr: " + e.getMessage());
 
             }
         });
@@ -241,7 +237,7 @@ public class MenuItemModel extends Observable {
 
 //    private static void
 
-    public void checkInUserCart(String userId){
+    public void checkInUserCart(String userId) {
 
         getUserRef().document(userId).collection("Cart")
                 .document(menuItem.getID())
@@ -249,12 +245,12 @@ public class MenuItemModel extends Observable {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
 
-                if(snapshot.exists()){
+                if (snapshot.exists()) {
                     hasInCart = true;
                     setChanged();
                     notifyObservers(HAS_IN_CART);
 
-                }else{
+                } else {
                     hasInCart = false;
                     setChanged();
                     notifyObservers(NOT_IN_CART);
@@ -265,7 +261,7 @@ public class MenuItemModel extends Observable {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                notifyError(NOT_IN_CART,e.getMessage());
+                notifyError(NOT_IN_CART, e.getMessage());
 
             }
         });
@@ -286,35 +282,35 @@ public class MenuItemModel extends Observable {
 
     }
 
-    public void addToOrRemoveFromCart(String userId){
+    public void addToOrRemoveFromCart(String userId) {
 
         final DocumentReference cartItemRef =
                 getUserRef().document(userId).collection("Cart").document(menuItem.getID());
 
-        if(!hasInCart){
-            cartItemRef.set(new CartItem(menuItem.getID(),1,System.currentTimeMillis(),menuItem.getRestaurantId()))
+        if (!hasInCart) {
+            cartItemRef.set(new CartItem(menuItem.getID(), 1, System.currentTimeMillis(), menuItem.getRestaurantId()))
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
 
                             getUserRef().document(userId).update("CartTotal",
                                     FieldValue.increment(menuItem.getPrice()))
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
 
-                                    hasInCart = true;
-                                    setChanged();
-                                    notifyObservers(ADD_TO_CART_SUCCESS);
+                                            hasInCart = true;
+                                            setChanged();
+                                            notifyObservers(ADD_TO_CART_SUCCESS);
 
 
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
                                     getUserRef().document(userId).delete();
 
-                                    notifyError(ADD_TO_CART_FAILED,e.getMessage());
+                                    notifyError(ADD_TO_CART_FAILED, e.getMessage());
                                 }
                             });
 
@@ -323,17 +319,17 @@ public class MenuItemModel extends Observable {
                 @Override
                 public void onFailure(@NonNull Exception e) {
 
-                    notifyError(ADD_TO_CART_FAILED,e.getMessage());
+                    notifyError(ADD_TO_CART_FAILED, e.getMessage());
 
                 }
             });
-        }else{
+        } else {
 
             cartItemRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot snapshot) {
 
-                    if(snapshot.exists()){
+                    if (snapshot.exists()) {
 
                         final float price = snapshot.getLong("count") * menuItem.getPrice();
 
@@ -362,14 +358,14 @@ public class MenuItemModel extends Observable {
                             @Override
                             public void onFailure(@NonNull Exception e) {
 
-                                notifyError(CART_RESULT,e.getMessage());
+                                notifyError(CART_RESULT, e.getMessage());
 
                             }
                         });
 
-                    }else{
+                    } else {
 
-                        notifyError(CART_RESULT,"cart item doesn't exist");
+                        notifyError(CART_RESULT, "cart item doesn't exist");
 
                     }
                 }
@@ -401,17 +397,17 @@ public class MenuItemModel extends Observable {
 
     }
 
-    public void checkAlreadyFavItem(String userId){
+    public void checkAlreadyFavItem(String userId) {
 
         getUserRef().document(userId).collection("Favorites")
-                .whereArrayContains("FavoriteMenuItems",menuItem.getID())
+                .whereArrayContains("FavoriteMenuItems", menuItem.getID())
                 .limit(1)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
 
-                       isFavored = snapshots!=null && !snapshots.isEmpty();
+                        isFavored = snapshots != null && !snapshots.isEmpty();
                         setChanged();
                         notifyObservers(CHECK_FAVORED_SUCCESS);
                     }
@@ -419,26 +415,26 @@ public class MenuItemModel extends Observable {
             @Override
             public void onFailure(@NonNull Exception e) {
 
-                notifyError(CHECK_FAVORED_FAILED,e.getMessage());
+                notifyError(CHECK_FAVORED_FAILED, e.getMessage());
             }
         });
 
 
     }
 
-    public void favOrUnFavItem(String restaurantId,String userId){
+    public void favOrUnFavItem(String restaurantId, String userId) {
 
         getUserRef().document(userId).collection("Favorites")
                 .document(restaurantId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
 
-                if(snapshot.exists()){
+                if (snapshot.exists()) {
                     updateFavForReference(snapshot.getReference());
-                }else{
+                } else {
 
-                    final HashMap<String,Object> favMap = new HashMap<>();
-                    favMap.put("FavoriteMenuItems",new ArrayList<>());
+                    final HashMap<String, Object> favMap = new HashMap<>();
+                    favMap.put("FavoriteMenuItems", new ArrayList<>());
 
                     snapshot.getReference().set(favMap).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -448,8 +444,8 @@ public class MenuItemModel extends Observable {
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.d("ttt","failed to add snapshot: "+e.getMessage());
-                            notifyError(isFavored?UN_FAVORING_FAILED:FAVORING_FAILED,e.getMessage());
+                            Log.d("ttt", "failed to add snapshot: " + e.getMessage());
+                            notifyError(isFavored ? UN_FAVORING_FAILED : FAVORING_FAILED, e.getMessage());
 
                         }
                     });
@@ -460,58 +456,58 @@ public class MenuItemModel extends Observable {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                notifyError(isFavored?UN_FAVORING_FAILED:FAVORING_FAILED,e.getMessage());
+                notifyError(isFavored ? UN_FAVORING_FAILED : FAVORING_FAILED, e.getMessage());
             }
         });
 
     }
 
-    private void updateFavForReference(DocumentReference ref){
+    private void updateFavForReference(DocumentReference ref) {
 
-                ref.update("FavoriteMenuItems",
-                isFavored?FieldValue.arrayRemove(menuItem.getID()):FieldValue.arrayUnion(menuItem.getID()))
+        ref.update("FavoriteMenuItems",
+                isFavored ? FieldValue.arrayRemove(menuItem.getID()) : FieldValue.arrayUnion(menuItem.getID()))
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
 
                         firestore.collection("MenuItems")
                                 .document(menuItem.getID()).update("favoriteCount",
-                                FieldValue.increment(isFavored?-1:1));
+                                FieldValue.increment(isFavored ? -1 : 1));
 
                         final boolean wasFavored = isFavored;
                         isFavored = !isFavored;
                         setChanged();
-                        notifyObservers(wasFavored?UN_FAVORING_SUCCESS:FAVORING_SUCCESS);
+                        notifyObservers(wasFavored ? UN_FAVORING_SUCCESS : FAVORING_SUCCESS);
 
                     }
                 }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+            @Override
+            public void onFailure(@NonNull Exception e) {
 
-                        notifyError(isFavored?UN_FAVORING_FAILED:FAVORING_FAILED,e.getMessage());
+                notifyError(isFavored ? UN_FAVORING_FAILED : FAVORING_FAILED, e.getMessage());
 
-                    }
-                });
+            }
+        });
     }
 
-    public void deleteMenuItem(){
+    public void deleteMenuItem() {
 
         final DocumentReference menuItemRef =
                 firestore.collection("MenuItems").document(menuItem.getID());
 
-        menuItemRef.update("isDeleted",true)
+        menuItemRef.update("isDeleted", true)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
 
-                        final HashMap<Integer,Object> resultMap = new HashMap<>();
+                        final HashMap<Integer, Object> resultMap = new HashMap<>();
 
                         menuItemRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
 
 
-                                resultMap.put(REMOVE_SUCCESS,menuItem.getID());
+                                resultMap.put(REMOVE_SUCCESS, menuItem.getID());
                                 setChanged();
                                 notifyObservers(resultMap);
                                 deleteObservers();
@@ -521,7 +517,7 @@ public class MenuItemModel extends Observable {
                             @Override
                             public void onFailure(@NonNull Exception e) {
 
-                                resultMap.put(REMOVE_FAILED,e.getMessage());
+                                resultMap.put(REMOVE_FAILED, e.getMessage());
                                 setChanged();
                                 notifyObservers(resultMap);
 
@@ -533,17 +529,17 @@ public class MenuItemModel extends Observable {
 
     }
 
-    private void notifyError(int key,String error){
-        final HashMap<Integer,Object> resultMap = new HashMap<>();
-        resultMap.put(key,error);
+    private void notifyError(int key, String error) {
+        final HashMap<Integer, Object> resultMap = new HashMap<>();
+        resultMap.put(key, error);
         setChanged();
         notifyObservers(resultMap);
     }
 
-    private CollectionReference getUserRef(){
+    private CollectionReference getUserRef() {
 
-        if(userRef == null)
-            userRef =  firestore.collection("Users");
+        if (userRef == null)
+            userRef = firestore.collection("Users");
 
         return userRef;
     }

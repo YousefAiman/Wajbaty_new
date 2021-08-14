@@ -9,16 +9,16 @@
         android:title="Notifications"
         android:icon="@drawable/bell_icon"/>
 
-    <item android:id="@+id/show_settings_action"
-        android:title="Settings"
-        android:icon="@drawable/settings_icon"/>
+<!--    <item android:id="@+id/show_settings_action"-->
+<!--        android:title="Settings"-->
+<!--        android:icon="@drawable/settings_icon"/>-->
 
     <item android:id="@+id/show_about_us_action"
         android:title="About us"
         android:icon="@drawable/info_icon"/>
 
-    <item android:id="@+id/show_privacy_policy_action"
-        android:title="Privacy policy"
-        android:icon="@drawable/shield_icon"/>
+<!--    <item android:id="@+id/show_privacy_policy_action"-->
+<!--        android:title="Privacy policy"-->
+<!--        android:icon="@drawable/shield_icon"/>-->
 
 </menu>

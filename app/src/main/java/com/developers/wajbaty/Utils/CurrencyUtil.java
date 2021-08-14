@@ -1,12 +1,5 @@
 package com.developers.wajbaty.Utils;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
@@ -14,7 +7,7 @@ import java.util.Locale;
 
 public class CurrencyUtil {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         System.out.println(Currency.getInstance(Locale.getDefault()).getDisplayName());
         System.out.println(Currency.getInstance(Locale.getDefault()).getCurrencyCode());
@@ -23,17 +16,17 @@ public class CurrencyUtil {
     }
 
 
-    public static String getCurrencyCodeFromName(String code){
+    public static String getCurrencyCodeFromName(String code) {
 
         for (Currency currency : Currency.getAvailableCurrencies()) {
-            if(currency.getCurrencyCode().equals(code)){
+            if (currency.getCurrencyCode().equals(code)) {
                 return currency.getCurrencyCode();
             }
         }
         return null;
     }
 
-    public static String getDefaultCurrencyCode(){
+    public static String getDefaultCurrencyCode() {
 
         return Currency.getInstance(Locale.getDefault()).getCurrencyCode();
 

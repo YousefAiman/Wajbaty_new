@@ -1,9 +1,5 @@
 package com.developers.wajbaty.Fragments;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.app.FragmentManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,14 +20,9 @@ public class ProgressDialogFragment extends DialogFragment {
     private boolean canBeDismissed;
     private ProgressDialogListener progressDialogListener;
 
-    public interface ProgressDialogListener{
-        void onProgressDismissed();
-    }
-
-    public ProgressDialogFragment(){
+    public ProgressDialogFragment() {
         setCancelable(false);
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,12 +34,11 @@ public class ProgressDialogFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
 
-        requireDialog().getWindow().setLayout(title!=null || message!=null?ViewGroup.LayoutParams.MATCH_PARENT:
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+        requireDialog().getWindow().setLayout(title != null || message != null ? ViewGroup.LayoutParams.MATCH_PARENT :
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
 
     }
-
 
     @Nullable
     @Override
@@ -56,26 +46,26 @@ public class ProgressDialogFragment extends DialogFragment {
 
         View view;
 
-        if(getTitle() == null && getMessage() == null){
+        if (getTitle() == null && getMessage() == null) {
             view = inflater.inflate(R.layout.main_progress_dialog, container, false);
-        }else if(getTitle() !=null && getMessage() == null){
+        } else if (getTitle() != null && getMessage() == null) {
 
             view = inflater.inflate(R.layout.main_progress_dialog_with_title, container, false);
 
             final TextView progressTitleTv = view.findViewById(R.id.progressTitleTv);
             progressTitleTv.setText(getTitle());
 
-        }else if(!canBeDismissed){
+        } else if (!canBeDismissed) {
 
             view = inflater.inflate(R.layout.main_progress_dialog_with_title_and_message, container, false);
 
             final TextView progressTitleTv = view.findViewById(R.id.progressTitleTv);
             progressTitleTv.setText(getTitle());
 
-             final TextView progressMessageTv = view.findViewById(R.id.progressMessageTv);
+            final TextView progressMessageTv = view.findViewById(R.id.progressMessageTv);
             progressMessageTv.setText(getMessage());
 
-        }else {
+        } else {
 
             view = inflater.inflate(R.layout.main_progress_dialog_with_title_and_message_and_cancel, container, false);
 
@@ -85,11 +75,11 @@ public class ProgressDialogFragment extends DialogFragment {
             final TextView progressMessageTv = view.findViewById(R.id.progressMessageTv);
             progressMessageTv.setText(getMessage());
 
-            final ImageView progressCloseIv= view.findViewById(R.id.progressCloseIv);
+            final ImageView progressCloseIv = view.findViewById(R.id.progressCloseIv);
             progressCloseIv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(progressDialogListener!=null){
+                    if (progressDialogListener != null) {
                         dismiss();
                         progressDialogListener.onProgressDismissed();
                     }
@@ -100,8 +90,6 @@ public class ProgressDialogFragment extends DialogFragment {
 
         return view;
     }
-
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -124,22 +112,24 @@ public class ProgressDialogFragment extends DialogFragment {
         this.message = message;
     }
 
+    public ProgressDialogListener getProgressDialogListener() {
+        return progressDialogListener;
+    }
+
     public void setProgressDialogListener(ProgressDialogListener progressDialogListener) {
         this.progressDialogListener = progressDialogListener;
     }
 
-
-
-
-    public ProgressDialogListener getProgressDialogListener() {
-        return progressDialogListener;
-    }
     public boolean isCanBeDismissed() {
         return canBeDismissed;
     }
 
     public void setCanBeDismissed(boolean canBeDismissed) {
         this.canBeDismissed = canBeDismissed;
+    }
+
+    public interface ProgressDialogListener {
+        void onProgressDismissed();
     }
 
 }

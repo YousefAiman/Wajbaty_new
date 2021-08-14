@@ -25,10 +25,10 @@ public class MessageMap implements Serializable {
     public MessageMap() {
     }
 
-    public MessageMap(HashMap<String,Object> messageHashMap) {
+    public MessageMap(HashMap<String, Object> messageHashMap) {
 
         this.content = (String) messageHashMap.get("content");
-        if(messageHashMap.containsKey("deleted")){
+        if (messageHashMap.containsKey("deleted")) {
             this.deleted = (boolean) messageHashMap.get("deleted");
         }
         this.sender = (String) messageHashMap.get("sender");

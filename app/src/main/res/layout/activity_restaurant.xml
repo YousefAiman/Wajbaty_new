@@ -22,7 +22,7 @@
             android:paddingTop="20dp"
             app:tabIndicatorColor="@color/white"
             app:tabTextColor="@color/white"
-            app:tabTextAppearance="@style/asdasdad"
+            app:tabTextAppearance="@style/tabTextApperance"
             app:tabIconTint="@color/white"
             android:background="@color/orange"/>
 
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
-            app:contentScrim="?attr/colorPrimary"
+            app:contentScrim="@color/transparent_grey"
             app:expandedTitleMarginBottom="50dp"
             app:collapsedTitleTextAppearance="@style/CollapsedAppBar"
             app:expandedTitleTextAppearance="@style/ExpandedAppBar"
@@ -66,6 +66,16 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:fitsSystemWindows="true"
                     app:layout_collapseMode="parallax" />
+
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="3.5:1"
+                    android:background="@drawable/gradient_black_background"
+                    />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

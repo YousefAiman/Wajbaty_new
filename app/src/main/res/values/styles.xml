@@ -1,14 +1,5 @@
 <resources>
 
-    <style name="Widget.Theme.Wajbaty.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">
-        <item name="android:background">@color/black_overlay</item>
-    </style>
-
-    <style name="Widget.Theme.Wajbaty.ButtonBar.Fullscreen" parent="">
-        <item name="android:background">@color/black_overlay</item>
-        <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
-    </style>
-
     <style name="customRatingBar" parent="Widget.AppCompat.RatingBar">
         <item name="android:progressDrawable">@drawable/custom_rating_bar_selector</item>
         <item name="android:minHeight">24dip</item>
@@ -35,7 +26,7 @@
         <item name="android:fontFamily">@font/almarai_regular</item>
     </style>
 
-    <style name="asdasdad" parent="Widget.AppCompat.ActionBar.TabText">
+    <style name="tabTextApperance" parent="Widget.AppCompat.ActionBar.TabText">
         <item name="android:textSize">16sp</item>
         <item name="android:fontFamily">@font/almarai_regular</item>
     </style>

@@ -1,5 +1,11 @@
 package com.developers.wajbaty.Activities;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,16 +13,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
 import com.developers.wajbaty.Adapters.NotificationsAdapter;
 import com.developers.wajbaty.Models.Notification;
 import com.developers.wajbaty.R;
-import com.developers.wajbaty.Utils.GlobalVariables;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
@@ -31,7 +30,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NotificationsActivity extends AppCompatActivity implements NotificationsAdapter.NotificationListener{
+public class NotificationsActivity extends AppCompatActivity implements NotificationsAdapter.NotificationListener {
 
     //constants
     private static final int NOTIFICATION_LIMIT = 10;
@@ -41,7 +40,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     private ArrayList<Notification> notifications;
 
     private List<ListenerRegistration> notificationsSnapshotListeners;
-    private Query mainQuery,newNotificationsQuery;
+    private Query mainQuery, newNotificationsQuery;
 
 
     //views
@@ -73,10 +72,10 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     }
 
-    private void initializeObjects(){
+    private void initializeObjects() {
 
         notifications = new ArrayList<>();
-        adapter = new NotificationsAdapter(notifications,this);
+        adapter = new NotificationsAdapter(notifications, this);
 
 //        notificationsSnapshotListener = ;
 
@@ -90,23 +89,23 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                 .collection("Notifications");
 
 
-        mainQuery = notificationRef.whereEqualTo("seen",false)
-                .whereLessThanOrEqualTo("timeCreatedInMillis",System.currentTimeMillis())
+        mainQuery = notificationRef.whereEqualTo("seen", false)
+                .whereLessThanOrEqualTo("timeCreatedInMillis", System.currentTimeMillis())
                 .orderBy("timeCreatedInMillis", Query.Direction.DESCENDING)
                 .limit(NOTIFICATION_LIMIT);
 
-        newNotificationsQuery = notificationRef.whereGreaterThan("timeCreatedInMillis",System.currentTimeMillis());
+        newNotificationsQuery = notificationRef.whereGreaterThan("timeCreatedInMillis", System.currentTimeMillis());
 
     }
 
-    private void getViews(){
+    private void getViews() {
 
         notificationsToolbar = findViewById(R.id.notificationsToolbar);
         notificationsRv = findViewById(R.id.notificationsRv);
         notificationsProgressBar = findViewById(R.id.notificationsProgressBar);
         notificationsEmptyTv = findViewById(R.id.notificationsEmptyTv);
 
-        notificationsToolbar.setNavigationOnClickListener(v->finish());
+        notificationsToolbar.setNavigationOnClickListener(v -> finish());
         notificationsRv.setAdapter(adapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback());
@@ -115,64 +114,65 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     }
 
-    private void setupNotificationListener(boolean initialSnapshot){
+    private void setupNotificationListener(boolean initialSnapshot) {
 
         Query query = mainQuery;
 
-        if(!initialSnapshot && lastDocSnapshot!=null){
+        if (!initialSnapshot && lastDocSnapshot != null) {
             query = query.startAfter(lastDocSnapshot);
         }
 
         notificationsSnapshotListeners.add(query.addSnapshotListener(new EventListener<QuerySnapshot>() {
             boolean isInitial = true;
+
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                if(isInitial){
+                if (isInitial) {
 
-                    if(value!=null){
+                    if (value != null) {
 
-                        if(initialSnapshot){
+                        if (initialSnapshot) {
 
                             final List<DocumentSnapshot> documentSnapshots = value.getDocuments();
 
-                            if(documentSnapshots.isEmpty()){
+                            if (documentSnapshots.isEmpty()) {
                                 isFetchingNotifications = false;
                                 notificationsEmptyTv.setVisibility(View.VISIBLE);
                                 notificationsProgressBar.setVisibility(View.GONE);
                                 return;
                             }
 
-                            for(DocumentSnapshot documentSnapshot: documentSnapshots){
+                            for (DocumentSnapshot documentSnapshot : documentSnapshots) {
                                 notifications.add(documentSnapshot.toObject(Notification.class));
                             }
 
-                            if(!notifications.isEmpty()){
+                            if (!notifications.isEmpty()) {
                                 adapter.notifyDataSetChanged();
-                            }else{
+                            } else {
                                 notificationsEmptyTv.setVisibility(View.VISIBLE);
                             }
 
-                            if(documentSnapshots.size() == NOTIFICATION_LIMIT && currentScrollListener == null){
+                            if (documentSnapshots.size() == NOTIFICATION_LIMIT && currentScrollListener == null) {
                                 notificationsRv.addOnScrollListener(currentScrollListener = new ScrollListener());
                             }
 
-                            lastDocSnapshot = documentSnapshots.get(documentSnapshots.size()-1);
+                            lastDocSnapshot = documentSnapshots.get(documentSnapshots.size() - 1);
 
-                        }else{
+                        } else {
 
                             final int previousSize = notifications.size();
                             int count = 0;
-                            for(DocumentSnapshot documentSnapshot: value.getDocuments()){
-                                notifications.add(notifications.size(),documentSnapshot.toObject(Notification.class));
+                            for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                                notifications.add(notifications.size(), documentSnapshot.toObject(Notification.class));
                                 count++;
                             }
 
-                                if(!notifications.isEmpty()){
-                                    adapter.notifyItemRangeInserted(previousSize,count);
-                                }
+                            if (!notifications.isEmpty()) {
+                                adapter.notifyItemRangeInserted(previousSize, count);
+                            }
 
-                            if(count < NOTIFICATION_LIMIT && currentScrollListener != null){
+                            if (count < NOTIFICATION_LIMIT && currentScrollListener != null) {
                                 notificationsRv.removeOnScrollListener(currentScrollListener);
                                 currentScrollListener = null;
                             }
@@ -180,7 +180,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         }
                         notificationsProgressBar.setVisibility(View.GONE);
 
-                    }else{
+                    } else {
 
                         notificationsProgressBar.setVisibility(View.GONE);
                         notificationsEmptyTv.setVisibility(View.VISIBLE);
@@ -188,25 +188,25 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                     isFetchingNotifications = false;
 
                     isInitial = false;
-                }else{
+                } else {
 
-                    if(value!=null){
+                    if (value != null) {
 
-                        for(DocumentChange dc:value.getDocumentChanges()){
+                        for (DocumentChange dc : value.getDocumentChanges()) {
 
                             final DocumentSnapshot documentSnapshot = dc.getDocument();
 
-                            switch (dc.getType()){
+                            switch (dc.getType()) {
 
 
                                 case MODIFIED:
 
-                                    if(documentSnapshot.contains("seen") &&
-                                            (Boolean) dc.getDocument().get("seen")){
+                                    if (documentSnapshot.contains("seen") &&
+                                            (Boolean) dc.getDocument().get("seen")) {
 
                                         removeNotification(documentSnapshot.getId());
 
-                                }
+                                    }
 
                                     break;
 
@@ -222,8 +222,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         }
 
 
-
-                    }else{
+                    } else {
 
                         notificationsProgressBar.setVisibility(View.GONE);
                         notificationsEmptyTv.setVisibility(View.VISIBLE);
@@ -236,32 +235,32 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     }
 
-    private void listenForNewNotifications(){
+    private void listenForNewNotifications() {
 
         notificationsSnapshotListeners.add(
                 newNotificationsQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
-                        if(value!=null){
+                        if (value != null) {
 
-                            for(DocumentChange dc:value.getDocumentChanges()){
+                            for (DocumentChange dc : value.getDocumentChanges()) {
 
                                 final DocumentSnapshot documentSnapshot = dc.getDocument();
 
-                                switch (dc.getType()){
+                                switch (dc.getType()) {
 
                                     case ADDED:
 
-                                        notifications.add(0,documentSnapshot.toObject(Notification.class));
+                                        notifications.add(0, documentSnapshot.toObject(Notification.class));
                                         adapter.notifyItemInserted(0);
 
                                         break;
 
                                     case MODIFIED:
 
-                                        if(documentSnapshot.contains("seen") &&
-                                                (Boolean) dc.getDocument().get("seen")){
+                                        if (documentSnapshot.contains("seen") &&
+                                                (Boolean) dc.getDocument().get("seen")) {
 
                                             removeNotification(documentSnapshot.getId());
 
@@ -289,10 +288,10 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     }
 
-    private void removeNotification(String id){
+    private void removeNotification(String id) {
 
-        for(int i=0;i<notifications.size();i++){
-            if(notifications.get(i).getID().equals(id)){
+        for (int i = 0; i < notifications.size(); i++) {
+            if (notifications.get(i).getID().equals(id)) {
 
                 notifications.remove(i);
                 adapter.notifyItemRemoved(i);
@@ -308,18 +307,18 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     @Override
     public void onNotificationClicked(int position) {
 
-        if(position >= notifications.size())
+        if (position >= notifications.size())
             return;
 
         final Notification notification = notifications.get(position);
 
-        switch (notification.getType()){
+        switch (notification.getType()) {
 
             case Notification.TYPE_MESSAGE:
 
-                startActivity(new Intent(this,MessagingActivity.class)
-                .putExtra("messagingUserId",notification.getSenderID())
-                .putExtra("intendedDeliveryID",notification.getDestinationID()));
+                startActivity(new Intent(this, MessagingActivity.class)
+                        .putExtra("messagingUserId", notification.getSenderID())
+                        .putExtra("intendedDeliveryID", notification.getDestinationID()));
 
                 break;
 
@@ -332,6 +331,17 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (notificationsSnapshotListeners != null && !notificationsSnapshotListeners.isEmpty()) {
+            for (ListenerRegistration listenerRegistration : notificationsSnapshotListeners) {
+                listenerRegistration.remove();
+            }
+        }
+
+    }
 
     private class ScrollListener extends RecyclerView.OnScrollListener {
         @Override
@@ -344,19 +354,6 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             }
         }
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if(notificationsSnapshotListeners!=null && !notificationsSnapshotListeners.isEmpty()){
-            for(ListenerRegistration listenerRegistration:notificationsSnapshotListeners){
-                listenerRegistration.remove();
-            }
-        }
-
-    }
-
 
     private class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
 
@@ -375,12 +372,12 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 //            if (GlobalVariables.isWifiIsOn()) {
 //
-                int position = viewHolder.getAdapterPosition();
+            int position = viewHolder.getAdapterPosition();
 
-                if(position < notifications.size()){
-                    notificationRef.document(notifications.get(position).getID())
-                            .update("seen",false);
-                }
+            if (position < notifications.size()) {
+                notificationRef.document(notifications.get(position).getID())
+                        .update("seen", false);
+            }
 
 //            }
         }

@@ -1,13 +1,6 @@
 package com.developers.wajbaty.PartneredRestaurant.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.widget.NestedScrollView;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +16,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.developers.wajbaty.Adapters.AdditionalOptionsAdapter;
 import com.developers.wajbaty.Adapters.FillOptionsAdapter;
 import com.developers.wajbaty.R;
@@ -36,7 +34,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -53,12 +50,12 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     //views
     private ImageView backIv;
     private Button infoInputNextBtn;
-    private EditText nameEd,locationEd,descriptionEd;
+    private EditText nameEd, locationEd, descriptionEd;
 
     //category spinner
     private Spinner categorySpinner;
     private ArrayAdapter<String> spinnerAdapter;
-    private Map<String,String> categories;
+    private Map<String, String> categories;
     private List<String> categoryNames;
 
     //service Options
@@ -105,35 +102,34 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     }
 
 
+    private void initObjects() {
 
-    private void initObjects(){
-
-        language = Locale.getDefault().getLanguage().equals("ar")?"ar":"en";
+        language = Locale.getDefault().getLanguage().equals("ar") ? "ar" : "en";
         firestore = FirebaseFirestore.getInstance();
 
         categories = new HashMap<>();
         categoryNames = new ArrayList<>();
 
         spinnerAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_dropdown_item,categoryNames);
+                this, android.R.layout.simple_spinner_dropdown_item, categoryNames);
 
         selectedServiceOptions = new ArrayList<>();
         serviceOptionsTvs = new ArrayList<>();
 
         serviceOptionsTvsListener = new View.OnClickListener() {
-//            final Drawable checkBackground =
+            //            final Drawable checkBackground =
 //                    ResourcesCompat.getDrawable(getResources(),R.drawable.option_checked_background,null);
             @Override
             public void onClick(View v) {
 
-                final String text = ((TextView)v).getText().toString();
-                if(selectedServiceOptions.contains(text)){
+                final String text = ((TextView) v).getText().toString();
+                if (selectedServiceOptions.contains(text)) {
 
                     //already clicked
                     v.setBackgroundResource(R.drawable.option_un_checked_background);
                     selectedServiceOptions.remove(text);
 
-                }else{
+                } else {
                     v.setBackgroundResource(R.drawable.option_checked_background);
                     selectedServiceOptions.add(text);
                 }
@@ -144,7 +140,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
         additionalServices = new ArrayList<>();
         additionalServices.add(null);
 
-        additionalOptionsAdapter = new AdditionalOptionsAdapter(additionalServices,"option");
+        additionalOptionsAdapter = new AdditionalOptionsAdapter(additionalServices, "option");
 
         contacts = new ArrayList<>();
         contactInfoAdapter = new FillOptionsAdapter(contacts);
@@ -154,7 +150,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
     }
 
-    private void getViews(){
+    private void getViews() {
 
         final NestedScrollView nestedScrollView = findViewById(R.id.nestedScrollView);
         nestedScrollView.setNestedScrollingEnabled(false);
@@ -173,7 +169,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     }
 
 
-    private void initListeners(){
+    private void initListeners() {
 
         backIv.setOnClickListener(this);
         infoInputNextBtn.setOnClickListener(this);
@@ -181,7 +177,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
     }
 
-    private void attachAdapters(){
+    private void attachAdapters() {
 
         categorySpinner.setAdapter(spinnerAdapter);
         additionalServicesRv.setAdapter(additionalOptionsAdapter);
@@ -190,85 +186,84 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
     }
 
-    private void fetchOptions(){
-
+    private void fetchOptions() {
 
 
         final ArrayList<String> serviceOptions = new ArrayList<>();
 
         final List<Task<?>> tasks = new ArrayList<>();
 
-           tasks.add(FirebaseFirestore.getInstance().collection("GeneralOptions")
-                    .document("Categories")
-                    .collection("Categories")
-                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                @Override
-                public void onSuccess(QuerySnapshot snapshots) {
-                    if(snapshots!=null && !snapshots.isEmpty()){
+        tasks.add(FirebaseFirestore.getInstance().collection("GeneralOptions")
+                .document("Categories")
+                .collection("Categories")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot snapshots) {
+                        if (snapshots != null && !snapshots.isEmpty()) {
 
-                        final String name = "name_"+language;
+                            final String name = "name_" + language;
 
-                        for(DocumentSnapshot documentSnapshot:snapshots){
-                            categories.put(documentSnapshot.getId(),documentSnapshot.getString(name));
+                            for (DocumentSnapshot documentSnapshot : snapshots) {
+                                categories.put(documentSnapshot.getId(), documentSnapshot.getString(name));
+                            }
                         }
                     }
-                }
-            }));
+                }));
 
 
         tasks.add(firestore.collection("GeneralOptions")
                 .document("ServiceOptions")
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot snapshot) {
-                if(snapshot.exists()){
-                    serviceOptions.addAll((ArrayList<String>)snapshot.get("ServiceOptions"));
-                }
-            }
-        }));
+                    @Override
+                    public void onSuccess(DocumentSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            serviceOptions.addAll((ArrayList<String>) snapshot.get("ServiceOptions"));
+                        }
+                    }
+                }));
 
-         tasks.add(firestore.collection("GeneralOptions")
+        tasks.add(firestore.collection("GeneralOptions")
                 .document("ContactInformation")
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot snapshot) {
-                if(snapshot.exists()){
-                    contacts.addAll((List<String>)snapshot.get("ContactInformation"));
-                }
-            }
-        }));
+                    @Override
+                    public void onSuccess(DocumentSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            contacts.addAll((List<String>) snapshot.get("ContactInformation"));
+                        }
+                    }
+                }));
 
-       tasks.add(firestore.collection("GeneralOptions")
+        tasks.add(firestore.collection("GeneralOptions")
                 .document("SocialMediaWebsites")
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot snapshot) {
-                if(snapshot.exists()){
-                    socialMediaSites.addAll((List<String>)snapshot.get("SocialMediaWebsites"));
-                }
-            }
-        }));
+                    @Override
+                    public void onSuccess(DocumentSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            socialMediaSites.addAll((List<String>) snapshot.get("SocialMediaWebsites"));
+                        }
+                    }
+                }));
 
         Tasks.whenAllComplete(tasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
             @Override
             public void onComplete(@NonNull Task<List<Task<?>>> task) {
 
-                if(!categories.isEmpty()){
+                if (!categories.isEmpty()) {
                     populateCategorySpinner();
                 }
 
-                if(!serviceOptions.isEmpty()){
+                if (!serviceOptions.isEmpty()) {
 
                     createServiceOptionsViews(serviceOptions);
 
                 }
 
-                if(!contacts.isEmpty()){
+                if (!contacts.isEmpty()) {
 
                     contactInfoAdapter.notifyDataSetChanged();
 
                 }
-                if(!socialMediaSites.isEmpty()){
+                if (!socialMediaSites.isEmpty()) {
 
                     socialMediaAdapter.notifyDataSetChanged();
 
@@ -279,16 +274,16 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
     }
 
-    private void populateAddress(){
+    private void populateAddress() {
 
         final Intent intent = getIntent();
 
-        if(intent !=null){
+        if (intent != null) {
 
-            if(intent.hasExtra("addressMap")){
-                final Map<String,String> addressMap =
+            if (intent.hasExtra("addressMap")) {
+                final Map<String, String> addressMap =
                         (Map<String, String>) intent.getSerializableExtra("addressMap");
-                if(addressMap!=null && addressMap.containsKey("fullAddress")){
+                if (addressMap != null && addressMap.containsKey("fullAddress")) {
                     locationEd.setText(addressMap.get("fullAddress"));
                 }
             }
@@ -296,15 +291,15 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     }
 
     private void populateInfo() {
-                final Intent intent = getIntent();
+        final Intent intent = getIntent();
 
-        if(intent !=null){
+        if (intent != null) {
 
-            if(intent.hasExtra("infoBundle")){
+            if (intent.hasExtra("infoBundle")) {
 
                 final Bundle infoBundle = intent.getBundleExtra("infoBundle");
 
-                if(infoBundle.containsKey("restaurantName")){
+                if (infoBundle.containsKey("restaurantName")) {
                     nameEd.setText(infoBundle.getString("restaurantName"));
                 }
 
@@ -314,9 +309,9 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     }
 
 
-    private void createServiceOptionsViews(ArrayList<String> serviceOptions){
+    private void createServiceOptionsViews(ArrayList<String> serviceOptions) {
 
-        if(serviceOptions!=null && !serviceOptions.isEmpty()){
+        if (serviceOptions != null && !serviceOptions.isEmpty()) {
 
 //            int loopCount = 1;
             final int whiteColor = getResources().getColor(R.color.white);
@@ -327,7 +322,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 //            linearLayout.setGravity(Gravity.END);
 
 //            horizontalScrollView.ad
-            for(int i= 0;i < serviceOptions.size();i++){
+            for (int i = 0; i < serviceOptions.size(); i++) {
 
 //
 //                if(i / 4f > loopCount){
@@ -345,12 +340,12 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
                 final LinearLayout.LayoutParams params =
                         new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                params.setMargins(0,0, (int) (12 * db),0);
+                params.setMargins(0, 0, (int) (12 * db), 0);
 
                 textView.setBackgroundResource(R.drawable.option_un_checked_background);
                 textView.setText(serviceOptions.get(i));
                 textView.setTextColor(whiteColor);
-                textView.setPadding((int) (30*db),(int) (12*db),(int) (30*db),(int) (12*db));
+                textView.setPadding((int) (30 * db), (int) (12 * db), (int) (30 * db), (int) (12 * db));
                 textView.setOnClickListener(serviceOptionsTvsListener);
                 textView.setLayoutParams(params);
 
@@ -361,22 +356,20 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
         }
     }
 
-    private void createAdditionalServicesRecycler(){
-
-
-
-    }
-
-   private void createContactInfoRecycler(){
-
+    private void createAdditionalServicesRecycler() {
 
 
     }
 
-    private void populateCategorySpinner(){
+    private void createContactInfoRecycler() {
 
 
-        for(String key:categories.keySet()){
+    }
+
+    private void populateCategorySpinner() {
+
+
+        for (String key : categories.keySet()) {
             categoryNames.add(categories.get(key));
         }
 
@@ -389,7 +382,6 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
 
-
     }
 
     @Override
@@ -400,11 +392,11 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == infoInputNextBtn.getId()){
+        if (v.getId() == infoInputNextBtn.getId()) {
 
             final String name = nameEd.getText().toString().trim();
 
-            if(name.isEmpty()){
+            if (name.isEmpty()) {
                 Toast.makeText(this,
                         "You need to add the name of your restaurant!",
                         Toast.LENGTH_SHORT).show();
@@ -414,7 +406,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
             final String description = descriptionEd.getText().toString().trim();
 
-            if(description.isEmpty()){
+            if (description.isEmpty()) {
                 Toast.makeText(this,
                         "You need to add a description to your restaurant!",
                         Toast.LENGTH_SHORT).show();
@@ -422,15 +414,15 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
             }
 
 
-            if(selectedServiceOptions == null || selectedServiceOptions.isEmpty()){
+            if (selectedServiceOptions == null || selectedServiceOptions.isEmpty()) {
                 Toast.makeText(this,
                         "You need to choose at least one service option for your restaurant",
                         Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            for(String selectedOption:selectedServiceOptions){
-                Log.d("ttt","sevice option: "+selectedOption);
+            for (String selectedOption : selectedServiceOptions) {
+                Log.d("ttt", "sevice option: " + selectedOption);
             }
 
 //            boolean hasAtleastOneAdditionalService
@@ -442,16 +434,16 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
                     final String additionalService = editText.getText().toString().trim();
 
-                    if(!additionalService.isEmpty()){
+                    if (!additionalService.isEmpty()) {
                         selectedAdditionalServices.add(additionalService);
 
-                        Log.d("ttt","additionalServices: " + additionalService);
+                        Log.d("ttt", "additionalServices: " + additionalService);
 
                     }
                 }
             }
 
-            final Map<String,String> addedContactInfoMap = new HashMap<>();
+            final Map<String, String> addedContactInfoMap = new HashMap<>();
 
             for (int i = 0; i < contacts.size(); i++) {
                 final EditText editText = contactInfoRv.getChildAt(i).findViewById(R.id.optionEd);
@@ -459,17 +451,17 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
                     final String contactInfo = editText.getText().toString().trim();
 
-                    if(!contactInfo.isEmpty()){
+                    if (!contactInfo.isEmpty()) {
 
-                        if(contacts.get(i)!=null && !contacts.get(i).isEmpty()){
-                            addedContactInfoMap.put(contacts.get(i),contactInfo);
-                            Log.d("ttt",contacts.get(i)+ " : " + contactInfo);
+                        if (contacts.get(i) != null && !contacts.get(i).isEmpty()) {
+                            addedContactInfoMap.put(contacts.get(i), contactInfo);
+                            Log.d("ttt", contacts.get(i) + " : " + contactInfo);
                         }
                     }
                 }
             }
 
-            if(!addedContactInfoMap.containsKey("Phone Number")){
+            if (!addedContactInfoMap.containsKey("Phone Number")) {
                 Toast.makeText(this,
                         "You need to at least add a phone number in the contact information section",
                         Toast.LENGTH_SHORT).show();
@@ -477,7 +469,7 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
                 return;
             }
 
-            final Map<String,String> addedSocialMediaSitesMap = new HashMap<>();
+            final Map<String, String> addedSocialMediaSitesMap = new HashMap<>();
 
             for (int i = 0; i < socialMediaSites.size(); i++) {
                 final EditText editText = socialMediaRv.getChildAt(i).findViewById(R.id.optionEd);
@@ -485,56 +477,56 @@ public class RestaurantInfoActivity extends AppCompatActivity implements Adapter
 
                     final String socialMediaSite = editText.getText().toString().trim();
 
-                    if(socialMediaSites.get(i)!=null && !socialMediaSite.isEmpty()){
+                    if (socialMediaSites.get(i) != null && !socialMediaSite.isEmpty()) {
 
-                        addedSocialMediaSitesMap.put(socialMediaSites.get(i),socialMediaSite);
-                        Log.d("ttt",socialMediaSites.get(i)+ " : " + socialMediaSite);
+                        addedSocialMediaSitesMap.put(socialMediaSites.get(i), socialMediaSite);
+                        Log.d("ttt", socialMediaSites.get(i) + " : " + socialMediaSite);
                     }
                 }
             }
 
 
             final Bundle infoBundle = new Bundle();
-            infoBundle.putString("name",name);
-            infoBundle.putString("description",description);
+            infoBundle.putString("name", name);
+            infoBundle.putString("description", description);
 
             final String category = categorySpinner.getSelectedItem().toString();
 
             String categoryKey = "";
 
-            for(String key:categories.keySet()){
-                if(categories.get(key).equals(category)){
+            for (String key : categories.keySet()) {
+                if (categories.get(key).equals(category)) {
                     categoryKey = key;
                     break;
                 }
             }
 
 
-            infoBundle.putString("category",categoryKey);
+            infoBundle.putString("category", categoryKey);
 
-            infoBundle.putStringArrayList("selectedServiceOptions",selectedServiceOptions);
+            infoBundle.putStringArrayList("selectedServiceOptions", selectedServiceOptions);
 
-            if(selectedAdditionalServices!=null && !selectedAdditionalServices.isEmpty()){
-                infoBundle.putStringArrayList("selectedAdditionalServices",selectedAdditionalServices);
+            if (selectedAdditionalServices != null && !selectedAdditionalServices.isEmpty()) {
+                infoBundle.putStringArrayList("selectedAdditionalServices", selectedAdditionalServices);
             }
 
-            if(addedContactInfoMap!=null && !addedContactInfoMap.isEmpty()){
+            if (addedContactInfoMap != null && !addedContactInfoMap.isEmpty()) {
                 infoBundle.putSerializable("addedContactInfoMap", (Serializable) addedContactInfoMap);
             }
 
-            if(addedSocialMediaSitesMap!=null && !addedSocialMediaSitesMap.isEmpty()){
+            if (addedSocialMediaSitesMap != null && !addedSocialMediaSitesMap.isEmpty()) {
                 infoBundle.putSerializable("addedSocialMediaSitesMap", (Serializable) addedSocialMediaSitesMap);
             }
 
-            final Intent intent = new Intent(this,RestaurantScheduleActivity.class);
-            intent.putExtra("addressMap",getIntent().getSerializableExtra("addressMap"));
-            intent.putExtra("imagesBundle",getIntent().getBundleExtra("imagesBundle"));
-            intent.putExtra("infoBundle",infoBundle);
+            final Intent intent = new Intent(this, RestaurantScheduleActivity.class);
+            intent.putExtra("addressMap", getIntent().getSerializableExtra("addressMap"));
+            intent.putExtra("imagesBundle", getIntent().getBundleExtra("imagesBundle"));
+            intent.putExtra("infoBundle", infoBundle);
             startActivity(intent);
 
             finish();
 
-        }else if(v.getId() == backIv.getId()){
+        } else if (v.getId() == backIv.getId()) {
 
             finish();
 

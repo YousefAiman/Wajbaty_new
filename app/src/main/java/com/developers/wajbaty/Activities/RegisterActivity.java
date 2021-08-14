@@ -21,12 +21,10 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.developers.wajbaty.Models.User;
 import com.developers.wajbaty.R;
 import com.developers.wajbaty.Utils.EmojiUtil;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
@@ -35,15 +33,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -70,7 +64,7 @@ public class RegisterActivity extends AppCompatActivity {
     User user;
     String defaultCode = "";
 
-    private Map<String,Object> addressMap;
+    private Map<String, Object> addressMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +74,7 @@ public class RegisterActivity extends AppCompatActivity {
         initViews();
         initItems();
         initClicks();
+
 
         createCountryCodeSpinner();
     }
@@ -93,17 +88,17 @@ public class RegisterActivity extends AppCompatActivity {
 //            String confPassword = conf_passwordEd.getText().toString().trim();
             String phone = phoneNumberEd.getText().toString().trim();
 
-            if (username.isEmpty()){
+            if (username.isEmpty()) {
                 usernameEd.setError("Field can't be empty");
             }
 
-            if (email.isEmpty()){
+            if (email.isEmpty()) {
                 emailEd.setError("Field can't be empty");
-            }else if (!validateEmail(email)) {
+            } else if (!validateEmail(email)) {
 //                Toast.makeText(this, "Invalid Email", Toast.LENGTH_SHORT).show();
             }
 
-            if (phone.isEmpty()){
+            if (phone.isEmpty()) {
                 phoneNumberEd.setError("Field can't be empty");
             }
 
@@ -151,15 +146,15 @@ public class RegisterActivity extends AppCompatActivity {
                 int id = radioGroup.getCheckedRadioButtonId();
 
                 int userType = 0;
-                if(id == customerRadioButton.getId()){
+                if (id == customerRadioButton.getId()) {
                     userType = User.TYPE_CUSTOMER;
-                }else if(id == restaurantRadioButton.getId()){
+                } else if (id == restaurantRadioButton.getId()) {
                     userType = User.TYPE_ADMIN;
-                }else  if(id == deliveryRadioButton.getId()){
+                } else if (id == deliveryRadioButton.getId()) {
                     userType = User.TYPE_DELIVERY;
                 }
 
-                Log.d("ttt","userType: "+userType);
+                Log.d("ttt", "userType: " + userType);
 //                selectType();
 //                FirebaseMessaging.getInstance().getToken()
 //                        .addOnSuccessListener(new OnSuccessListener<String>() {
@@ -212,13 +207,13 @@ public class RegisterActivity extends AppCompatActivity {
                 int finalUserType = userType;
                 String finalFullMobile = fullMobile;
                 firebaseFirestore.collection("Users")
-                        .whereEqualTo("phoneNumber",fullMobile)
+                        .whereEqualTo("phoneNumber", fullMobile)
                         .limit(1)
                         .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
 
-                        if(snapshots.isEmpty()){
+                        if (snapshots.isEmpty()) {
                             Intent intent = new Intent(RegisterActivity.this, VerifyAccountActivity.class);
                             intent.putExtra("username", username);
                             intent.putExtra("email", email);
@@ -227,7 +222,7 @@ public class RegisterActivity extends AppCompatActivity {
                             intent.putExtra("addressMap", (Serializable) addressMap);
                             startActivity(intent);
                             finish();
-                        }else{
+                        } else {
 
                             Toast.makeText(RegisterActivity.this,
                                     "This phone number is already used by another account!" +
@@ -379,64 +374,100 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     void createCountryCodeSpinner() {
-        new Thread(() -> {
 
-            List<String> supportedCountryCodes = new ArrayList<>(phoneNumberUtil.getSupportedRegions());
+        if (addressMap != null && addressMap.containsKey("countryCode")) {
+            defaultCode = (String) addressMap.get("countryCode");
+        } else {
+            defaultCode = Locale.getDefault().getCountry();
+        }
 
+        if (defaultCode == null)
+            return;
 
-            String defaultCode;
+        String[] phoneCodes;
 
+        if (defaultCode.equals("ps") || defaultCode.equals("il")) {
 
-            if (addressMap != null && addressMap.containsKey("countryCode")) {
-                defaultCode = (String) addressMap.get("countryCode");
-            } else {
-                defaultCode = Locale.getDefault().getCountry();
-            }
+            phoneCodes = new String[]{EmojiUtil.countryCodeToEmoji("ps")
+                    + " +" + phoneNumberUtil.getCountryCodeForRegion("ps"),
+                    EmojiUtil.countryCodeToEmoji("il")
+                            + " +" + phoneNumberUtil.getCountryCodeForRegion("il")};
 
-            defaultCode = defaultCode.toUpperCase();
+        } else {
 
-            final String defaultSpinnerChoice = EmojiUtil.countryCodeToEmoji(defaultCode)
-                    + " +" + phoneNumberUtil.getCountryCodeForRegion(defaultCode);
+            phoneCodes = new String[]{EmojiUtil.countryCodeToEmoji(defaultCode)
+                    + " +" + phoneNumberUtil.getCountryCodeForRegion(defaultCode)};
 
+        }
 
-            final List<String> spinnerArray = new ArrayList<>(supportedCountryCodes.size());
+        final ArrayAdapter<String> ad = new ArrayAdapter<>(
+                this, R.layout.spinner_item_layout, phoneCodes);
 
-            for (String code : supportedCountryCodes) {
+        ad.setDropDownViewResource(R.layout.spinner_item_layout);
+        phoneSpinner.setAdapter(ad);
 
-                spinnerArray.add(EmojiUtil.countryCodeToEmoji(code)
-                        + " +" + phoneNumberUtil.getCountryCodeForRegion(code));
-            }
+        phoneSpinner.setAdapter(ad);
 
-            supportedCountryCodes = null;
+//        phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
 
-            Collections.sort(spinnerArray, new Comparator<String>() {
-                @Override
-                public int compare(String s, String t1) {
-                    return extractCode(s) - extractCode(t1);
-                }
-
-                int extractCode(String s) {
-                    return Integer.parseInt(s.split("\\+")[1]);
-                }
-            });
-
-
-            Log.d("ttt", "list size: " + spinnerArray.size());
-
-            final ArrayAdapter<String> ad
-                    = new ArrayAdapter<>(
-                    this,
-                    R.layout.spinner_item_layout,
-                    spinnerArray);
-
-            ad.setDropDownViewResource(R.layout.spinner_item_layout);
-
-            phoneSpinner.post(() -> {
-                phoneSpinner.setAdapter(ad);
-
-                phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
-            });
-        }).start();
+//        new Thread(() -> {
+//
+//            List<String> supportedCountryCodes = new ArrayList<>(phoneNumberUtil.getSupportedRegions());
+//
+//
+//            String defaultCode;
+//
+//
+//            if (addressMap != null && addressMap.containsKey("countryCode")) {
+//                defaultCode = (String) addressMap.get("countryCode");
+//            } else {
+//                defaultCode = Locale.getDefault().getCountry();
+//            }
+//
+//            defaultCode = defaultCode.toUpperCase();
+//
+//            final String defaultSpinnerChoice = EmojiUtil.countryCodeToEmoji(defaultCode)
+//                    + " +" + phoneNumberUtil.getCountryCodeForRegion(defaultCode);
+//
+//
+//            final List<String> spinnerArray = new ArrayList<>(supportedCountryCodes.size());
+//
+//            for (String code : supportedCountryCodes) {
+//
+//                spinnerArray.add(EmojiUtil.countryCodeToEmoji(code)
+//                        + " +" + phoneNumberUtil.getCountryCodeForRegion(code));
+//            }
+//
+//            supportedCountryCodes = null;
+//
+//            Collections.sort(spinnerArray, new Comparator<String>() {
+//                @Override
+//                public int compare(String s, String t1) {
+//                    return extractCode(s) - extractCode(t1);
+//                }
+//
+//                int extractCode(String s) {
+//                    return Integer.parseInt(s.split("\\+")[1]);
+//                }
+//            });
+//
+//
+//            Log.d("ttt", "list size: " + spinnerArray.size());
+//
+//            final ArrayAdapter<String> ad
+//                    = new ArrayAdapter<>(
+//                    this,
+//                    R.layout.spinner_item_layout,
+//                    spinnerArray);
+//
+//            ad.setDropDownViewResource(R.layout.spinner_item_layout);
+//
+//            phoneSpinner.post(() -> {
+//                phoneSpinner.setAdapter(ad);
+//
+//                phoneSpinner.setSelection(spinnerArray.indexOf(defaultSpinnerChoice));
+//            });
+//        }).start();
     }
 
     boolean checkPhoneNumber(String number, String code) {

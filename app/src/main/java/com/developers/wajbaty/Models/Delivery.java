@@ -7,17 +7,16 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @IgnoreExtraProperties
 public class Delivery implements Serializable {
 
-    public static final int STATUS_PENDING = 1,STATUS_ACCEPTED = 2,STATUS_PICKED_UP = 3,
-    STATUS_WAITING_USER_APPROVAL = 4,STATUS_USER_DENIED_APPROVAL = 5,STATUS_DELIVERED = 6;
+    public static final int STATUS_PENDING = 1, STATUS_ACCEPTED = 2, STATUS_PICKED_UP = 3,
+            STATUS_WAITING_USER_APPROVAL = 4, STATUS_USER_DENIED_APPROVAL = 5, STATUS_DELIVERED = 6;
 
     private String ID;
     private String requesterID;
-    private HashMap<String,Float> menuItemPriceMap;
+    private HashMap<String, Float> menuItemPriceMap;
     private int status;
     private long orderTimeInMillis;
 
@@ -31,19 +30,36 @@ public class Delivery implements Serializable {
     private int restaurantCount;
 //    private HashMap<String, Integer> restaurantMenuItemsMap;
 
-    @Exclude private String userImageUrl;
-    @Exclude private String userUsername;
+    @Exclude
+    private String userImageUrl;
+    @Exclude
+    private String userUsername;
 
 
     public Delivery() {
     }
 
-    public String getCurrency() {
-        return currency;
+    public Delivery(String ID, String requesterID, HashMap<String, Float> menuItemPriceMap, int status, long orderTimeInMillis, float totalCost, String currency, String address, double lat, double lng, String geohash
+//            ,HashMap<String,Integer> restaurantMenuItemsMap
+            , int restaurantCount
+    ) {
+        this.ID = ID;
+        this.requesterID = requesterID;
+        this.menuItemPriceMap = menuItemPriceMap;
+        this.status = status;
+        this.orderTimeInMillis = orderTimeInMillis;
+        this.totalCost = totalCost;
+        this.setCurrency(currency);
+        this.address = address;
+        this.geohash = geohash;
+        this.setLat(lat);
+        this.setLng(lng);
+        this.restaurantCount = restaurantCount;
+//        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
     }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public String getCurrency() {
+        return currency;
     }
 
 //    public HashMap<String,Integer> getRestaurantMenuItemsMap() {
@@ -53,6 +69,10 @@ public class Delivery implements Serializable {
 //    public void setRestaurantMenuItemsMap(HashMap<String,Integer> restaurantMenuItemsMap) {
 //        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
 //    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 
     public double getLat() {
         return lat;
@@ -80,10 +100,6 @@ public class Delivery implements Serializable {
 
     public int getRestaurantCount() {
         return restaurantCount;
-    }
-
-    public void setRestaurantCount(int restaurantCount) {
-        this.restaurantCount = restaurantCount;
     }
 
 //    @IgnoreExtraProperties
@@ -130,63 +146,8 @@ public class Delivery implements Serializable {
 //        }
 //    }
 
-    public static class InProgressDelivery extends Delivery{
-
-        private String driverID;
-        private GeoPoint driverLocation;
-        private List<String> pickedUpCartItemsIDs;
-
-        public InProgressDelivery() {
-        }
-
-        public InProgressDelivery(String driverID, GeoPoint driverLocation, List<String> pickedUpCartItemsIDs) {
-            this.driverID = driverID;
-            this.driverLocation = driverLocation;
-            this.pickedUpCartItemsIDs = pickedUpCartItemsIDs;
-        }
-
-        public String getDriverID() {
-            return driverID;
-        }
-
-        public void setDriverID(String driverID) {
-            this.driverID = driverID;
-        }
-
-        public GeoPoint getDriverLocation() {
-            return driverLocation;
-        }
-
-        public void setDriverLocation(GeoPoint driverLocation) {
-            this.driverLocation = driverLocation;
-        }
-
-        public List<String> getPickedUpCartItemsIDs() {
-            return pickedUpCartItemsIDs;
-        }
-
-        public void setPickedUpCartItemsIDs(List<String> pickedUpCartItemsIDs) {
-            this.pickedUpCartItemsIDs = pickedUpCartItemsIDs;
-        }
-    }
-
-    public Delivery(String ID, String requesterID, HashMap<String, Float> menuItemPriceMap, int status, long orderTimeInMillis, float totalCost,String currency, String address, double lat,double lng, String geohash
-//            ,HashMap<String,Integer> restaurantMenuItemsMap
-                    ,int restaurantCount
-    ) {
-        this.ID = ID;
-        this.requesterID = requesterID;
-        this.menuItemPriceMap = menuItemPriceMap;
-        this.status = status;
-        this.orderTimeInMillis = orderTimeInMillis;
-        this.totalCost = totalCost;
-        this.setCurrency(currency);
-        this.address = address;
-        this.geohash = geohash;
-        this.setLat(lat);
-        this.setLng(lng);
+    public void setRestaurantCount(int restaurantCount) {
         this.restaurantCount = restaurantCount;
-//        this.restaurantMenuItemsMap = restaurantMenuItemsMap;
     }
 
     public String getID() {
@@ -251,5 +212,45 @@ public class Delivery implements Serializable {
 
     public void setGeohash(String geohash) {
         this.geohash = geohash;
+    }
+
+    public static class InProgressDelivery extends Delivery {
+
+        private String driverID;
+        private GeoPoint driverLocation;
+        private List<String> pickedUpCartItemsIDs;
+
+        public InProgressDelivery() {
+        }
+
+        public InProgressDelivery(String driverID, GeoPoint driverLocation, List<String> pickedUpCartItemsIDs) {
+            this.driverID = driverID;
+            this.driverLocation = driverLocation;
+            this.pickedUpCartItemsIDs = pickedUpCartItemsIDs;
+        }
+
+        public String getDriverID() {
+            return driverID;
+        }
+
+        public void setDriverID(String driverID) {
+            this.driverID = driverID;
+        }
+
+        public GeoPoint getDriverLocation() {
+            return driverLocation;
+        }
+
+        public void setDriverLocation(GeoPoint driverLocation) {
+            this.driverLocation = driverLocation;
+        }
+
+        public List<String> getPickedUpCartItemsIDs() {
+            return pickedUpCartItemsIDs;
+        }
+
+        public void setPickedUpCartItemsIDs(List<String> pickedUpCartItemsIDs) {
+            this.pickedUpCartItemsIDs = pickedUpCartItemsIDs;
+        }
     }
 }

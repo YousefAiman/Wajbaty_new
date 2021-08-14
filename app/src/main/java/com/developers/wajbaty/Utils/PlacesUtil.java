@@ -3,48 +3,37 @@ package com.developers.wajbaty.Utils;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.developers.wajbaty.Models.PlaceSearchResult;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 
 public class PlacesUtil {
-    
-    private static final String TAG=  "PlacesUtil";
-    
+
+    private static final String TAG = "PlacesUtil";
+
     private static final String PLACES_API_KEY = "AIzaSyDvlvmMqf3YXfMsSKn4xs0SGFj8OCGzLvU";
-    private final Context context;
     private static PlaceResultListener placeResultListener;
-    
-    public PlacesUtil(Context context,PlaceResultListener placeResultListener){
+    private final Context context;
+
+    public PlacesUtil(Context context, PlaceResultListener placeResultListener) {
         this.context = context;
         PlacesUtil.placeResultListener = placeResultListener;
     }
-    
-    public interface PlaceResultListener{
-        void onPlacesFound(ArrayList<PlaceSearchResult> placeSearchResults);
-        void onPlacesError(String errorMessage);
-    }
-    
-    public void searchForRestaurant(String name){
+
+    public void searchForRestaurant(String name) {
 
         String url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?" +
-                "input="+ name +
+                "input=" + name +
                 "&inputtype=textquery&" +
                 "fields=photos,formatted_address,name,geometry&type=restaurant" +
-                "&key="+PLACES_API_KEY;
+                "&key=" + PLACES_API_KEY;
 
         RequestQueue queue = Volley.newRequestQueue(context);
         new Thread(new Runnable() {
@@ -56,13 +45,13 @@ public class PlacesUtil {
                         if (response.getString("status").equals("OK")) {
 
                             final JSONArray candidates = response.getJSONArray("candidates");
-                            if(candidates!=null && candidates.length() != 0){
+                            if (candidates != null && candidates.length() != 0) {
 
                                 final ArrayList<PlaceSearchResult> placeSearchResults = new ArrayList<>();
 
-                                for(int i=0;i<candidates.length();i++){
+                                for (int i = 0; i < candidates.length(); i++) {
 
-                                   final JSONObject cadidateObject = candidates.getJSONObject(i);
+                                    final JSONObject cadidateObject = candidates.getJSONObject(i);
 
                                     JSONObject locationObject = cadidateObject.getJSONObject("geometry").getJSONObject("location");
 
@@ -73,19 +62,19 @@ public class PlacesUtil {
 
                                     String photoUrl = null;
 
-                                    if(photos!=null && photos.length()!=0){
+                                    if (photos != null && photos.length() != 0) {
 
                                         JSONObject firstPhoto = photos.getJSONObject(0);
 
                                         photoUrl =
-                                         "https://maps.googleapis.com/maps/api/place/photo?" +
-                                                 "maxwidth=" + firstPhoto.getInt("width") +
-                                                 "&photoreference=" + firstPhoto.getString("photo_reference") +
-                                                 "&key=" + PLACES_API_KEY;
+                                                "https://maps.googleapis.com/maps/api/place/photo?" +
+                                                        "maxwidth=" + firstPhoto.getInt("width") +
+                                                        "&photoreference=" + firstPhoto.getString("photo_reference") +
+                                                        "&key=" + PLACES_API_KEY;
 
                                     }
 
-                                    if(cadidateObject!=null){
+                                    if (cadidateObject != null) {
 
                                         PlaceSearchResult searchResult =
                                                 new PlaceSearchResult(
@@ -102,7 +91,7 @@ public class PlacesUtil {
                                 }
 
                                 placeResultListener.onPlacesFound(placeSearchResults);
-                            }else{
+                            } else {
                                 placeResultListener.onPlacesError("Empty candidates");
                             }
 
@@ -110,16 +99,16 @@ public class PlacesUtil {
                             Log.d(TAG, "error here man 3: " +
                                     response.getJSONObject("status").getString("message"));
 
-                            placeResultListener.onPlacesError("status error "+ response.getJSONObject("status").getString("message"));
+                            placeResultListener.onPlacesError("status error " + response.getJSONObject("status").getString("message"));
                         }
                     } catch (JSONException e) {
                         Log.d(TAG, "error here man 1: " + e.getMessage());
                         e.printStackTrace();
-                        placeResultListener.onPlacesError("JSONException: "+ e.getMessage());
+                        placeResultListener.onPlacesError("JSONException: " + e.getMessage());
                     }
                 }, error -> {
                     Log.d(TAG, "error here man 2: " + error.getMessage());
-                    placeResultListener.onPlacesError("error: "+ error.getMessage());
+                    placeResultListener.onPlacesError("error: " + error.getMessage());
                 });
                 queue.add(jsonObjectRequest);
                 queue.start();
@@ -128,6 +117,12 @@ public class PlacesUtil {
         }).start();
 
 
+    }
+
+    public interface PlaceResultListener {
+        void onPlacesFound(ArrayList<PlaceSearchResult> placeSearchResults);
+
+        void onPlacesError(String errorMessage);
     }
 
 

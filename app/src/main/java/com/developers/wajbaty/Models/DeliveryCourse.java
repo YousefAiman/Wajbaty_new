@@ -16,7 +16,7 @@ public class DeliveryCourse implements Serializable {
     public DeliveryCourse() {
     }
 
-    public DeliveryCourse(String locationID,String locationName, Location location, int itemCount, boolean wasPassed, boolean isActive) {
+    public DeliveryCourse(String locationID, String locationName, Location location, int itemCount, boolean wasPassed, boolean isActive) {
         this.setLocationID(locationID);
         this.locationName = locationName;
         this.location = location;

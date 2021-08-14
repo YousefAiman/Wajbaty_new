@@ -1,10 +1,10 @@
 package com.developers.wajbaty.Activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.developers.wajbaty.R;
 
@@ -13,7 +13,8 @@ import java.util.Map;
 
 public class WelcomeActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Map<String,Object> addressMap;
+    private Map<String, Object> addressMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
