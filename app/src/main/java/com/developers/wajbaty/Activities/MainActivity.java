@@ -43,7 +43,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements LocationRequester.LocationRequestAction,
-        GeocoderUtil.GeocoderResultListener, View.OnClickListener {
+        GeocoderUtil.GeocoderResultListener
+//        , View.OnClickListener
+{
 
     private static final int TO_SLIDER_ACTIVITY = 1, TO_CONNECTION_ACTIVITY = 2,
             TO_HOME_ACTIVITY = 3, TO_WELCOME_ACTIVITY = 4, TO_MESSAGING_ACTIVITY = 5;
@@ -60,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
                                     "to show nearby restaurants!", Toast.LENGTH_SHORT).show();
                 }
             });
-    int lastClicked;
+//    int lastClicked;
     private int targetActivity;
     private int userType;
     private FirebaseUser currentUser;
@@ -74,11 +76,11 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
         Log.d("startupTime", "start time: " + System.currentTimeMillis());
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        findViewById(R.id.normalUserBtn).setOnClickListener(this);
-        findViewById(R.id.driverUserBtn).setOnClickListener(this);
-        findViewById(R.id.restaurantAdminUserBtn).setOnClickListener(this);
-//
-//        directUserToAppropriateActivity();
+//        findViewById(R.id.normalUserBtn).setOnClickListener(this);
+//        findViewById(R.id.driverUserBtn).setOnClickListener(this);
+//        findViewById(R.id.restaurantAdminUserBtn).setOnClickListener(this);
+
+        directUserToAppropriateActivity();
     }
 
     private void directUserToAppropriateActivity() {
@@ -125,343 +127,343 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
     @Override
     public void addressFetched(Map<String, Object> addressMap) {
 
-        LatLng latLng = (LatLng) addressMap.get("latLng");
+//        LatLng latLng = (LatLng) addressMap.get("latLng");
 //        Log.d("ttt", "gotten latLng in main from geocoder: " + latLng.latitude + "-" + latLng.longitude);
+
+        switch (targetActivity) {
+
+            case TO_SLIDER_ACTIVITY:
+
+                startActivity(new Intent(this, SliderActivity.class)
+                        .putExtra("addressMap", (Serializable) addressMap));
+                finish();
+                break;
+
+            case TO_HOME_ACTIVITY:
+            case TO_MESSAGING_ACTIVITY:
+
+                startTargetActivity(addressMap);
+
+                break;
+
+            case TO_WELCOME_ACTIVITY:
+
+                startActivity(new Intent(this, WelcomeActivity.class)
+                        .putExtra("addressMap", (Serializable) addressMap));
+                finish();
+
+                break;
+        }
+
+//        if(lastClicked == 1){
 //
-//        switch (targetActivity) {
+//            FirebaseAuth.getInstance().signInWithEmailAndPassword("customer@gmail.com","123456").
+//                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                        @Override
+//                        public void onSuccess(AuthResult authResult) {
 //
-//            case TO_SLIDER_ACTIVITY:
+//                            startMessagingService();
 //
-//                startActivity(new Intent(this, SliderActivity.class)
-//                        .putExtra("addressMap", (Serializable) addressMap));
-//                finish();
-//                break;
+//                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                @Override
+//                                public void onSuccess(String s) {
 //
-//            case TO_HOME_ACTIVITY:
-//            case TO_MESSAGING_ACTIVITY:
+//                                    FirebaseFirestore.getInstance().collection("Users")
+//                                            .document(authResult.getUser().getUid())
+//                                            .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                        @Override
+//                                        public void onSuccess(Void aVoid) {
+//                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                    .putExtra("userType",User.TYPE_CUSTOMER)
+//                                                    .putExtra("addressMap", (Serializable) addressMap));
 //
-//                startTargetActivity(addressMap);
+//                                            finish();
+//                                        }
+//                                    });
 //
-//                break;
+//                                }
+//                            });
 //
-//            case TO_WELCOME_ACTIVITY:
-//
-//                startActivity(new Intent(this, WelcomeActivity.class)
-//                        .putExtra("addressMap", (Serializable) addressMap));
-//                finish();
-//
-//                break;
-//        }
-
-        if(lastClicked == 1){
-
-            FirebaseAuth.getInstance().signInWithEmailAndPassword("customer@gmail.com","123456").
-                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-
-                            startMessagingService();
-
-                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
-                                @Override
-                                public void onSuccess(String s) {
-
-                                    FirebaseFirestore.getInstance().collection("Users")
-                                            .document(authResult.getUser().getUid())
-                                            .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
-                                                    .putExtra("userType",User.TYPE_CUSTOMER)
-                                                    .putExtra("addressMap", (Serializable) addressMap));
-
-                                            finish();
-                                        }
-                                    });
-
-                                }
-                            });
-
-;
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-
-                    FirebaseAuth.getInstance().createUserWithEmailAndPassword("customer@gmail.com","123456")
-                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                @Override
-                                public void onSuccess(AuthResult authResult) {
-
-                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
-                                        @Override
-                                        public void onSuccess(String s) {
-
-                                            User user = new User(authResult.getUser().getUid(),
-                                                    "new customer",
-                                                    authResult.getUser().getEmail(),
-                                                    "",
-                                                    "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/b60dc8bd-4756-4f9f-b7a2-04c92c97167d%2F17f7d916-6344-462f-a9dd-cb56e0a34091%2FmenuItemImage_0?alt=media&token=8c5480e3-447f-4b8c-bc2f-ae85a30e663a",
-                                                    (String) addressMap.get("countryCode"),
-                                                    s,
-                                                    User.TYPE_CUSTOMER);
-
-
-                                            FirebaseFirestore.getInstance().collection("Users")
-                                                    .document(authResult.getUser().getUid())
-                                                    .set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-
-                                                    startMessagingService();
-
-                                                                    startActivity(new Intent(MainActivity.this, HomeActivity.class)
-                                                                            .putExtra("userType",User.TYPE_CUSTOMER)
-                                                                            .putExtra("addressMap", (Serializable) addressMap));
-
-                                                                    finish();
-
-                                                }
-                                            });
-
-
-                                        }
-                                    });
-
-//              FirebaseFirestore.getInstance().collection("Users")
-//                    .document(authResult.getUser().getUid())
-//                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//                @Override
-//                public void onSuccess(DocumentSnapshot snapshot) {
-//
-//                    if(snapshot.exists()){
-//
-//                        if(snapshot.getLong("type") == User.TYPE_ADMIN){
-//
-//                            final RestaurantAdmin admin = snapshot.toObject(RestaurantAdmin.class);
-//
-//                            GlobalVariables.setCurrentRestaurantId(admin.getAdministratingRestaurants().get(0));
-//
-//                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
-//
-//                        }else{
-//
-//                            startActivity(new Intent(MainActivity.this, HomeActivity.class));
+//;
 //
 //                        }
-//
-//                    }
-//
-//                }
-//            });
-
-                                }
-                            });
-                }
-            });
-
-
-
-        }else if(lastClicked == 2){
-
-            FirebaseAuth.getInstance().signInWithEmailAndPassword("AhmedAli@gmail.com","123456").
-                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-
-                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
-                                @Override
-                                public void onSuccess(String s) {
-
-                                    FirebaseFirestore.getInstance().collection("Users")
-                                            .document(authResult.getUser().getUid())
-                                            .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
-                                                    .putExtra("userType",User.TYPE_DELIVERY)
-                                                    .putExtra("addressMap", (Serializable) addressMap));
-
-                                            finish();
-                                        }
-                                    });
-
-                                }
-                            });
-
-//                  FirebaseFirestore.getInstance().collection("Users")
-//                    .document(authResult.getUser().getUid())
-//                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//                    }).addOnFailureListener(new OnFailureListener() {
 //                @Override
-//                public void onSuccess(DocumentSnapshot snapshot) {
+//                public void onFailure(@NonNull Exception e) {
 //
-//                    if(snapshot.exists()){
+//                    FirebaseAuth.getInstance().createUserWithEmailAndPassword("customer@gmail.com","123456")
+//                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                                @Override
+//                                public void onSuccess(AuthResult authResult) {
 //
-//                            final RestaurantAdmin admin = snapshot.toObject(RestaurantAdmin.class);
+//                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                        @Override
+//                                        public void onSuccess(String s) {
 //
-//                            GlobalVariables.setCurrentRestaurantId(admin.getAdministratingRestaurants().get(0));
+//                                            User user = new User(authResult.getUser().getUid(),
+//                                                    "new customer",
+//                                                    authResult.getUser().getEmail(),
+//                                                    "",
+//                                                    "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/b60dc8bd-4756-4f9f-b7a2-04c92c97167d%2F17f7d916-6344-462f-a9dd-cb56e0a34091%2FmenuItemImage_0?alt=media&token=8c5480e3-447f-4b8c-bc2f-ae85a30e663a",
+//                                                    (String) addressMap.get("countryCode"),
+//                                                    s,
+//                                                    User.TYPE_CUSTOMER);
 //
-//                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
 //
-//                    }
+//                                            FirebaseFirestore.getInstance().collection("Users")
+//                                                    .document(authResult.getUser().getUid())
+//                                                    .set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                @Override
+//                                                public void onSuccess(Void aVoid) {
 //
+//                                                    startMessagingService();
+//
+//                                                                    startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                                            .putExtra("userType",User.TYPE_CUSTOMER)
+//                                                                            .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                                                    finish();
+//
+//                                                }
+//                                            });
+//
+//
+//                                        }
+//                                    });
+//
+////              FirebaseFirestore.getInstance().collection("Users")
+////                    .document(authResult.getUser().getUid())
+////                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+////                @Override
+////                public void onSuccess(DocumentSnapshot snapshot) {
+////
+////                    if(snapshot.exists()){
+////
+////                        if(snapshot.getLong("type") == User.TYPE_ADMIN){
+////
+////                            final RestaurantAdmin admin = snapshot.toObject(RestaurantAdmin.class);
+////
+////                            GlobalVariables.setCurrentRestaurantId(admin.getAdministratingRestaurants().get(0));
+////
+////                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
+////
+////                        }else{
+////
+////                            startActivity(new Intent(MainActivity.this, HomeActivity.class));
+////
+////                        }
+////
+////                    }
+////
+////                }
+////            });
+//
+//                                }
+//                            });
 //                }
 //            });
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                            FirebaseAuth.getInstance().createUserWithEmailAndPassword("AhmedAli@gmail.com","123456")
-                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                        @Override
-                                        public void onSuccess(AuthResult authResult) {
-
-                                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
-                                                @Override
-                                                public void onSuccess(String s) {
-
-
-                                                    DeliveryDriver deliveryDriver =
-                                                            new DeliveryDriver(
-                                                                    authResult.getUser().getUid(),
-                                                                    "Ahmed Ali",
-                                                                    "AhmedAli@gmail.com",
-                                                                    "",
-                                                                    "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2Fways-to-successfully-manage-a-fleet-of-restaurant-food-delivery-drivers-2-1024x683.jpg?alt=media&token=1673fa36-cc5e-404b-8499-dbb3edd6787e" ,
-                                                                    (String) addressMap.get("countryCode"),
-                                                                    s,
-                                                                    User.TYPE_DELIVERY,
-                                                                    0,
-                                                                    null,
-                                                                    DeliveryDriver.STATUS_AVAILABLE,
-                                                                    new GeoPoint(latLng.latitude,latLng.longitude),
-                                                                    GeoFireUtils.getGeoHashForLocation(
-                                                                            new GeoLocation(latLng.latitude,latLng.longitude)
-                                                                    )
-                                                            );
-
-
-                                                    FirebaseFirestore.getInstance().collection("Users")
-                                                            .document(authResult.getUser().getUid())
-                                                            .set(deliveryDriver).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-
-                                                            startMessagingService();
-                                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
-                                                                    .putExtra("userType",User.TYPE_DELIVERY)
-                                                                    .putExtra("addressMap", (Serializable) addressMap));
-
-                                                            finish();
-
-                                                        }
-                                                    });
-
-
-                                                }
-                                            });
-
-
-
-                                        }
-                                    });
-                        }
-                    });
-        }else if(lastClicked == 3){
-
-            String email = "testRestaurant@gmail.com";
-
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email,"123456").
-                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-
-                            FirebaseFirestore.getInstance().collection("Users")
-                                    .document(authResult.getUser().getUid())
-                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-                                    if(documentSnapshot.exists()){
-
-                                        startMessagingService();
-
-                                        GlobalVariables.setCurrentRestaurantId(documentSnapshot.getString("myRestaurantID"));
-                                        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
-                                            @Override
-                                            public void onSuccess(String s) {
-
-                                                FirebaseFirestore.getInstance().collection("Users")
-                                                        .document(authResult.getUser().getUid())
-                                                        .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        startActivity(new Intent(MainActivity.this, HomeActivity.class)
-                                                                .putExtra("userType",User.TYPE_ADMIN)
-                                                                .putExtra("addressMap", (Serializable) addressMap));
-
-                                                        finish();
-                                                    }
-                                                });
-
-                                            }
-                                        });
-
-                                    }
-
-                                }
-                            });
-
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,"123456")
-                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                        @Override
-                                        public void onSuccess(AuthResult authResult) {
-
-                                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
-                                                @Override
-                                                public void onSuccess(String s) {
-
-                                                    User userInfo =
-                                                            new User(authResult.getUser().getUid(),
-                                                                    "restaurant admin",
-                                                                    authResult.getUser().getEmail(),
-                                                                    "",
-                                                                    null,
-                                                                    (String) addressMap.get("countryCode"),
-                                                                    s,
-                                                                    User.TYPE_ADMIN);
-
-
-                                                    FirebaseFirestore.getInstance().collection("Users")
-                                                            .document(authResult.getUser().getUid())
-                                                            .set(userInfo).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-
-                                                            finish();
-                                                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
-
-                                                        }
-                                                    });
-
-
-                                                }
-                                            });
-
-                                        }
-                                    });
-                        }
-                    });
-        }
+//
+//
+//
+//        }else if(lastClicked == 2){
+//
+//            FirebaseAuth.getInstance().signInWithEmailAndPassword("AhmedAli@gmail.com","123456").
+//                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                        @Override
+//                        public void onSuccess(AuthResult authResult) {
+//
+//                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                @Override
+//                                public void onSuccess(String s) {
+//
+//                                    FirebaseFirestore.getInstance().collection("Users")
+//                                            .document(authResult.getUser().getUid())
+//                                            .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                        @Override
+//                                        public void onSuccess(Void aVoid) {
+//                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                    .putExtra("userType",User.TYPE_DELIVERY)
+//                                                    .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                            finish();
+//                                        }
+//                                    });
+//
+//                                }
+//                            });
+//
+////                  FirebaseFirestore.getInstance().collection("Users")
+////                    .document(authResult.getUser().getUid())
+////                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+////                @Override
+////                public void onSuccess(DocumentSnapshot snapshot) {
+////
+////                    if(snapshot.exists()){
+////
+////                            final RestaurantAdmin admin = snapshot.toObject(RestaurantAdmin.class);
+////
+////                            GlobalVariables.setCurrentRestaurantId(admin.getAdministratingRestaurants().get(0));
+////
+////                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
+////
+////                    }
+////
+////                }
+////            });
+//
+//                        }
+//                    }).addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//
+//                            FirebaseAuth.getInstance().createUserWithEmailAndPassword("AhmedAli@gmail.com","123456")
+//                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                                        @Override
+//                                        public void onSuccess(AuthResult authResult) {
+//
+//                                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                                @Override
+//                                                public void onSuccess(String s) {
+//
+//
+//                                                    DeliveryDriver deliveryDriver =
+//                                                            new DeliveryDriver(
+//                                                                    authResult.getUser().getUid(),
+//                                                                    "Ahmed Ali",
+//                                                                    "AhmedAli@gmail.com",
+//                                                                    "",
+//                                                                    "https://firebasestorage.googleapis.com/v0/b/wajbatytestproject.appspot.com/o/images%2Fways-to-successfully-manage-a-fleet-of-restaurant-food-delivery-drivers-2-1024x683.jpg?alt=media&token=1673fa36-cc5e-404b-8499-dbb3edd6787e" ,
+//                                                                    (String) addressMap.get("countryCode"),
+//                                                                    s,
+//                                                                    User.TYPE_DELIVERY,
+//                                                                    0,
+//                                                                    null,
+//                                                                    DeliveryDriver.STATUS_AVAILABLE,
+//                                                                    new GeoPoint(latLng.latitude,latLng.longitude),
+//                                                                    GeoFireUtils.getGeoHashForLocation(
+//                                                                            new GeoLocation(latLng.latitude,latLng.longitude)
+//                                                                    )
+//                                                            );
+//
+//
+//                                                    FirebaseFirestore.getInstance().collection("Users")
+//                                                            .document(authResult.getUser().getUid())
+//                                                            .set(deliveryDriver).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                        @Override
+//                                                        public void onSuccess(Void aVoid) {
+//
+//                                                            startMessagingService();
+//                                                            startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                                    .putExtra("userType",User.TYPE_DELIVERY)
+//                                                                    .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                                            finish();
+//
+//                                                        }
+//                                                    });
+//
+//
+//                                                }
+//                                            });
+//
+//
+//
+//                                        }
+//                                    });
+//                        }
+//                    });
+//        }else if(lastClicked == 3){
+//
+//            String email = "testRestaurant@gmail.com";
+//
+//            FirebaseAuth.getInstance().signInWithEmailAndPassword(email,"123456").
+//                    addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                        @Override
+//                        public void onSuccess(AuthResult authResult) {
+//
+//                            FirebaseFirestore.getInstance().collection("Users")
+//                                    .document(authResult.getUser().getUid())
+//                                    .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//                                @Override
+//                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+//
+//                                    if(documentSnapshot.exists()){
+//
+//                                        startMessagingService();
+//
+//                                        GlobalVariables.setCurrentRestaurantId(documentSnapshot.getString("myRestaurantID"));
+//                                        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                            @Override
+//                                            public void onSuccess(String s) {
+//
+//                                                FirebaseFirestore.getInstance().collection("Users")
+//                                                        .document(authResult.getUser().getUid())
+//                                                        .update("cloudMessagingToken",s).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void aVoid) {
+//                                                        startActivity(new Intent(MainActivity.this, HomeActivity.class)
+//                                                                .putExtra("userType",User.TYPE_ADMIN)
+//                                                                .putExtra("addressMap", (Serializable) addressMap));
+//
+//                                                        finish();
+//                                                    }
+//                                                });
+//
+//                                            }
+//                                        });
+//
+//                                    }
+//
+//                                }
+//                            });
+//
+//
+//                        }
+//                    }).addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//
+//                            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,"123456")
+//                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                                        @Override
+//                                        public void onSuccess(AuthResult authResult) {
+//
+//                                            FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+//                                                @Override
+//                                                public void onSuccess(String s) {
+//
+//                                                    User userInfo =
+//                                                            new User(authResult.getUser().getUid(),
+//                                                                    "restaurant admin",
+//                                                                    authResult.getUser().getEmail(),
+//                                                                    "",
+//                                                                    null,
+//                                                                    (String) addressMap.get("countryCode"),
+//                                                                    s,
+//                                                                    User.TYPE_ADMIN);
+//
+//
+//                                                    FirebaseFirestore.getInstance().collection("Users")
+//                                                            .document(authResult.getUser().getUid())
+//                                                            .set(userInfo).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                        @Override
+//                                                        public void onSuccess(Void aVoid) {
+//
+//                                                            finish();
+//                                                            startActivity(new Intent(MainActivity.this, RestaurantLocationActivity.class));
+//
+//                                                        }
+//                                                    });
+//
+//
+//                                                }
+//                                            });
+//
+//                                        }
+//                                    });
+//                        }
+//                    });
+//        }
 
     }
 
@@ -641,23 +643,24 @@ public class MainActivity extends AppCompatActivity implements LocationRequester
 
     }
 
-    @Override
-    public void onClick(View v) {
+//    @Override
+//    public void onClick(View v) {
+//
+//        if (v.getId() == R.id.normalUserBtn) {
+//
+//            lastClicked = 1;
+//            requestLocation();
+//
+//        } else if (v.getId() == R.id.driverUserBtn) {
+//            lastClicked = 2;
+//            requestLocation();
+//
+//        } else if (v.getId() == R.id.restaurantAdminUserBtn) {
+//            lastClicked = 3;
+//            requestLocation();
+//
+//        }
+//
+//    }
 
-        if (v.getId() == R.id.normalUserBtn) {
-
-            lastClicked = 1;
-            requestLocation();
-
-        } else if (v.getId() == R.id.driverUserBtn) {
-            lastClicked = 2;
-            requestLocation();
-
-        } else if (v.getId() == R.id.restaurantAdminUserBtn) {
-            lastClicked = 3;
-            requestLocation();
-
-        }
-
-    }
 }

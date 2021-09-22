@@ -36,41 +36,41 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
 
-    <Button
-        android:id="@+id/normalUserBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="normal user"
-        android:textColor="@color/white"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appName" />
+<!--    <Button-->
+<!--        android:id="@+id/normalUserBtn"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="20dp"-->
+<!--        android:text="normal user"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:visibility="visible"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/appName" />-->
 
-    <Button
-        android:id="@+id/driverUserBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="driver user"
-        android:visibility="visible"
-        android:textColor="@color/white"
-        android:layout_marginTop="30dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/normalUserBtn" />
+<!--    <Button-->
+<!--        android:id="@+id/driverUserBtn"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="driver user"-->
+<!--        android:visibility="visible"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:layout_marginTop="30dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/normalUserBtn" />-->
 
-    <Button
-        android:id="@+id/restaurantAdminUserBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Restaurant Admin user"
-        android:textColor="@color/white"
-        android:visibility="visible"
-        android:layout_marginTop="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/driverUserBtn" />
+<!--    <Button-->
+<!--        android:id="@+id/restaurantAdminUserBtn"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Restaurant Admin user"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:visibility="visible"-->
+<!--        android:layout_marginTop="20dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/driverUserBtn" />-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
